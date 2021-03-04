@@ -1,0 +1,158 @@
+\documentclass{report}
+\usepackage[spanish]{babel}
+\usepackage[utf8x]{inputenc}
+
+
+\usepackage[margin=1in]{geometry}
+
+\usepackage{amsthm}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{syllogism}
+\usepackage{bussproofs} 
+
+\usepackage[T1]{fontenc}
+\usepackage{titlesec, blindtext, color}
+\definecolor{gray75}{gray}{0.75}
+\newcommand{\hsp}{\hspace{20pt}}
+\titleformat{\chapter}[hang]{\Huge\bfseries}{\thechapter\hsp\textcolor{gray75}{|}\hsp}{0pt}{\Huge\bfseries}
+
+\newtheorem{theorem}{Teorema}[chapter]
+\newtheorem{theorem*}[theorem]{*Teorema}
+\newtheorem{prop}[theorem]{Proposición}
+\newtheorem{lema}[theorem]{Lema}
+\newtheorem{cor}[theorem]{Corolario}
+
+\newtheorem{prop*}[theorem]{*Proposición}
+\newtheorem{lema*}[theorem]{*Lema}
+\newtheorem{cor*}[theorem]{*Corolario}
+
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definición}
+\newtheorem{definition*}[theorem]{*Definición}
+\newtheorem{defs}[theorem]{Definiciones}
+\newtheorem{defs*}[theorem]{*Definiciones}
+\newtheorem{example}[theorem]{Ejemplo}
+\newtheorem{ex}[theorem]{Ejercicio}
+\newtheorem{note}[theorem]{Nota}
+
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Nota}
+
+\newtheoremstyle{jeje} % name
+    {\topsep}                    % Space above
+    {\topsep}                    % Space below
+    {}                   % Body font
+    {}                           % Indent amount
+    {\itshape}                   % Theorem head font
+    {.}                          % Punctuation after theorem head
+    {.5em}                       % Space after theorem head
+    {}  % Theorem head spec (can be left empty, meaning ‘normal’)
+\theoremstyle{jeje}
+\newtheorem*{sketchproof}{Sketch de demostración}
+
+\DeclareMathOperator{\Tr}{Tr}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\K}{\mathbb{K}}
+\newcommand{\norm}[1]{\left\|#1\right\|}
+
+
+\newcommand{\T}{\mathbb{T}}
+\renewcommand{\P}{\mathbb{P}}
+\newcommand{\C}{\mathbb{C}}
+\renewcommand{\H}{\mathbb{H}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\F}{\mathbb{F}}
+\newcommand{\tr}{\mathrm{tr}}
+\newcommand{\idash}{\quad}
+
+
+\newcommand{\nx}{\texttt{x}}
+\newcommand{\ny}{\texttt{y}}
+\newcommand{\nz}{\texttt{z}}
+\newcommand{\nw}{\texttt{w}}
+
+\newcommand{\n}[1]{\texttt{#1}}
+\newcommand{\mc}[1]{\mathcal{#1}}
+\newcommand{\fc}[2]{\mc{#1}[\![#2]\!]}
+\newcommand{\la}[2]{\langle #1, #2 \rangle}
+
+
+
+%Para poner gorritos:
+\usepackage{scalerel,stackengine}
+\stackMath
+\newcommand\reallywidehat[1]{%
+\savestack{\tmpbox}{\stretchto{%
+  \scaleto{%
+    \scalerel*[\widthof{\ensuremath{#1}}]{\kern.1pt\mathchar"0362\kern.1pt}%
+    {\rule{0ex}{\textheight}}%WIDTH-LIMITED CIRCUMFLEX
+  }{\textheight}% 
+}{2.4ex}}%
+\stackon[-6.9pt]{#1}{\tmpbox}%
+}
+
+
+\def\regla#1{\ensuremath\mathbf{(#1)}}
+
+\makeatother
+
+
+\numberwithin{section}{chapter}
+\numberwithin{equation}{chapter}
+
+\makeindex
+
+\begin{document}
+
+
+
+\title{Apuntes de Teoría de la Programación}
+
+
+\author{}
+
+\maketitle
+
+
+
+
+%    Dedication.  If the dedication is longer than a line or two,
+%    remove the centering instructions and the line break.
+\cleardoublepage
+\vspace*{13.5pc}
+\begin{center}
+\end{center}
+\cleardoublepage
+
+%    Change page number to 6 if a dedication is present.
+\renewcommand{\contentsname}{Contenidos}
+\tableofcontents
+\pagenumbering{gobble}
+
+%    Include unnumbered chapters (preface, acknowledgments, etc.) here.
+
+
+
+%    Include main chapters here.
+
+\include{cap1}
+\include{cap2}
+\include{cap3}
+\include{cap4}
+\appendix
+%    Include appendix "chapters" here.
+
+
+%    Bibliography styles amsplain or harvard are also acceptable.
+\bibliographystyle{amsalpha}
+%    See note above about multiple indexes.
+\printindex
+
+\end{document}
+
+%-----------------------------------------------------------------------
+% End of amsbook-template.tex
+%-----------------------------------------------------------------------

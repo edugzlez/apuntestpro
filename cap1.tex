@@ -1,0 +1,368 @@
+\cleardoublepage
+\chapter{Introducción}
+						
+\pagenumbering{arabic}
+$\\$
+
+\section{Un ejemplo de la lógica}
+La pregunta que motiva todo lo siguiente es: ¿qué es el significado? O, más concretamente, ¿cuál es la relación entre la sintaxis y la semántica? Aunque aquí nos centraremos principalmente en especificar el comportamiento de programas, parece conveniente presentar un ejemplo relacionado con la lógica. Recordemos que, en lógica de primer orden, disponíamos de un método para asignar un valor semántico a cada expresión. En este caso, el valor semántico que nos interesa es la \textit{denotación}, es decir, que por ejemplo $\varphi \lor \psi$ denota lo verdadero en función de $\varphi$ y $\psi$. El método consistía en:
+\begin{itemize}
+    \item Asumir que las fórmulas atómicas tienen una denotación fija, es decir, podemos determinar previamente si es V o F.
+    \item Las denotaciones de $\varphi \lor \psi$, $\neg \varphi$ quedan determinadas por las tablas de verdad correspondientes y el paso anterior.
+    \item La denotación de $\forall x. \varphi$ es V si y solo si, para cada $a$ posible, la denotación de $\varphi[a/x]$ es V.
+\end{itemize}
+Con esto ya sabríamos responder a la primera pregunta que nos hicimos para la lógica de primer orden. Sin embargo, esta aproximación no es la única. Pensemos en el concepto de `prueba' en un sentido computacional. En vez de enfocar el valor semántico hacia la denotación, preguntémonos cuándo un enunciado `tiene una prueba'. Así obtenemos un método alternativo:
+\begin{itemize}
+    \item Asumir que, para las fórmulas atómicas, conocemos lo que significa una prueba. Por ejemplo, la prueba de que $2 + 2 = 4$ consiste en operar con lápiz y papel.
+    \item Una prueba de $\varphi \land \psi$ es un par $(r, s)$ donde $r$ es una prueba de $\varphi$ y donde $s$ es una prueba de $\psi$.
+    \item Una prueba de $\varphi \lor \psi$ es un par $(k, r)$, donde o bien $r=0$ y $r$ es prueba de $\varphi$ o bien $k=1$ y $r$ es prueba de $\psi$.
+    \item Una prueba de $\varphi \rightarrow \psi$ es una función que lleva pruebas de $\varphi$ en pruebas de $\psi$.
+    \item Una prueba de $\neg \varphi$ es una prueba de $\varphi \rightarrow \bot$, donde $\bot$ no admite prueba.
+    \item Una prueba de $\forall x. \varphi$ es una función que lleva cada elemento posible $a$ en una prueba de $\varphi[a/x]$.
+    \item Una prueba de $\exists x.\varphi$ es un par $(a, r)$ donde $a$ es un elemento posible y $r$ es una prueba de $\varphi[a/x]$.
+\end{itemize}
+¿Qué ha ocurrido aquí? Hemos dado un valor semántico diferente a la sintaxis lógica usual. Nos encontraremos con situaciones similares a ésta a lo largo del curso pero, en vez de hablar de `proposiciones' y `fórmulas' trataremos `programas'.
+
+\section{Métodos de descripción semántica}
+
+Consideremos un programa como $\nz:= \nx; \nx := \ny; \ny := \nz$. Un análisis sintáctico nos dice que tenemos tres expresiones separadas por $`;$' y que cada una tiene la forma de una variable separada de otra por `$:=$'. El análisis semántico depende en gran medida del sintáctico. Será entonces conveniente asumir programas que están sintácticamente bien escritos, como en este ejemplo. La asignación de un valor semántico se tiene que realizar necesariamente en dos pasos: 
+\begin{itemize}
+    \item[(i)] Dar un significado expresiones separadas por $`;$'.
+    \item[(ii)]  Dar un significado a expresiones formadas por una variable seguida de `$:=$' y una expresión.
+\end{itemize}
+Nosotros nos centraremos en lo sucesivo en tres enfoques distintos aunque complementarios.
+
+\subsection{Semántica operacional}
+
+Aquí el valor semántico recae sobre el efecto que tiene el programa sobre la máquina en la que se ejecuta, es decir, una descripción operacional os dirá cómo ejecutar el programa que presentamos antes: 
+\begin{itemize}
+    \item[(i)] Para ejecutar una serie de expresiones separadas por `$;$', las ejecutamos una a una de izquierda a derecha.
+    \item[(ii)] Para ejecutar una expresión formada por una variable seguida de `$:=$' y una variable, determinamos el valor de la segunda variable y se lo damos a la primera. 
+\end{itemize}
+Por tanto, si ejecutamos el programa $\nz:= \nx; \nx := \ny; \ny := \nz$ suponiendo que tenemos las asignaciones iniciales $[\nx \mapsto 5, \ny \mapsto 7, \nz \mapsto 0]$, tenemos:
+\begin{align*}
+     \langle \nz:= \nx; \nx := \ny; \ny := \nz,  [\nx \mapsto 5, \ny \mapsto 7, \nz \mapsto 0] \rangle & \rightarrow\\
+    \langle \nx := \ny; \ny := \nz,  [\nx \mapsto 5, \ny \mapsto 7, \nz \mapsto 5] \rangle & \rightarrow\\
+     \langle \ny := \nz,  [\nx \mapsto 7, \ny \mapsto 7, \nz \mapsto 5] \rangle & \rightarrow \\
+     [\nx \mapsto 7, \ny \mapsto 5, \nz \mapsto 5]
+\end{align*}
+Esto es lo que se denomina \textit{semántica operacional estructural}. Pero podemos seguir un procedimiento distinto que muestra menos pasos del proceso anterior:
+\begin{prooftree}
+    \AxiomC{$\langle \nz := \nx, s_0\rangle \rightarrow s_1 \idash\idash \langle \nx := \ny, s_1\rangle \rightarrow s_2$}
+    \UnaryInfC{$\langle \nz := \nx; \nx := \ny, s_0\rangle \rightarrow s_2$}
+    \AxiomC{$\langle \ny := \nz, s_2\rangle \rightarrow s_3$}
+    \BinaryInfC{$\langle\nz:= \nx; \nx := \ny; \ny := \nz, s_0\rangle \rightarrow s_3$}
+\end{prooftree}
+Siendo:
+$$s_0 := [\nx \mapsto 5, \ny \mapsto 7, \nz \mapsto 0], s_1 := [\nx \mapsto 5, \ny \mapsto 7, \nz \mapsto 5],$$
+$$s_2 := [\nx \mapsto 7, \ny \mapsto 7, \nz \mapsto 5], s_3 := [\nx \mapsto 5, \ny \mapsto 5, \nz \mapsto 5].$$
+Es decir, aquí hemos resumido toda la información en $\langle e, s\rangle \rightarrow t$, que simboliza el hecho de que, al ejecutar la expresión $e$ en el estado $s$, pasamos al estado $t$.
+
+\subsection{Semántica denotacional}
+
+En este punto de vista, el valor semántico se encuentra en el efecto de cómo se ejecutan los programas. En el caso que tratamos:
+\begin{itemize}
+    \item[(i)] El efecto de una serie de expresiones separadas por `$;$' consiste en la composición de los efectos de las expresiones.
+    \item[(ii)] El efecto de una expresión formada por una variable seguida por `$:=$' y otra variable es una función que lleva un estado en uno nuevo, formado a partir del original haciendo que el valor de la primera variable sea el de la segunda.
+\end{itemize}
+Es decir, tenemos:
+$$\mathcal{S}[\![ \nz:= \nx; \nx := \ny; \ny := \nz ]\!] = \mathcal{S}[\![ \ny := \nz  ]\!]\circ \mathcal{S}[\![ \nx := \ny  ]\!]\circ \mathcal{S}[\![ \nz := \nx  ]\!]$$
+Y por tanto, 
+\begin{align*}
+     & \mathcal{S}[\![ \nz:= \nx; \nx := \ny; \ny := \nz ]\!]([\nx \mapsto 5, \ny \mapsto 7, \nz \mapsto 0]) \\
+    = &\mathcal{S}[\![ \ny := \nz  ]\!](\mathcal{S}[\![ \nx := \ny  ]\!](\mathcal{S}[\![ \nz := \nx  ]\!]([\nx \mapsto 5, \ny \mapsto 7, \nz \mapsto 0]))) \\
+    = & \mathcal{S}[\![ \ny := \nz  ]\!](\mathcal{S}[\![ \nx := \ny  ]\!]([\nx \mapsto 5, \ny \mapsto 7, \nz \mapsto 5])) \\
+    = & \mathcal{S}[\![ \ny := \nz  ]\!]([\nx \mapsto 7, \ny \mapsto 7, \nz \mapsto 5]) \\
+    = & [\nx \mapsto 7, \ny \mapsto 5, \nz \mapsto 5].
+\end{align*}
+
+Nótese lo que hemos conseguido aquí: hemos traducido el funcionamiento del programa a una serie de objetos matemáticos. Esto será de ayuda en el futuro.
+
+\subsection{Semántica axiomática}
+
+Dado un programa, decimos que es \textit{parcialmente correcto} respecto de una premisa y una consecuencia si, cuando el estado inicial verifica la premisa y el programa termina, el estado final verifica la consecuencia. En nuestro caso, tenemos la propiedad:
+$$\{\nx = \texttt{n}\land \ny = \texttt{m}\}\nz:= \nx; \nx := \ny; \ny := \nz\{\ny = \texttt{n}\land \nx = \texttt{m}\}$$
+Nótese que esta propiedad no asegura que el programa termine. Desde este punto de vista, lo que queremos es construir un sistema lógico para demostrar la corrección parcial de un programa. En cambio, como veremos, ciertos aspectos de los programas no serán tenidos en cuenta.
+La deducción de la corrección parcial del programa de ejemplo es la siguiente:
+\begin{prooftree}
+    \AxiomC{$\{p_0\}\nz := \nx\{p_1\} \idash\idash \{p_1\}\nx:=\ny\{p_2\}$}
+    \UnaryInfC{$\{p_0\}\nz := \nx; \nx := \ny\{p_2\}$}
+    \AxiomC{$\{p_2\}\ny := \nz\{p_3\}$}
+    \BinaryInfC{$\{p_0\}\nz:= \nx; \nx := \ny; \ny := \nz\{p_3\}$}
+\end{prooftree}
+Donde
+$$p_0 := \texttt{x}=\texttt{n}\land\texttt{y}=\texttt{m}, p_1 := \texttt{z}=\texttt{n}\land\texttt{y}=\texttt{m},$$
+$$p_2 := \texttt{z}=\texttt{n}\land\texttt{x}=\texttt{m}, p_3 := \texttt{y}=\texttt{n}\land\texttt{x}=\texttt{m}.$$
+Aunque se pueda observar cierta similitud con el enfoque operacional, la diferencia es que aquí trabajamos con aserciones que no tienen en cuenta el funcionamiento del programa. La ventaja de esto consiste en que podemos describir fácilmente determinadas propiedades de tal programa.
+
+
+\section{El lenguaje While}
+
+Veamos a continuación un ejemplo que iremos desarrollando durante el curso, el lenguaje \textbf{While}. Para especificar las \textit{categorías sintácticas}, especificamos una \textit{metavariable} específica que toma valores en los elementos de cada una:
+\begin{itemize}
+    \item Numerales: $n\in \mathbf{Num}$.
+    \item Variables: $x\in \mathbf{Var}$.
+    \item Expresiones aritméticas: $a\in \mathbf{Aexp}$.
+    \item Expresiones booleanas: $b\in \mathbf{Bexp}$.
+    \item Sentencias: $S\in \mathbf{Stm}$.
+\end{itemize}
+En caso de que hiciera falta emplear más de una metavariable, emplearemos, por ejemplo, $n', n'', \dots$ y $n_1, n_2, \dots$. Supondremos que las categorías $\mathbf{Num}$ y $ \mathbf{Var}$ se construyen de manera natural. Las categorías sintácticas $\mathbf{Aexp}$, $\mathbf{Bexp}$ y $\mathbf{Stm}$ se construyen de la siguiente forma:
+\[
+    \begin{array}{l}
+         a ::= n\ |\ x\ |\ a_1+ a_2\ |\ a_1\times a_2\ |\ a_1-a_2 \\
+         b ::= \n{true}\ |\ \n{false}\ |\ a_1 = a_2\ |\ a_1 \leq a_2\ |\ \neg b\ |\ b_1 \land b_2 \\
+         S ::= x:=a\ |\ \n{skip}\ |\ S_1;S_2\ |\ \n{if}\ b\ \n{then}\ S_1\ \n{else}\ S_2\ |\ \n{while}\ b\ \n{do}\ S
+         
+    \end{array}
+\]
+
+
+Si volvemos al ejemplo de antes, la expresión $\n{z} := \n{x}; \n{x} := \n{y}; \n{y} := \n{z}$, podemos definir una \textit{sintaxis concreta}, en el sentido de que, de los diferentes árboles de derivación para tal expresión, debemos escoger uno. En cambio, lo que acabamos de definir arriba es un ejemplo de \textit{sintaxis absracta}, y los árboles de derivación posibles son todos distintos elementos de la categoría $\mathbf{Stm}$. De hecho, en caso de que queramos expresar la prioridad de las operaciones, lo haremos mediante el uso de paréntesis.
+
+\section{Semántica para expresiones}
+
+Veamos, a modo de ejemplo, cómo dar significado a los numerales. Expresaremos la gramática de $\mathbf{Num}$ por
+\[
+    n ::= \n{0}\ |\ \n{1} \ |\ n\ \n{0} \ |\ n\ \n{1}
+\]
+
+Intepretaremos los numerales como si fuesen la expresión binaria de un número natural. Es decir, se tendrá una \textit{aplicación semántica} $\mc{N}: \mathbf{Num} \to \Z$ dada recursivamente por:
+\[
+    \begin{array}{l}
+         \fc{\mc{N}}{\n{0}} = 0 \\
+         \fc{\mc{N}}{\n{1}}= 1 \\
+         \fc{\mc{N}}{n \n{0}} = 2\otimes \fc{\mc{N}}{n}\\
+         \fc{\mc{N}}{n \n{1}} = 2\otimes \fc{\mc{N}}{n} \oplus 1
+    \end{array}
+\]
+Donde $\oplus, \otimes$ expresan las operaciones de suma y producto en $\Z$ y $0, 1, 2$ los enteros correspondientes: la distinción entre objetos sintácticos y semánticos tiene que ser cuidadosa. Las igualdades anteriores se llaman \textit{ecuaciones semánticas}, nos indican cómo asociar un objeto matemático a un símbolo. Además, tenemos aquí un ejemplo de lo que se llama el \textit{principio de composición}, es decir, construimos el significado de una expresión (\textit{elemento compuesto}) en función del de sus componentes (\textit{elementos base}). Ésto facilita aplicar el método de demostración general que seguiremos, la \textit{inducción estructural}, que consiste en primero demostrar una propiedad para cada elemento base y después demostrarla para los compuestos empleando la hipótesis de inducción. Veamos un ejemplo a continuación.
+
+Primero recordemos que una función $f: A \rightarrow B$ es \textit{parcial} si hay elementos $a\in A$ en los que no está definida. En caso contrario, se denomina \textit{función total}.
+
+\begin{prop}
+La función $\mc{N}: \mathbf{Num} \to \Z$ es total.
+\end{prop}
+\begin{proof}[Demostración]
+Por inducción. De los siguientes casos, $(a), (b)$ son los \texttit{casos base} y $(c), (d)$ los \textit{inductivos}:
+\begin{itemize}
+    \item[(a)] Si $n = \n{0}$, $\fc{N}{n} = 0$.
+    \item[(b)] Si $n = \n{1}$, $\fc{N}{n} = 1$.
+    \item[(c)] Si $n = m\n{0}$, $\fc{N}{n} = \fc{N}{m\n{0}} = 2 \otimes \fc{N}{m}$, y por hipótesis de inducción tenemos el resultado.
+    \item[(d)] Análogo a (c).
+\end{itemize}
+\end{proof}
+
+\begin{example}
+Definamos una gramática y una semántica asociada para interpretar los numerales (binarios), de modo que el primer caracter de cada cadena represente el signo (positivo o negativo) del número representado por el resto de la misma. Una gramática posible es:
+\[
+    n ::= \n{0}\ |\ \n{1} \ |\ \n{0}n \ |\ \n{1}n
+\]
+Definiremos su semántica atendiendo a que las cadenas $\n{0}$ y $\n{1}$ representan el número 0, pues se compondrían solo del signo, sin acompañar ningún número. \\ \\ 
+La función semántica es $\mc{S}: \mathbf{Num} \rightarrow \Z$, definida por:
+\[
+    \begin{array}{l}
+        \fc{S}{0} = 0\\
+        \fc{S}{1} = 0 \\
+         \fc{\mc{S}}{\n{0}n} = \fc{N}{n} \\
+         \fc{\mc{S}}{\n{1}n} =-\fc{N}{n}\\
+    \end{array}
+\]
+Notemos el siguiente detalle: en principio, la función $\mc{N}$, como tal, no puede tomar valores del modo anterior. Sin embargo, se puede probar que, como la gramática que dimos en la definición de $\mc{N}$ y la que hemos escrito arriba generan las mismas cadenas, la función $\mc{N}$ se puede identificar fácilmente con la función que buscamos. \\ \\
+Pese a ello es posible definir dicha función de la siguiente forma
+\[
+    \begin{array}{l}
+         \fc{N}{\n{0}} = 0 \\
+         \fc{N}{\n{1}} = 1 \\
+         \fc{N}{\n{0}n} = \fc{AUX}{n, 0} \\
+         \fc{N}{\n{1}n} =  \fc{AUX}{n, 1} \\
+    \end{array}
+\]
+y la función $\mc{AUX}: \mathbf{Num} \times \mathbb{N} \to \mathbb{N} $
+\[
+    \begin{array}{l}
+         \fc{AUX}{\n{0}, x} = 2\otimes x \\
+         \fc{AUX}{\n{1}, x} = 2\otimes x \oplus 1 \\
+         \fc{AUX}{\n{0}n, x} = \fc{AUX}{n, 2\otimes x} \\
+         \fc{AUX}{\n{1}n, x} =  \fc{AUX}{n, 2\otimes x \oplus 1} \\
+    \end{array}
+\]
+donde el segundo parámetro representa un acumulador. Por construcción de la gramática la lectura de la cadena se hace de izquierda a derecha, dificultando un poco la construcción de la semántica.
+\end{example}
+\\
+
+
+
+Desde la perspectiva de la semántica denotacional, el significado de una expresión está determinado por los valores que toman en ella las variables. Esto motiva el concepto de \textit{estado}, definido en nuestro caso como un elemento del conjunto $\mathbf{State} := \mathbf{Var} \rightarrow \Z$, es decir, como una función que lleva una variable en su valor (un entero positivo). Por tanto, el significado de la expresión viene dado por una función auxiliar $\mc{A}: \mathbf{Aexp} \rightarrow (\mathbf{State}\rightarrow \Z)$, donde $\mathcal{A}$ toma una exprexión aritmética y un estado $s$\footnote{Nótese que $\mathcal{A}$ nos lleva $a$ a una función $\fc{A}{a}$ y aplicamos tal función a $s$ escribiendo $ \fc{A}{a}s$. Por otro lado, con $s\, x$ nos referimos a $s$ aplicado a $x$.}:
+\begin{align*}
+    \fc{A}{n}s & = \fc{N}{n} \\
+    \fc{A}{x}s & = s\ x \\ 
+    \fc{A}{a_1 + a_2}s & = \fc{A}{a_1}s \oplus\fc{A}{a_2}s \\
+    \fc{A}{a_1 \times a_2}s & = \fc{A}{a_1}s \otimes \fc{A}{a_2}s \\
+     \fc{A}{a_1 - a_2}s & = \fc{A}{a_1}s \ominus \fc{A}{a_2}s 
+\end{align*}
+
+
+\begin{example}
+Podemos añadir a la definición la ecuación semántica
+$$\fc{A}{-a}s = 0 \ominus \fc{A}{a}s$$
+Incluso podemos prescindir del $0$ por cómo está definida $\ominus$. En cambio,
+$$\fc{A}{-a}s  = \fc{A}{\n{0}-a}s$$
+no está definida de forma composicional.
+\end{example}
+
+Se puede repetir el procedimiento anterior para definir una función semántica para los booleanos, $\mc{B} : \mathbf{Bexp} \rightarrow (\mathbf{State}\rightarrow Bool)$, siendo $Bool := \{\mathbf{tt}, \mathbf{ff}\}$, definida por:
+\begin{align*}
+    \fc{B}{\n{true}}s & = \mathbf{tt}\\
+    \fc{B}{\n{false}}s & = \mathbf{ff} \\
+    \fc{B}{a_1 = a_2}s & = \begin{cases} \mathbf{tt}\text{, si }\fc{A}{a_1}s\text{ es igual a } \fc{A}{a_2}s \\ \mathbf{ff}\text{, en otro caso}\end{cases}\\
+    \fc{B}{a_1 \leq a_2}s & = \begin{cases} \mathbf{tt}\text{, si }\fc{A}{a_1}s\text{ es menor que } \fc{A}{a_2}s \\ \mathbf{ff}\text{, en otro caso}\end{cases}\\
+    \fc{B}{\neg b}s & = \begin{cases} \mathbf{tt}\text{, si }\fc{B}{b}s\text{ es } \mathbf{ff} \\ \mathbf{ff} \text{, en otro caso}\end{cases}\\
+    \fc{B}{b_1 \land b_2}s & = \begin{cases} \mathbf{tt}\text{, si }\fc{B}{b_1}s\text{ es } \mathbf{tt}\text{ y } \fc{B}{b_2}s\text{ es } \mathbf{tt} \\ \mathbf{ff}\text{, en otro caso}\end{cases}
+\end{align*}
+
+De nuevo, por inducción estructural, es fácil demostrar el siguiente resultado, que es análogo al que vimos para los numerales:
+\begin{prop}
+La función $\mc{B} : \mathbf{Bexp} \rightarrow (\mathbf{State}\rightarrow Bool)$ es total.
+\end{prop}
+
+El siguiente ejemplo ilustra cómo podemos extender una categoría sintáctica (de forma cuidadosa):
+\begin{example}
+Consideremos la extensión $\mathbf{Bexp}'$ de $\mathbf{Bexp}$:
+$$b \,\, ::= \, \, \n{true} \, | \, \n{false} \, | \, a_1 = a_2 \, | \, a_1 \neq a_2 \, | \, a_1 \leq a_2 \, | \, a_1 \geq a_2 \, | \, a_1 < a_2 \, | \, a_1 > a_2 \, | \, \neg b \, | \, b_1 \land b_2 \, | \, b_1 \lor b_2 \, | \, b_1 \Rightarrow b_2 \, | \, b_1\Leftrightarrow b_2$$
+Dos expresiones booleanas $b_1, b_2$ se dicen \textit{equivalentes} si, para cada estado $s$, $\fc{B}{b_1}s = \fc{B}{b_2}s$. Veamos que, dada una expresión $b' \in \mathbf{Bexp}'$, existe $b \in \mathbf{Bexp}$ equivalente a $b'$. La demostración consiste en dos pasos: (i) Dar un valor semántico a cada expresión de la extensión, (ii) Comprobar que podemos expresar el valor semántico de $b'$ mediante $b$, empleando las igualdades sintácticas naturales:
+\begin{itemize}
+    \item Si $b'$ es una expresión de $\mathbf{Bexp}$, $b := b'$.
+    \item Si $b'$ es de la forma $a_1 \neq a_2$, tomamos $b$ como $\neg(a_1 = a_2)$.
+    \item Si $b'$ es de la forma $a_1 \geq a_2$, tomamos $b$ como $a_2 \leq a_1$.
+    \item Si $b'$ es de la forma $a_1 < a_2$, tomamos $b$ como $(a_1 \leq a_2)\land \neg(a_1 = a_2)$.
+    \item Si $b'$ es de la forma $a_1 > a_2$, tomamos $b$ como $(a_2 \leq a_1)\land \neg(a_1 = a_2)$.
+    \item Si $b'$ es de la forma $b_1 \lor b_2$, tomamos $b$ como $\neg(\neg b_1 \land \neg b_2)$.
+    \item Si $b'$ es de la forma $b_1 \Rightarrow b_2$, tomamos $b$ como $\neg(b_1 \land \neg b_2)$.
+    \item Si $b'$ es de la forma $b_1 \Leftrightarrow b_2$, tomamos $b$ como $\neg(b_1 \land \neg b_2) \land \neg(b_2 \land \neg b_1)$.
+\end{itemize}
+Notemos que podríamos haber razonado inductivamente, pero para mayor claridad hemos indicado cuál es la traducción concreta de cada expresión.
+\end{example}
+
+\section{Propiedades semánticas}
+
+En esta sección introducimos dos conceptos fundamentales que son comunes a la lógica.
+
+\subsection{Variables libres}
+
+Dada una expresión aritmética $a$, su conjunto de \textit{variables libres}, $\mathrm{FV}(a) \subseteq \mathbf{Var}$, se define composicionalmente como:
+\begin{align*}
+    \mathrm{FV}(n) & = \emptyset\\
+    \mathrm{FV}(x) & = \{x\}\\
+    \mathrm{FV}(a_1 + a_2) & = \mathrm{FV}(a_1) \cup \mathrm{FV}(a_2) \\
+    \mathrm{FV}(a_1 \times a_2) & = \mathrm{FV}(a_1) \cup \mathrm{FV}(a_2) \\
+    \mathrm{FV}(a_1 - a_2) & = \mathrm{FV}(a_1) \cup \mathrm{FV}(a_2) 
+\end{align*}
+El siguiente resultado nos dice que $\mathrm{FV}(a)$ determina el valor semántico de $a$:
+
+\begin{lema}
+Sea $a\in \mathbf{Aexp}$. Sean $s, s' \in \mathbf{State}$ tales que, para cada $x \in \mathrm{FV}(a)$, $s\ x = s'\x$. Entonces $\fc{A}{a}s = \fc{A}{a}s'$.
+\end{lema}
+\begin{proof}[Demostración]
+Veamos los casos base:
+\begin{itemize}
+    \item Si $a:= n$, sabemos que $\fc{A}{a}s := \fc{N}{n} =: \fc{A}{a}s'$.
+    \item Si $a := x$, entonces, como $x \in \mathrm{FV}(a)$, por hipótesis tenemos que $\fc{A}{a}s := s\ x  = s'\ x := \fc{A}{n}s'$.
+\end{itemize}
+Los casos inductivos son:
+\begin{itemize}
+    \item Si $a$ es de la forma $a_1 + a_2$, $\fc{A}{a}s := \fc{A}{a_1}s + \fc{A}{a_2}s$ y $\fc{A}{a}s' := \fc{A}{a_1}s' + \fc{A}{a_2}s'$. Como $\mathrm{FV}(a_i) \subseteq \mathrm{FV}(a_1) \cup\mathrm{FV}(a_2) = \mathrm{FV}(a_1 + a_2)$, por la hipótesis de inducción aplicada a $a_i$, tenemos que $\fc{A}{a_i}s = \fc{A}{a_i}s'$, para $i = 1, 2$. Entonces,
+$$\fc{A}{a_1+a_2}s = \fc{A}{a_1}s + \fc{A}{a_2}s = \fc{A}{a_1}s' + \fc{A}{a_2}s' = \fc{A}{a_1+a_2}s',$$
+como queríamos. 
+    \item Para $a_1 * a_2$ y $a_1 - a_2$ basta repetir lo anterior (ya que el conjunto de variables libres es el mismo).
+\end{itemize}
+\end{proof}
+
+De la misma forma, para expresiones booleanas, tenemos:
+\begin{align*}
+    \mathrm{FV}(\n{true}) & = \emptyset\\
+    \mathrm{FV}(\n{true}) & = \emptyset\\
+    \mathrm{FV}(a_1 = a_2) & = \mathrm{FV}(a_1) \cup \mathrm{FV}(a_2) \\
+    \mathrm{FV}(a_1 \leq a_2) & = \mathrm{FV}(a_1) \cup \mathrm{FV}(a_2) \\
+    \mathrm{FV}(\neg b) & = \mathrm{FV}(b)\\
+    \mathrm{FV}(b_1 \land b_2) & = \mathrm{FV}(b_1) \cup \mathrm{FV}(b_2) 
+\end{align*}
+
+La demostración del anterior lema se puede repetir de nuevo:
+
+\begin{lema}
+Sea $b\in \mathbf{Bexp}$. Sean $s, s' \in \mathbf{State}$ tales que, para cada $x \in \mathrm{FV}(b)$, $s\ x = s'\x$. Entonces $\fc{B}{b}s = \fc{B}{b}s'$.
+\end{lema}
+\begin{proof}[Demostración]
+Casos base:
+\begin{itemize}
+    \item Si $b := \n{true}$, $\fc{B}{b}s := V =: \fc{B}{b}s'$ y análogamente con $\n{false}$.
+    \item Si $b$ es de la forma $a_1 = a_2$, con $a_1, a_2 \in \mathbf{Aexp}$, sabemos que
+$$\fc{B}{a_1 = a_2}s  = \begin{cases} V\text{, si }\fc{A}{a_1}s\text{ es igual a } \fc{A}{a_2}s \\ F\text{, en otro caso}\end{cases} \text{ y que }\, \fc{B}{a_1 = a_2}s' = \begin{cases} V\text{, si }\fc{A}{a_1}s'\text{ es igual a } \fc{A}{a_2}s' \\ F\text{, en otro caso}\end{cases}$$
+Como suponemos que para cada $x \in \mathrm{FV}(b)$, $s\ x = s'\ x$ y $\mathrm{FV}(a_1), \mathrm{FV}(a_2) \subseteq \mathrm{FV}(b)$, se sigue que se verifican las hipótesis del lema anterior, y que por tanto $\fc{A}{a_i}s = \fc{A}{a_i}s'$, para $i = 1, 2$. Ahora bien, $\fc{B}{b}s$ es $V$ si y solo si $\fc{A}{a_1}s$ es igual a $\fc{A}{a_2}s$ y, por lo que acabamos de decir, esto es cierto si y solo si $\fc{A}{a_1}s'$ es igual a $\fc{A}{a_2}s'$, que es precisamente equivalente a que $\fc{B}{b}s'$ sea $V$.
+    \item Si $b$ es de la forma $a_1 \leq a_2$, con con $a_1, a_2 \in \mathbf{Aexp}$, el procedimiento es análogo al anterior.
+\end{itemize}
+
+Para los casos inductivos tenemos:
+\begin{itemize}
+    \item Si $b$ es de la forma $\neg b'$, para cierta $b' \in \mathrm{Bexp}$, sabemos que entonces $\mathrm{FV}(b) = \mathrm{FV}(b')$. Como suponemos que, para cada $x \in \mathrm{FV}(b)$, $s\ x = s' \ x$, podemos aplicar la hipótesis de inducción, y entonces obtenemos que $\fc{B}{b}s$ es $V$ si y solo si $\fc{B}{b'}s = \fc{B}{b'}s'$ es $V$, que es equivalente a que $\fc{B}{b}s'$ sea $V$. Por tanto, $\fc{B}{b}s = \fc{B}{b}s'$.
+    \item Si $b$ es de la forma $b_1 \land b_2$, para ciertas $b_1, b_2 \in \mathrm{Bexp}$, sabemos que entonces $\mathrm{FV}(b) =  \mathrm{FV}(b_1)\cup\mathrm{FV}(b_2)$ y, siguiendo los razonamientos que ya hemos hecho antes, podemos aplicar la hipótesis de inducción sobre $b_1$ y $b_2$. Entonces $\fc{B}{b}s$ es $V$ si y solo si $\fc{B}{b_1}s$ es $V$ y $\fc{B}{b_2}s$ es $v$, que equivale a que $\fc{B}{b_1}s'$ sea $V$ y $\fc{B}{b_2}s'$ sea $V$, que es cierto si y solo si $\fc{B}{b}s'$ es $V$ y, por tanto, $\fc{B}{b}s = \fc{B}{b}s'$.
+\end{itemize}
+\end{proof}
+
+\subsection{Sustitución}
+
+Si tenemos dos expresiones aritméticas $a, a_0$ y $x\in \mathrm{FV}(a)$, entonces denotamos por $a[x \mapsto a_0]$ a la expresión obtenida al \textit{sustituir} cada ocurrencia de $x$ en $a$ por $a_0$. Se define composicionalmente como:
+\begin{align*}
+    n[x \maptso a_0] & = n \\
+    y[x \mapsto a_0] & = \begin{cases}a_0 \text{, si } x=y\\ y\text{, si } x\neq y\end{cases}\\
+    (a_1+a_2)[x \mapsto a_0] & = a_1[x \mapsto a_0] + a_2[x \mapsto a_0]\\
+    (a_1\times a_2)[x \mapsto a_0] & = a_1[x \mapsto a_0] \times a_2[x \mapsto a_0]\\
+    (a_1-a_2)[x \mapsto a_0] & = a_1[x \mapsto a_0] - a_2[x \mapsto a_0]
+\end{align*}
+También podemos definir la sustitución en relación con los estados:
+$$(s[y\mapsto v])x := \begin{cases}v\text{, si } x=y\\ s\ x \text{, si } x\neq y\end{cases}$$
+
+La relación entre ambos conceptos se muestra en el siguiente resultado:
+\begin{lema}
+Dadas $a, a_0 \in \mathbf{Aexp}$, para todo $s \in \mathbf{State}$ se cumple que $$\fc{A}{a[y\mapsto a_0]}s = \fc{A}{a}(s[y\mapsto \fc{A}{a_0}s]).$$
+\end{lema}
+\begin{proof}[Demostración]
+De nuevo, una demostración rutinaria por inducción estructural. Los casos base son los siguientes:
+\begin{itemize}
+    \item Si $a := n$, $\fc{A}{a[y\mapsto a_0]}s =  \fc{A}{n}s = \fc{N}{n} = \fc{A}{a}([s\mapsto \fc{A}{a_0}s])$.
+    \item Si $a:= x$, entonces
+    \[
+        \fc{A}{a[y\mapsto a_0]}s = \left\{\begin{array}{ll}
+            \fc{A}{a_0}s & x=y \\
+            \fc{A}{x}s & x\neq y
+        \end{array}\right.
+    \]
+    $$
+        \fc{A}{a}(s[y\mapsto \fc{A}{a_0}s]) = (s[y\mapsto \fc{A}{a_0}s])\ x = \left\{ \begin{array}{ll}
+             \fc{A}{a_0}s & x=y \\
+             s\ x & x\neq y
+        \end{array}\right.
+    $$
+    \item Si $a := a_1 + a_2$ con $a_1,a_2$ cumpliendo la proposición. Se tiene 
+    \[
+        \fc{A}{a_i[y\mapsto a_0]}s = \fc{A}{a_i}(s[y\mapsto \fc{A}{a_0}s]) =
+        \fc{A}{a_i}s' 
+    \]
+    para $i\in\{1, 2\}$. Se denota $s' := (s[y\mapsto \fc{A}{a_0}s])$.
+    Entonces
+    \begin{eqnarray*}
+        \fc{A}{(a_1+a_2)[y\mapsto a_0]}s &=&
+        \fc{A}{a_1[y\mapsto a_0]+a_2[y\mapsto a_0]}s  \\
+        &=& \fc{A}{a_1[y\mapsto a_0]}s\oplus\fc{A}{a_2[y\mapsto a_0]}s \\
+        &\overset{hip.ind.}{=}& \fc{A}{a_1}s' \oplus\fc{A}{a_2}s' \\
+        &=& \fc{A}{a_1+a_2}
+    \end{eqnarray*}
+    \item El caso $a := a_1 \times a_2$ es análogo.
+\end{itemize}
+\end{proof}
+
+
+Todo lo anterior justifica una noción que será importante a lo largo del curso. Dadas una categoría sintáctica $\textbf{Cat}$, dos expresiones $b_1, b_2 \in \textbf{Cat}$ y una función semántica $\mc{C}: \textbf{Cat}\rightarrow C$, se dice que $b_1, b_2$ son \textit{semánticamente equivalentes} si para todo $s\in \textbf{State}$ se tiene
+\[
+    \fc{C}{b_1}s = \fc{C}{b_2}s.
+\]
