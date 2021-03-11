@@ -1,15 +1,24 @@
 \documentclass{report}
 \usepackage[spanish]{babel}
 \usepackage[utf8x]{inputenc}
+\usepackage[hidelinks]{hyperref}
+\author{González Vaquero Eduardo, Lobato de la Cruz Pablo, Muñoz Pérez, Miguel}
+
+
 
 
 \usepackage[margin=1in]{geometry}
+
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\rhead{González, Lobato, Muñoz}
 
 \usepackage{amsthm}
 \usepackage{amsmath}
 \usepackage{amsfonts}
 \usepackage{syllogism}
-\usepackage{bussproofs} 
+\usepackage{bussproofs}
+\usepackage{enumitem}
 
 \usepackage[T1]{fontenc}
 \usepackage{titlesec, blindtext, color}
@@ -78,6 +87,7 @@
 \newcommand{\mc}[1]{\mathcal{#1}}
 \newcommand{\fc}[2]{\mc{#1}[\![#2]\!]}
 \newcommand{\la}[2]{\langle #1, #2 \rangle}
+\newcommand{\dto}{\Rightarrow}
 
 
 
@@ -152,7 +162,3 @@
 \printindex
 
 \end{document}
-
-%-----------------------------------------------------------------------
-% End of amsbook-template.tex
-%-----------------------------------------------------------------------

@@ -3,27 +3,24 @@
 						
 $\\$
 
-En el anterior capítulo hemos visto cómo dar un valor semántico al lenguaje While mediante el enfoque de la semántica denotacional. Centrémonos ahora en la semántica operacional. La distinción fundamental que hacíamos desde este punto de vista es la siguiente:
+En el anterior capítulo hemos visto cómo dar un valor semántico al lenguaje While mediante el punto de vista de la semántica denotacional. Centrémonos ahora en la semántica operacional. La distinción fundamental que hacíamos de este enfoque es la siguiente:
 \begin{itemize}
     \item Semántica operacional \textit{natural}, que describe cómo se han obtenido los resultados generales de las ejecuciones.
     \item Semántica operacional \textit{estructural}, que describe cómo se ha obtenido cada paso en la ejecución.
 \end{itemize}
-
 Para ambos tipos de semántica operacional, el valor semántico de cada expresión será especificado por un \textit{sistema de transiciones}, compuesto de dos configuraciones distintas:
 \begin{itemize}
     \item[] $\langle S, s\rangle$, que denota que la expresión $S$ se ejecutará desde el estado $s$.
     \item[] $s$, que denota un estado terminal. Las \textit{configuraciones terminales} tendrán esta forma.
 \end{itemize}
-Finalmente, es necesaria una \textit{relación de transición} que describa cómo tiene lugar la ejecución. La diferencia entre las dos semánticas se encuentra principalmente en ésta.
-
-En este capítulo queremos estudiar cada enfoque para luego comprobar que, en cierto sentido, son ambos equivalentes.
+Finalmente, es necesaria una \textit{relación de transición} que describa cómo tiene lugar la ejecución. La diferencia entre las dos semánticas se encuentra principalmente en ésta. De hecho, veremos que ambos tipos de semántica son, en cierto sentido, equivalentes.
 
 \section{Semántica operacional natural}
 
 
 \subsection{Sistema de transiciones}
 
-La relación de transición $\langle S, s\rangle \rightarrow s'$ se puede leer como que, la ejecución de $S$ desde el estado $s$ terminará y el nuevo estado será $s'$. Está determinada por las siguientes reglas:  
+La relación de transición $\langle S, s\rangle \rightarrow s'$ se puede leer como que, la ejecución de $S$ desde el estado $s$ terminará y el nuevo estado será $s'$. Está determinada por las siguientes reglas\footnote{Nótese que las variables $S_1, S_2, s, s', s''$, etc. quedan fijadas en la premisa pero libres en la consecuencia.}:  
 \begin{itemize}
     \item[] $[\text{ass}_{\text{ns}}]$ 
 
@@ -43,10 +40,10 @@ La relación de transición $\langle S, s\rangle \rightarrow s'$ se puede leer c
               \centerAlignProof
                 \AxiomC{}
                 \UnaryInfC{$\la{\n{skip}}{s}\rightarrow s$}
-              \DisplayProof
+                  \DisplayProof
         \end{center}
 
-    \item[]$[\text{comp}_{\text{ns}}]$
+    \item[][$\text{comp}_{\text{ns}}$]
         \begin{center}
               \centerAlignProof
                 
@@ -57,6 +54,7 @@ La relación de transición $\langle S, s\rangle \rightarrow s'$ se puede leer c
                 \BinaryInfC{$\la{S_1; S_2}{s} \to s''$}
               \DisplayProof
         \end{center}
+\newpage
 \item[][$\text{if}^{\text{tt}}_{\text{ns}}$]
 
 
@@ -116,6 +114,7 @@ La relación de transición $\langle S, s\rangle \rightarrow s'$ se puede leer c
         $\text{ si }\fc{B}{b}s = \mathbf{ff}$
 \end{center}
 \end{itemize}
+Llamaremos a esta colección de reglas $\text{While}_{\text{ns}}$.
 
 Aclaremos un poco la terminología:
 
@@ -322,7 +321,384 @@ Ahora, combinando (a) y (b) con [$\text{comp}_{\text{ns}}$], obtenemos $\la{S_1;
 
 Notemos, por otro lado, que en general $S_1;S_2$ y $S_2; S_1$ no son semánticamente equivalentes: si tratásemos de hacer lo mismo que antes, obtendríamos las hojas $\la{S_1}{s}\rightarrow s''$ y $\la{S_2}{s''}\rightarrow s'$ por un lado y $\la{S_2}{s}\rightarrow s''$ y $\la{S_1}{s''}\rightarrow s'$ por otro, y en general no hay forma de combinar cada par de premisas para obtener la conclusión deseada.
 \end{example}
+\\
+
 
 \begin{example}
-Podríamos extender el lenguaje While con la regla $\n{repeat } S \n{ until } b$.
+Podemos expandir el sistema $\text{While}_\text{ns}$ el siguiente modo: añadimos dos reglas que permitan dar una semántica de la expresión $\n{for }x:= a_1 \n{ to } a_2\n{ do }S$, es decir, 
+\begin{itemize}
+    \item[] 
+\begin{center}
+      \centerAlignProof
+      [$\text{for}_{\text{ns}}^{\text{tt}}$]
+      \quad
+      \centerAlignProof
+        \AxiomC{$\la{x:= a_1;S}{s}\rightarrow s'$}
+        \AxiomC{$\la{\n{for } \n{x}:= \n{x}+\n{1 to } a_2 \n{ do }S}{s'}\to s''$}
+        \BinaryInfC{$\la{\n{for } \n{x}:= a_1\n{ to } a_2 \n{ do }S}{s}\to s''$}
+        \DisplayProof
+      \quad
+      \centerAlignProof
+        $\text{ si }\fc{B}{a_1\leq a_2}s = \mathbf{tt}$
+\end{center}
+ \item[] 
+\begin{center}
+      \centerAlignProof
+      [$\text{for}_{\text{ns}}^{\text{ff}}$]
+      \quad
+      \centerAlignProof
+        \AxiomC{}
+        \UnaryInfC{$\la{\n{for } \n{x}:= a_1\n{ to } a_2 \n{ do }S}{s}\to s[\n{x}\mapsto \fc{A}{a_1}]s$}
+        \DisplayProof
+      \quad
+      \centerAlignProof
+        $\text{ si }\fc{B}{a_1\leq a_2}s = \mathbf{ff}$
+\end{center}
+\end{itemize}
+Pero debemos tener un especial cuidado con este tipo de reglas, por ejemplo, podemos descuidar que en $a_1$ aparezca la variable $\n{y}$, a saber, que $a_1$ contenga $\n{y} + 3$, y que por otro lado en $S$ tengamos $\n{y}=5$. Del mismo modo, podríamos tener que la variable $\n{x}$ ya aparece del mismo modo como $\n{x} = 4$, por ejemplo. Si $\n{x}$ apareciera en $a_2$ entonces también tendríamos este problema.
 \end{example}
+\\
+
+Aunque no lo demostraremos, se puede observar que el sistema $\text{While}_\text{ns}$ es \textit{Turing-completo}, es decir, en él podemos simular cualquier computación posible en una máquina de Turing. Por tanto, se podía pensar que podemos introducir reglas para ciertas expresiones en función de su correlato en $\text{While}_\text{ns}$ (que existe, por lo anterior). Sin embargo, si quisiéramos introducir $\n{for }x:= a_1 \n{ to } a_2\n{ do }S$ como un bucle $\n{while ... do ...}$, acabaríamos teniendo apariciones de $\n{while ... do ...}$ en las reglas asociadas a $\n{for }x:= a_1 \n{ to } a_2\n{ do }S$, lo que difiere de la semántica operacional que hemos visto hasta ahora.
+
+
+\begin{example}
+Podríamos extender el lenguaje While con dos reglas para la expresión $\n{repeat } S \n{ until } b$:
+\begin{itemize}
+    \item[] 
+\begin{center}
+      \centerAlignProof
+      [$\text{repeat}_{\text{ns}}^{\text{tt}}$]
+      \quad
+      \centerAlignProof
+        \AxiomC{$\la{S}{s}\rightarrow s'$}
+        \UnaryInfC{$\la{\n{repeat } S \n{ until } b}{s}\rightarrow s'$}
+        \DisplayProof
+      \quad
+      \centerAlignProof
+        $\text{ si }\fc{B}{b}s' = \mathbf{tt}$
+\end{center}
+    \item[] 
+\begin{center}
+      \centerAlignProof
+      [$\text{repeat}_{\text{ns}}^{\text{ff}}$]
+      \quad
+      \centerAlignProof
+        \AxiomC{$\la{S}{s}\rightarrow s'$}
+        \AxiomC{$\la{\n{repeat } S \n{ until } b}{s'}\rightarrow s''$}
+        \BinaryInfC{$\la{\n{repeat } S \n{ until } b}{s}\rightarrow s''$}
+        \DisplayProof
+      \quad
+      \centerAlignProof
+        $\text{ si }\fc{B}{b}s' = \mathbf{ff}$
+\end{center}
+\end{itemize}
+\end{example}
+\\
+
+\begin{prop}
+$\n{repeat } S \n{ until } b$ es semánticamente equivalente a $S; \n{if } b \n{ then skip else } (\n{repeat } S \n{ until } b)$.
+\end{prop}
+\begin{proof}
+
+\noindent\textit{Parte 1.} Supongamos que $\la{\n{repeat } S \n{ until } b}{s}\rightarrow s'$. Solo tenemos las siguientes posibilidades:
+\\
+
+\noindent\textit{(a)} Si hemos aplicado la regla [$\text{repeat}_{\text{ns}}^{\text{tt}}$], tenemos:
+\begin{center}
+      \centerAlignProof
+      [$\text{repeat}_{\text{ns}}^{\text{tt}}$]
+      \quad
+      \centerAlignProof
+        \AxiomC{$\la{S}{s}\rightarrow s'$}
+        \UnaryInfC{$\la{\n{repeat } S \n{ until } b}{s}\rightarrow s'$}
+        \DisplayProof
+      \quad
+      \centerAlignProof
+        $\text{ si }\fc{B}{b}s' = \mathbf{tt}$
+\end{center}
+Ahora bien, por otro lado, podemos aplicar el axioma [$\text{skip}_{\text{ns}}$] para obtener directamente que $\la{\n{skip}}{s'}\rightarrow s'$. Ahora, como $\text{ si }\fc{B}{b}s' = \mathbf{tt}$, podemos aplicar la regla [$\text{if}^{\text{tt}}_{\text{ns}}$]:
+\begin{center}
+      \centerAlignProof
+      \quad
+      \centerAlignProof
+        \AxiomC{$\la{\n{skip}}{s'}\rightarrow s'$}
+        \UnaryInfC{$\la{\n{if}\ b\ \n{then skip else}\ (\n{repeat } S \n{ until } b)}{s'} \to s'$}[$\text{if}^{\text{tt}}_{\text{ns}}$]
+      \DisplayProof
+      \quad
+      \centerAlignProof
+\end{center}
+Y, entonces, 
+        \begin{center}
+              \centerAlignProof
+              \quad
+              \centerAlignProof
+                \AxiomC{$\la{S}{s} \to s'$}
+                \AxiomC{$\la{\n{if}\ b\ \n{then skip else}\ (\n{repeat } S \n{ until } b)}{s'} \to s'$}
+                \BinaryInfC{$\la{S; \n{if } b \n{ then skip else } (\n{repeat } S \n{ until } b)}{s} \to s'$}[$\text{comp}_{\text{ns}}$]
+              \DisplayProof
+        \end{center}
+Luego obtenemos el resultado.
+\\
+
+\noindent\textit{(b)} Si hemos aplicado la regla [$\text{repeat}_{\text{ns}}^{\text{ff}}$], tenemos:
+\begin{center}
+      \centerAlignProof
+      [$\text{repeat}_{\text{ns}}^{\text{ff}}$]
+      \quad
+      \centerAlignProof
+        \AxiomC{$\la{S}{s}\rightarrow s''$}
+        \AxiomC{$\la{\n{repeat } S \n{ until } b}{s''}\rightarrow s'$}
+        \BinaryInfC{$\la{\n{repeat } S \n{ until } b}{s}\rightarrow s'$}
+        \DisplayProof
+      \quad
+      \centerAlignProof
+        $\text{ si }\fc{B}{b}s' = \mathbf{ff}$
+\end{center}
+Ahora, usando que $\text{ si }\fc{B}{b}s' = \mathbf{ff}$, 
+\begin{center}
+      \centerAlignProof
+      \quad
+      \centerAlignProof
+        \AxiomC{$\la{\n{repeat } S \n{ until } b}{s''}\rightarrow s'$}
+        \UnaryInfC{$\la{\n{if}\ b\ \n{then skip else}\ (\n{repeat } S \n{ until } b)}{s''} \to s'$}[$\text{if}^{\text{ff}}_{\text{ns}}$]
+      \DisplayProof
+      \quad
+      \centerAlignProof
+\end{center}
+
+Pero entonces, 
+ \begin{center}
+              \centerAlignProof
+              \quad
+              \centerAlignProof
+                \AxiomC{$\la{S}{s} \to s''$}
+                \AxiomC{$\la{\n{if}\ b\ \n{then skip else}\ (\n{repeat } S \n{ until } b)}{s''} \to s'$}
+                \BinaryInfC{$\la{S; \n{if } b \n{ then skip else } (\n{repeat } S \n{ until } b)}{s} \to s'$}[$\text{comp}_{\text{ns}}$]
+              \DisplayProof
+        \end{center}
+\\
+
+
+\noindent\textit{Parte 2.} Supongamos que $\la{S;\n{ if } b \n{ then } \n{skip } \n{else } \n{repeat } S \n{ until } b}{s}\to s'$. La única posibilidad es haber aplicado la regla $[\text{comp}_{\text{ns}}]$
+
+\begin{center}
+    \centerAlignProof
+    \quad
+    \centerAlignProof
+    \AxiomC{$\la{S}{s} \to s_0$}
+    \AxiomC{$\la{\n{if}\ b\ \n{then skip else}\ (\n{repeat } S \n{ until } b)}{s_0} \to s'$}
+    \BinaryInfC{$\la{S;\n{if } b \n{ then } \n{skip } \n{else } \n{repeat } S \n{ until } b}{s}\to s'$}
+    \DisplayProof
+\end{center}
+para algún $s_0 \in \textbf{State}$. Para la transición $\la{\n{if}\ b\ \n{then skip else}\ (\n{repeat } S \n{ until } b)}{s_0} \to s'$ tenemos dos posibilidades
+\\ \\
+\noindent\textit{(a)} Si $\fc{B}{b}s_0 = \textbf{tt}$ entonces únicamente existe la posibilidad de que se haya derivado de $[\text{if}^{tt}_{ns}]$:
+\begin{center}
+    \centerAlignProof
+    \quad
+    \centerAlignProof
+    \AxiomC{$\la{skip}{s_0} \to s' $}
+    \UnaryInfC{$\la{\n{if}\ b\ \n{then skip else}\ (\n{repeat } S \n{ until } b)}{s_0} \to s'$}
+    \DisplayProof
+\end{center}
+y la única forma de que sea cierto $\la{skip}{s_0} \to s'$ es que $s_0 = s'$. Como se verifica $\la{S}{s} \to s_0$ entonces se verifica $\la{S}{s} \to s'$ y se puede aplicar la regla $[\text{repeat}^{tt}_{ns}]$:
+\begin{center}
+    \centerAlignProof
+    \quad
+    \centerAlignProof
+    \AxiomC{$\la{S}{s} \to s' $}
+    \UnaryInfC{$\la{\n{repeat } S \n{ until } b}{s} \to s'$}
+    \DisplayProof
+\end{center}
+obteniendo el resultado pues ya se sabe que $\la{S}{s} \to s_0$.
+\\ \\
+\noindent\textit{(b)}  Si $\fc{B}{b}s_0 = \textbf{ff}$ entonces solo cabe la posibilidad de que haya partido de $[\text{if}^{ff}_{ns}]$:
+
+\begin{center}
+    \centerAlignProof
+    \quad
+    \centerAlignProof
+    \AxiomC{$\la{\n{repeat } S \n{ until } b}{s_0} \to s'$}
+    \UnaryInfC{$\la{\n{if}\ b\ \n{then skip else}\ (\n{repeat } S \n{ until } b)}{s_0} \to s'$}
+    \DisplayProof
+\end{center}
+teniendo así $\la{\n{repeat } S \n{ until } b}{s_0} \to s'$ y entonces se puede deducir
+\begin{center}
+    \centerAlignProof
+    \quad
+    \centerAlignProof
+    \AxiomC{$\la{S}{s} \to s_0$}
+    \AxiomC{$\la{\n{repeat } S \n{ until } b}{s_0} \to s'$}
+    \BinaryInfC{$\la{\n{repeat } S \n{ until } b}{s} \to s'$}
+    \DisplayProof
+\end{center}
+mediante $[\text{repeat}^{ff}_{ns}]$ pues $\fc{B}{b}s_0 = \textbf{ff}$. \\
+\end{proof}
+
+
+
+Veamos ahora la siguiente
+\begin{definition}
+Decimos que un sistema de transiciones (como el que hemos visto para While) es \textit{determinista} si, para cada $S \in \mathbf{Stm}$, $s, s', s'' \in \mathbf{State}$,  
+$$\la{S}{s}\rightarrow s' \text{ y } \la{S}{s}\rightarrow s'' \text{ implica que } s'= s''$$
+\end{definition}
+
+Para poder demostrar que una propiedad como la anterior se verifica en árboles sencillos y compuestos, emplearemos la demostración por \textit{inducción sobre reglas}, que se compone de dos pasos:
+\begin{enumerate}
+    \item Primero comprobamos que la propiedad se verifica para los axiomas del sistema.
+    \item Para cada regla, suponiendo que las premisas verifican la propiedad , comprobamos que también se cumple para la conclusión (siempre y cuando se verifiquen las condiciones de la regla).
+\end{enumerate}
+
+\begin{theorem}
+El sistema de transiciones $\text{While}_{\text{ns}}$ es determinista.
+\end{theorem}
+
+\begin{example} Podemos añadir una semántica $\n{forVar}\ x\ \n{do}\ S$ que ejecute la sentencia $S$ siempre que $x$ sea distinto de $0$ y lo incremente en $1$ en cada iteración. Veamos que sería semánticamente equivalente a $\n{while}\ \neg (x=0)\ \n{do}\ (S; x:=x+1)$.
+\\ \\
+Primero, definimos la semantica de $\n{forVar}\ x\ \n{do}\ S$:
+        \begin{center}
+              \centerAlignProof
+              \quad
+              \centerAlignProof
+                \AxiomC{}
+                \LeftLabel{$[\text{for}^0]$ }
+                \RightLabel{si $\fc{A}{x}s = 0$}
+                \UnaryInfC{$\la{\n{forVar}\ x\ \n{do}\ S}{s} \to s$}
+              \DisplayProof
+        \end{center}
+        
+        \begin{center}
+              \centerAlignProof
+              \quad
+              \centerAlignProof
+                \AxiomC{}
+                \LeftLabel{$[\text{for}^{\ne 0}]$ }
+                \RightLabel{si $\fc{A}{x}s \ne 0$}
+                \AxiomC{ $\la{S; x := x+1}{s} \to s'$ }
+                \AxiomC{$\la{\n{forVar}\ x\ \n{do}\ S}{s'} \to s_1$}
+                \BinaryInfC{$\la{\n{forVar}\ x\ \n{do}\ S}{s} \to s_1$}
+              \DisplayProof
+        \end{center}
+
+\noindent Veamos que $\la{\n{forVar}\ x\ \n{do}\ S}{s} \to s_1$ implica $\la{\n{while}\ \neg (x=0)\ \n{do}\ (S; x:=x+1)}{s}\to s_1 $.\\
+Para empezar, sabemos que $\fc{A}{x}s = 0$ si y solo si $\fc{B}{\neg (x=0) }s = \mathbf{ff}$, dividimos la demostración en dos pasos:
+
+\begin{enumerate}
+    \item Si $x=0$ tenemos por $[\text{for}^0]$ que:
+    \begin{center}
+              \centerAlignProof
+              \quad
+              \centerAlignProof
+                \AxiomC{$\la{\n{forVar}\ x\ \n{do}\ S}{s} \to s$}
+              \DisplayProof
+        \end{center}
+        
+    Como $\fc{B}{\neg (x=0) }s = \mathbf{ff}$ por la regla [$\text{while}^{\text{ff}}_{\text{ns}}$] sabemos que:
+
+    \begin{center}
+          \centerAlignProof
+       
+          \quad
+          \centerAlignProof
+            \AxiomC{$\la{\n{while}\ \neg (x=0)\ \n{do}\ (S; x:=x+1)}{s} \to s$}
+          \DisplayProof
+          \quad
+          \centerAlignProof
+    \end{center}    
+    
+    \item Si $ x\ne0$, entonces suponemos ciertas las siguientes premisas:
+    \begin{enumerate}[a)]
+        \item  \AxiomC{$\la{S; x := x+1}{s} \to s_2$} \DisplayProof
+        \item   \AxiomC{$\la{\n{forVar}\ x\ \n{do}\ S}{s_2} \to s_1$} \DisplayProof
+    \end{enumerate}
+    
+    
+    pues la transición $\la{\n{forVar}\ x\ \n{do}\ S}{s} \to s'$ solo puede haber provenido de:
+    
+    \begin{center}
+              \centerAlignProof
+              \quad
+              \centerAlignProof
+                
+                \AxiomC{ $\la{S; x := x+1}{s} \to s_2$ }
+                \LeftLabel{$[\text{for}^{\ne 0}]$}
+                \AxiomC{$\la{\n{forVar}\ x\ \n{do}\ S}{s_2} \to s'$}
+                \BinaryInfC{$\la{\n{forVar}\ x\ \n{do}\ S}{s} \to s'$}
+              \DisplayProof
+        \end{center}
+    Podemos aplicar la hipótesis de inducción sobre $\la{\n{forVar}\ x\ \n{do}\ S}{s_2} \to s'$ y por lo tanto tenemos que $\la{\n{forVar}\ x\ \n{do}\ S}{s_2} \to s'$ implica que $\la{\n{while}\ \neg (x=0)\ \n{do}\ (S; x:=x+1)}{s_2} \to s' $, luego podemos costruir el siguiente árbol de derivación:
+    
+    \begin{center}
+              \centerAlignProof
+              \quad
+              \centerAlignProof
+                
+                \AxiomC{ $\la{S; x := x+1}{s} \to s_2$ }
+                \LeftLabel{ [$\text{while}^{\text{tt}}_{\text{ns}}$]}
+                \AxiomC{$\la{\n{while}\ \neg (x=0)\ \n{do}\ (S; x:=x+1)}{s_2} \to s'$}
+                \BinaryInfC{$\la{\n{while}\ \neg (x=0)\ \n{do}\ (S; x:=x+1)}{s} \to s'$}
+              \DisplayProof
+        \end{center}
+\end{enumerate}
+\end{example}
+
+
+\section{Semántica de paso corto}
+
+\subsection{Transiciones}
+
+\noindent Se crea una nueva relación de transición $\la{S}{s} \dto \gamma$, que representa que $\gamma$ es una sentencia o estado que se ejecuta después de $\la{S}{s}$ ($S$ sobre el estado $s$). Se dirá que $\la{S}{s}$ está bloqueda si no existe $\gamma$ tal que $\la{S}{s} \dto \gamma$. Se crean las siguientes reglas de deducción:
+\begin{prooftree}
+    \AxiomC{}
+    \LeftLabel{$[\text{ass}_{sos}]$}
+    \UnaryInfC{ $\la{x:=a}{s} \dto s[x\mapsto \fc{A}{a}s]$}
+\end{prooftree}
+
+\begin{prooftree}
+    \AxiomC{}
+    \LeftLabel{$[\text{skip}_{sos}]$}
+    \UnaryInfC{$\la{skip}{s} \dto s$}
+\end{prooftree}
+
+\begin{prooftree}
+    \AxiomC{$\la{S_1}{s} \dto \la{S_1'}{s'}$}
+    \LeftLabel{$[\text{comp}_{sos}^1]$}
+    \UnaryInfC{ $\la{S_1; S_2}{s} \dto \la{S_1'; S_2}{s'}$}
+\end{prooftree}
+
+\begin{prooftree}
+    \AxiomC{$\la{S_1}{s} \dto s'$}
+    \LeftLabel{$[\text{comp}_{sos}^2]$}
+    \UnaryInfC{ $\la{S_1; S_2}{s} \dto \la{S_2}{s'}$}
+\end{prooftree}
+
+\begin{prooftree}
+    \AxiomC{}
+    \LeftLabel{$[\text{if}^{tt}_{sos}]$}
+    \RightLabel{si $\fc{B}{b}s = \textbf{tt}$}
+    \UnaryInfC{$\la{\n{if}\ b\ \n{then}\ S_1\ \n{else}\ S_2}{s} \dto \la{S_1}{s}$}
+\end{prooftree}
+
+\begin{prooftree}
+    \AxiomC{}
+    \LeftLabel{$[\text{if}_{sos}^{ff}]$}
+    \RightLabel{si $\fc{B}{b}s = \textbf{ff}$}
+    \UnaryInfC{$\la{\n{if}\ b\ \n{then}\ S_1\ \n{else}\ S_2; s}{s} \dto \la{S_2}{s}$}
+\end{prooftree}
+
+\subsection{Secuencias de derivación}
+\noindent Una secuencia de derivación es finita cuando llega a un bloqueo o a un estado final.
+\[
+    \gamma_0 \dto \gamma_1 \dto ... \dto \gamma_k
+\]
+donde $\gamma_0 = \la{S}{s}$,  $\gamma_i \dto \gamma_{i+1}$ para $i\in\{0, ..., k-1\}$ y $\gamma_k$ es una configuración bloqueada. \\ \\
+La ejecución $\la{S}{s}$ de la sentencia $S$ en un estado $s$:
+\begin{enumerate}
+    \item \textbf{Termina} si y solo si existe una única secuencia de derivación finita comenzando en $\la{S}{s}$
+
+    \item \textbf{Termina con éxito} si $\la{S_1}{s} \dto ^* s'$ para algún estado s'.
+    
+    \item \textbf{Cicla} si solo si existe una secuencia de derivación infinita comenzando en $\la{S}{s}$
+\end{enumerate}
+\textbf{Nota:} estas definiciones son excluyentes si solo si las secuencias de derivacion son únicas, por comodidad las definimos exclusivas así si extendemos el lenguaje no nos tenemos que preocupar.

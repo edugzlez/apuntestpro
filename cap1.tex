@@ -117,7 +117,7 @@ En caso de que hiciera falta emplear más de una metavariable, emplearemos, por 
 \]
 
 
-Si volvemos al ejemplo de antes, la expresión $\n{z} := \n{x}; \n{x} := \n{y}; \n{y} := \n{z}$, podemos definir una \textit{sintaxis concreta}, en el sentido de que, de los diferentes árboles de derivación para tal expresión, debemos escoger uno. En cambio, lo que acabamos de definir arriba es un ejemplo de \textit{sintaxis absracta}, y los árboles de derivación posibles son todos distintos elementos de la categoría $\mathbf{Stm}$. De hecho, en caso de que queramos expresar la prioridad de las operaciones, lo haremos mediante el uso de paréntesis.
+Si volvemos al ejemplo de antes, la expresión $\n{z} := \n{x}; \n{x} := \n{y}; \n{y} := \n{z}$, podemos definir una \textit{sintaxis concreta}, en el sentido de que, de los diferentes árboles de derivación para tal expresión, debemos escoger uno. En cambio, lo que acabamos de definir arriba es un ejemplo de \textit{sintaxis abstracta}, y los árboles de derivación posibles son todos distintos elementos de la categoría $\mathbf{Stm}$. De hecho, en caso de que queramos expresar la prioridad de las operaciones, lo haremos mediante el uso de paréntesis.
 
 \section{Semántica para expresiones}
 
@@ -188,7 +188,7 @@ y la función $\mc{AUX}: \mathbf{Num} \times \mathbb{N} \to \mathbb{N} $
 \]
 donde el segundo parámetro representa un acumulador. Por construcción de la gramática la lectura de la cadena se hace de izquierda a derecha, dificultando un poco la construcción de la semántica.
 \end{example}
-\\
+
 
 
 
@@ -229,7 +229,7 @@ El siguiente ejemplo ilustra cómo podemos extender una categoría sintáctica (
 \begin{example}
 Consideremos la extensión $\mathbf{Bexp}'$ de $\mathbf{Bexp}$:
 $$b \,\, ::= \, \, \n{true} \, | \, \n{false} \, | \, a_1 = a_2 \, | \, a_1 \neq a_2 \, | \, a_1 \leq a_2 \, | \, a_1 \geq a_2 \, | \, a_1 < a_2 \, | \, a_1 > a_2 \, | \, \neg b \, | \, b_1 \land b_2 \, | \, b_1 \lor b_2 \, | \, b_1 \Rightarrow b_2 \, | \, b_1\Leftrightarrow b_2$$
-Dos expresiones booleanas $b_1, b_2$ se dicen \textit{equivalentes} si, para cada estado $s$, $\fc{B}{b_1}s = \fc{B}{b_2}s$. Veamos que, dada una expresión $b' \in \mathbf{Bexp}'$, existe $b \in \mathbf{Bexp}$ equivalente a $b'$. La demostración consiste en dos pasos: (i) Dar un valor semántico a cada expresión de la extensión, (ii) Comprobar que podemos expresar el valor semántico de $b'$ mediante $b$, empleando las igualdades sintácticas naturales:
+Dos expresiones booleanas $b_1, b_2$ se dicen \textit{equivalentes} si, para cada estado $s$, $\fc{B}{b_1}s = \fc{B}{b_2}s$. Veamos que, dada una expresión $b' \in \mathbf{Bexp}'$, existe $b \in \mathbf{Bexp}$ equivalente a $b'$. La demostración consiste en dos pasos: (i) Dar un valor semántico a cada expresión de la extensión, (ii) Comprobar que podemos expresar el valor semántico de $b'$ mediante $b$, empleando las igualdades sintácticas naturales.
 \begin{itemize}
     \item Si $b'$ es una expresión de $\mathbf{Bexp}$, $b := b'$.
     \item Si $b'$ es de la forma $a_1 \neq a_2$, tomamos $b$ como $\neg(a_1 = a_2)$.
@@ -313,7 +313,7 @@ Para los casos inductivos tenemos:
 
 Si tenemos dos expresiones aritméticas $a, a_0$ y $x\in \mathrm{FV}(a)$, entonces denotamos por $a[x \mapsto a_0]$ a la expresión obtenida al \textit{sustituir} cada ocurrencia de $x$ en $a$ por $a_0$. Se define composicionalmente como:
 \begin{align*}
-    n[x \maptso a_0] & = n \\
+    n[x \mapsto a_0] & = n \\
     y[x \mapsto a_0] & = \begin{cases}a_0 \text{, si } x=y\\ y\text{, si } x\neq y\end{cases}\\
     (a_1+a_2)[x \mapsto a_0] & = a_1[x \mapsto a_0] + a_2[x \mapsto a_0]\\
     (a_1\times a_2)[x \mapsto a_0] & = a_1[x \mapsto a_0] \times a_2[x \mapsto a_0]\\
@@ -362,7 +362,7 @@ De nuevo, una demostración rutinaria por inducción estructural. Los casos base
 \end{proof}
 
 
-Todo lo anterior justifica una noción que será importante a lo largo del curso. Dadas una categoría sintáctica $\textbf{Cat}$, dos expresiones $b_1, b_2 \in \textbf{Cat}$ y una función semántica $\mc{C}: \textbf{Cat}\rightarrow C$, se dice que $b_1, b_2$ son \textit{semánticamente equivalentes} si para todo $s\in \textbf{State}$ se tiene
+Todo lo anterior justifica una noción que será importante a lo largo del curso. Dada una categoría sintáctica $\textbf{Cat}$, dos expresiones $b_1, b_2 \in \textbf{Cat}$ y una función semántica $\mc{C}: \textbf{Cat}\rightarrow C$, se dice que $b_1, b_2$ son \textit{semánticamente equivalentes} si para todo $s\in \textbf{State}$ se tiene
 \[
     \fc{C}{b_1}s = \fc{C}{b_2}s.
 \]
