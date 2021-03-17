@@ -21,8 +21,11 @@ Finalmente, es necesaria una \textit{relación de transición} que describa cóm
 \subsection{Sistema de transiciones}
 
 La relación de transición $\langle S, s\rangle \rightarrow s'$ se puede leer como que, la ejecución de $S$ desde el estado $s$ terminará y el nuevo estado será $s'$. Está determinada por las siguientes reglas\footnote{Nótese que las variables $S_1, S_2, s, s', s''$, etc. quedan fijadas en la premisa pero libres en la consecuencia.}:  
+
+
+\begin{sist*}[$\nn{While}_\nn{ns}$]\mbox{}
 \begin{itemize}
-    \item[] $[\text{ass}_{\text{ns}}]$ 
+    \item[] $[\text{ass}_{\text{ns}}]$
 
         \begin{center}
               \centerAlignProof
@@ -114,7 +117,7 @@ La relación de transición $\langle S, s\rangle \rightarrow s'$ se puede leer c
         $\text{ si }\fc{B}{b}s = \mathbf{ff}$
 \end{center}
 \end{itemize}
-Llamaremos a esta colección de reglas $\text{While}_{\text{ns}}$.
+\end{sist*}
 
 Aclaremos un poco la terminología:
 
@@ -149,12 +152,12 @@ Decimos que una ejecución de la expresión $S$ desde el estado $s$, $\la{S}{s}$
 
 \begin{example}
 Podemos tratar de determinar si las siguientes expresiones terminan o ciclan siempre:
-\begin{itemize}
-    \item[(a)] $\n{while} \, \neg(\n{x}=1) \, \n{do} \, (\n{y} := \n{y} \times \n{x}; \n{x} := \n{x} - 1)$.
-    \item[(b)] $\n{while} \, 1 \leq \n{x} \, \n{do} \, (\n{y} := \n{y} \times \n{x}; \n{x} := \n{x} - 1)$.
-    \item[(b)] $\n{while true do skip}$.
-\end{itemize}
-HACER ESTO
+\begin{enumerate}
+    \item $\n{while} \, \neg(\n{x}=1) \, \n{do} \, (\n{y} := \n{y} \times \n{x}; \n{x} := \n{x} - 1)$.
+    \item $\n{while} \, 1 \leq \n{x} \, \n{do} \, (\n{y} := \n{y} \times \n{x}; \n{x} := \n{x} - 1)$.
+    \item $\n{while true do skip}$.
+\end{enumerate}
+La primera para siempre, pues si se inicializa
 \end{example}
 
 \subsection{Propiedades}
@@ -357,10 +360,10 @@ Podemos expandir el sistema $\text{While}_\text{ns}$ el siguiente modo: añadimo
 \end{itemize}
 Pero debemos tener un especial cuidado con este tipo de reglas, por ejemplo, podemos descuidar que en $a_1$ aparezca la variable $\n{y}$, a saber, que $a_1$ contenga $\n{y} + 3$, y que por otro lado en $S$ tengamos $\n{y}=5$. Del mismo modo, podríamos tener que la variable $\n{x}$ ya aparece del mismo modo como $\n{x} = 4$, por ejemplo. Si $\n{x}$ apareciera en $a_2$ entonces también tendríamos este problema.
 \end{example}
-\\
+\\ \\
 
 Aunque no lo demostraremos, se puede observar que el sistema $\text{While}_\text{ns}$ es \textit{Turing-completo}, es decir, en él podemos simular cualquier computación posible en una máquina de Turing. Por tanto, se podía pensar que podemos introducir reglas para ciertas expresiones en función de su correlato en $\text{While}_\text{ns}$ (que existe, por lo anterior). Sin embargo, si quisiéramos introducir $\n{for }x:= a_1 \n{ to } a_2\n{ do }S$ como un bucle $\n{while ... do ...}$, acabaríamos teniendo apariciones de $\n{while ... do ...}$ en las reglas asociadas a $\n{for }x:= a_1 \n{ to } a_2\n{ do }S$, lo que difiere de la semántica operacional que hemos visto hasta ahora.
-
+\\
 
 \begin{example}
 Podríamos extender el lenguaje While con dos reglas para la expresión $\n{repeat } S \n{ until } b$:
@@ -493,7 +496,7 @@ Pero entonces,
 \end{center}
 para algún $s_0 \in \textbf{State}$. Para la transición $\la{\n{if}\ b\ \n{then skip else}\ (\n{repeat } S \n{ until } b)}{s_0} \to s'$ tenemos dos posibilidades
 \\ \\
-\noindent\textit{(a)} Si $\fc{B}{b}s_0 = \textbf{tt}$ entonces únicamente existe la posibilidad de que se haya derivado de $[\text{if}^{tt}_{ns}]$:
+\noindent\textit{(a)} Si $\fc{B}{b}s_0 = \textbf{tt}$ entonces únicamente existe la posibilidad de que se haya derivado de $[\text{if}^\nn{tt}_\nn{ns}]$:
 \begin{center}
     \centerAlignProof
     \quad
@@ -502,7 +505,7 @@ para algún $s_0 \in \textbf{State}$. Para la transición $\la{\n{if}\ b\ \n{the
     \UnaryInfC{$\la{\n{if}\ b\ \n{then skip else}\ (\n{repeat } S \n{ until } b)}{s_0} \to s'$}
     \DisplayProof
 \end{center}
-y la única forma de que sea cierto $\la{skip}{s_0} \to s'$ es que $s_0 = s'$. Como se verifica $\la{S}{s} \to s_0$ entonces se verifica $\la{S}{s} \to s'$ y se puede aplicar la regla $[\text{repeat}^{tt}_{ns}]$:
+y la única forma de que sea cierto $\la{skip}{s_0} \to s'$ es que $s_0 = s'$. Como se verifica $\la{S}{s} \to s_0$ entonces se verifica $\la{S}{s} \to s'$ y se puede aplicar la regla $[\text{repeat}^\nn{tt}_\nn{ns}]$:
 \begin{center}
     \centerAlignProof
     \quad
@@ -513,7 +516,7 @@ y la única forma de que sea cierto $\la{skip}{s_0} \to s'$ es que $s_0 = s'$. C
 \end{center}
 obteniendo el resultado pues ya se sabe que $\la{S}{s} \to s_0$.
 \\ \\
-\noindent\textit{(b)}  Si $\fc{B}{b}s_0 = \textbf{ff}$ entonces solo cabe la posibilidad de que haya partido de $[\text{if}^{ff}_{ns}]$:
+\noindent\textit{(b)}  Si $\fc{B}{b}s_0 = \textbf{ff}$ entonces solo cabe la posibilidad de que haya partido de $[\text{if}^\nn{ff}_\nn{ns}]$:
 
 \begin{center}
     \centerAlignProof
@@ -533,26 +536,28 @@ teniendo así $\la{\n{repeat } S \n{ until } b}{s_0} \to s'$ y entonces se puede
     \BinaryInfC{$\la{\n{repeat } S \n{ until } b}{s} \to s'$}
     \DisplayProof
 \end{center}
-mediante $[\text{repeat}^{ff}_{ns}]$ pues $\fc{B}{b}s_0 = \textbf{ff}$. \\
+mediante $[\text{repeat}^\nn{ff}_\nn{ns}]$ pues $\fc{B}{b}s_0 = \textbf{ff}$. \\
 \end{proof}
 
-
-
-Veamos ahora la siguiente
-\begin{definition}
-Decimos que un sistema de transiciones (como el que hemos visto para While) es \textit{determinista} si, para cada $S \in \mathbf{Stm}$, $s, s', s'' \in \mathbf{State}$,  
-$$\la{S}{s}\rightarrow s' \text{ y } \la{S}{s}\rightarrow s'' \text{ implica que } s'= s''$$
-\end{definition}
 
 Para poder demostrar que una propiedad como la anterior se verifica en árboles sencillos y compuestos, emplearemos la demostración por \textit{inducción sobre reglas}, que se compone de dos pasos:
 \begin{enumerate}
     \item Primero comprobamos que la propiedad se verifica para los axiomas del sistema.
     \item Para cada regla, suponiendo que las premisas verifican la propiedad , comprobamos que también se cumple para la conclusión (siempre y cuando se verifiquen las condiciones de la regla).
 \end{enumerate}
+\\
 
-\begin{theorem}
-El sistema de transiciones $\text{While}_{\text{ns}}$ es determinista.
+El siguiente resultado nos dice que, en general, hay \textit{una} manera de deducir una configuración mediante las reglas del sistema de transición $\nn{While}_\nn{ns}$:
+
+\begin{theorem}\label{determinismo}
+El sistema de transiciones $\nn{While}_{\nn{ns}}$ es determinista, es decir, para cada $S \in \mathbf{Stm}$, $s, s', s'' \in \mathbf{State}$,  
+$$\la{S}{s}\rightarrow s' \text{ y } \la{S}{s}\rightarrow s'' \text{ implica que } s'= s''.$$
 \end{theorem}
+\begin{proof}
+Para simplificar la demostración, vamos a definir una propiedad sintáctica de las reglas del sistema $\nn{While}_\nn{ns}$. Decimos que dos reglas son \textit{independientes entre sí} cuando no es posible obtener una mediante la aplicación de la otra. Notemos que este es el caso de nuestro sistema: las reglas $[\nn{while}_\nn{ns}^\nn{tt}]$ y $[\nn{while}_\nn{ns}^\nn{ff}]$ son independientes entre sí porque ambas tienen premisas distintas (suponemos que $\mathbf{tt}$ y $\mathbf{ff}$ son distintos). Entonces, como cada regla es independiente de la otra, deducimos que, en caso de que tengamos $\la{S}{s}\rightarrow s'$ y $\la{S}{s}\rightarrow s''$, necesariamente tendremos que haber aplicado la misma única regla posible en los dos casos para llegar a las respectivas configuraciones. Es fácil convencerse entonces de que, por inducción sobre las reglas, la propiedad deseada se cumple.
+\end{proof}
+\\
+
 
 \begin{example} Podemos añadir una semántica $\n{forVar}\ x\ \n{do}\ S$ que ejecute la sentencia $S$ siempre que $x$ sea distinto de $0$ y lo incremente en $1$ en cada iteración. Veamos que sería semánticamente equivalente a $\n{while}\ \neg (x=0)\ \n{do}\ (S; x:=x+1)$.
 \\ \\
@@ -641,64 +646,263 @@ Para empezar, sabemos que $\fc{A}{x}s = 0$ si y solo si $\fc{B}{\neg (x=0) }s = 
               \DisplayProof
         \end{center}
 \end{enumerate}
+Supongamos ahora que $\la{\n{while}\ \neg (x=0)\ \n{do}\ (S; x:=x+1)}{s}\to s'$. Entonces, distinguimos los siguientes casos:
+\begin{enumerate}
+    \item Si hemos aplicado [$\text{while}^{\text{ff}}_{\text{ns}}$], entonces 
+    \begin{center}
+      \centerAlignProof
+       
+      \quad
+      \centerAlignProof
+        \AxiomC{}
+        \UnaryInfC{$\la{\n{while}\ \neg (x=0)\ \n{do}\ (S; x:=x+1)}{s} \to s'$}[$\text{while}^{\text{ff}}_{\text{ns}}$]
+      \DisplayProof
+      \quad
+      \centerAlignProof
+\end{center}
+y además deducimos que $s=s'$ y que $x \neq 0$. Pero entonces tenemos que, directamente:
+\begin{center}
+              \centerAlignProof
+              \quad
+              \centerAlignProof
+                \AxiomC{}
+                \LeftLabel{$[\text{for}^0]$ }
+                \RightLabel{}
+                \UnaryInfC{$\la{\n{forVar}\ x\ \n{do}\ S}{s} \to s$}
+              \DisplayProof
+        \end{center}
+es decir, obtenemos la implicación deseada.
+    \item Si hemos aplicado [$\text{while}^{\text{tt}}_{\text{ns}}$], 
+\begin{center}
+      \centerAlignProof
+        
+      \quad
+      \centerAlignProof
+        \AxiomC{$\la{(S; x:=x+1)}{s} \to s'$}
+        \AxiomC{$\la{\n{while}\  \neg (x=0)\ \n{do}\ (S; x:=x+1)}{s'} \to s''$}
+        \BinaryInfC{$\la{\n{while}\ \neg (x=0)\ \n{do}\ (S; x:=x+1)}{s} \to s''$}[$\text{while}^{\text{tt}}_{\text{ns}}$]
+      \DisplayProof
+      \quad
+      \centerAlignProof
+\end{center}
+y además deducimos que $x \neq 0$. Si aplicamos hipótesis de inducción sobre $\la{\n{while}\  \neg (x=0)\ \n{do}\ (S; x:=x+1)}{s'} \to s''$, obtenemos que $\la{\n{forVar}\ x\ \n{do}\ S}{s'} \to s''$. Pero entonces, juntando las premisas anteriores,  
+  \begin{center}
+              \centerAlignProof
+              \quad
+              \centerAlignProof
+                \AxiomC{}
+                \LeftLabel{$[\text{for}^{\ne 0}]$ }
+                \RightLabel{}
+                \AxiomC{ $\la{S; x := x+1}{s} \to s'$ }
+                \AxiomC{$\la{\n{forVar}\ x\ \n{do}\ S}{s'} \to s''$}
+                \BinaryInfC{$\la{\n{forVar}\ x\ \n{do}\ S}{s} \to s''$}
+              \DisplayProof
+        \end{center}
+luego obtenemos el resultado.
+\end{enumerate}
 \end{example}
+\\
+
+\subsection{Expresiones}
+
+Finalmente, podemos definir el valor semántico de cada $S \in \mathbf{Stm}$ mediante una aplicación
+$\mc{S}_\nn{ns}: \mathbf{Stm} \rightarrow (\mathbf{State}\hookrightarrow\mathbf{State})$, donde
+\begin{align*}
+    \mc{S}_\nn{ns}[[S]]:  \mathbf{State} & \hookrightarrow  \mathbf{State} \\
+                     s               & \mapsto          \begin{cases} s' \text{, si } \la{S}{s}\to s' \\ 
+                        \nn{indefinido} \text{, en otro caso}
+                        \end{cases}
+\end{align*}
+El determinismo de $\nn{While}_\nn{ns}$ implica que está bien definida. Además, es parcial porque, como vimos, la expresión $\n{while true do skip}$ siempre entra en bucle, es decir, $ \mc{S}_\nn{ns}[[\n{while true do skip}]]s = \mathrm{indefinido}$, para cada $s \in \mathbf{State}$.
 
 
-\section{Semántica de paso corto}
 
-\subsection{Transiciones}
+\section{Semántica operacional estructural}
 
-\noindent Se crea una nueva relación de transición $\la{S}{s} \dto \gamma$, que representa que $\gamma$ es una sentencia o estado que se ejecuta después de $\la{S}{s}$ ($S$ sobre el estado $s$). Se dirá que $\la{S}{s}$ está bloqueda si no existe $\gamma$ tal que $\la{S}{s} \dto \gamma$. Se crean las siguientes reglas de deducción:
+\subsection{Sistema de transiciones}
+
+Ahora nos centramos en los pasos concretos de la ejecución de un programa. Para ello, definimos una relación de transición $\la{S}{s} \dto \gamma$ como:
+\begin{itemize}
+    \item Si $\gamma$ es de la forma $\la{S'}{s'}$, entonces la ejecución de $S$ desde $s$ no se completa y sigue en $\la{S'}{s'}$.
+    \item Si $\gamma$ es de la forma $s'$, entonces la ejecución finaliza en el estado $s'$.
+\end{itemize}
+La nueva relación de transición queda determinada por el conjunto de reglas:
+
+\begin{sist*}[$\nn{While}_\nn{sos}$]\mbox{}
+\begin{itemize}
+    \item[] $[\text{ass}_{\nn{sos}}]$
 \begin{prooftree}
     \AxiomC{}
-    \LeftLabel{$[\text{ass}_{sos}]$}
+    \LeftLabel{}
     \UnaryInfC{ $\la{x:=a}{s} \dto s[x\mapsto \fc{A}{a}s]$}
 \end{prooftree}
-
+    \item[]$[\text{skip}_{\nn{sos}}]$
 \begin{prooftree}
     \AxiomC{}
-    \LeftLabel{$[\text{skip}_{sos}]$}
-    \UnaryInfC{$\la{skip}{s} \dto s$}
+    \LeftLabel{}
+    \UnaryInfC{$\la{\n{skip}}{s} \dto s$}
 \end{prooftree}
-
+    \item[]$[\text{comp}_{\nn{sos}}^1]$
 \begin{prooftree}
     \AxiomC{$\la{S_1}{s} \dto \la{S_1'}{s'}$}
-    \LeftLabel{$[\text{comp}_{sos}^1]$}
+    \LeftLabel{}
     \UnaryInfC{ $\la{S_1; S_2}{s} \dto \la{S_1'; S_2}{s'}$}
 \end{prooftree}
-
+    \item[]$[\text{comp}_{\nn{sos}}^2]$
 \begin{prooftree}
     \AxiomC{$\la{S_1}{s} \dto s'$}
-    \LeftLabel{$[\text{comp}_{sos}^2]$}
+    \LeftLabel{}
     \UnaryInfC{ $\la{S_1; S_2}{s} \dto \la{S_2}{s'}$}
 \end{prooftree}
-
+    \item[]$[\text{if}^{\nn{tt}}_{\nn{sos}}]$
 \begin{prooftree}
     \AxiomC{}
-    \LeftLabel{$[\text{if}^{tt}_{sos}]$}
+    \LeftLabel{}
     \RightLabel{si $\fc{B}{b}s = \textbf{tt}$}
     \UnaryInfC{$\la{\n{if}\ b\ \n{then}\ S_1\ \n{else}\ S_2}{s} \dto \la{S_1}{s}$}
 \end{prooftree}
-
+    \item[]$[\text{if}_{\nn{sos}}^\nn{ff}]$
 \begin{prooftree}
     \AxiomC{}
-    \LeftLabel{$[\text{if}_{sos}^{ff}]$}
+    \LeftLabel{}
     \RightLabel{si $\fc{B}{b}s = \textbf{ff}$}
     \UnaryInfC{$\la{\n{if}\ b\ \n{then}\ S_1\ \n{else}\ S_2; s}{s} \dto \la{S_2}{s}$}
 \end{prooftree}
 
-\subsection{Secuencias de derivación}
-\noindent Una secuencia de derivación es finita cuando llega a un bloqueo o a un estado final.
+    \item[] $[\nn{while}_\nn{sos}]$
+\begin{prooftree}
+    \AxiomC{}
+    \LeftLabel{}
+    \RightLabel{}
+    \UnaryInfC{$\la{\n{while }b\n{ do }S}{s}\dto \la{\n{if }b\n{ then }(S; \n{while }b\n{ do }S)\n{ else skip}}{s}$}
+\end{prooftree}    
+\end{itemize}
+\end{sist*}
+\\ \\
+
+Notemos que podríamos haber incluido, por ejemplo, dos reglas para la semántica de $\n{while }b \n{ do }S$:
+ 
+\begin{prooftree}
+    \AxiomC{}
+    \LeftLabel{$[\nn{while}_\nn{sos}^\nn{ff}]$}
+    \RightLabel{ si $\fc{B}{s}= \mathbf{ff}$}
+    \UnaryInfC{$\la{\n{while }b\n{ do }S}{s}\dto s$}
+\end{prooftree}    
+y
+\begin{prooftree}
+    \AxiomC{}
+    \LeftLabel{$[\nn{while}_\nn{sos}^\nn{tt}]$}
+    \RightLabel{ si $\fc{B}{s}= \mathbf{tt}$}
+    \UnaryInfC{$\la{\n{while }b\n{ do }S}{s}\dto \la{S;\n{while }b\n{ do }S}{s}$}
+\end{prooftree}    
+\\
+
+\begin{definition}
+Se dirá que $\la{S}{s}$ está \textit{bloqueada} si no existe $\gamma$ tal que $\la{S}{s} \dto \gamma$. Una secuencia de derivación es finita cuando llega a un bloqueo o a un estado final:
 \[
     \gamma_0 \dto \gamma_1 \dto ... \dto \gamma_k
 \]
-donde $\gamma_0 = \la{S}{s}$,  $\gamma_i \dto \gamma_{i+1}$ para $i\in\{0, ..., k-1\}$ y $\gamma_k$ es una configuración bloqueada. \\ \\
-La ejecución $\la{S}{s}$ de la sentencia $S$ en un estado $s$:
-\begin{enumerate}
-    \item \textbf{Termina} si y solo si existe una única secuencia de derivación finita comenzando en $\la{S}{s}$
+donde $\gamma_0 = \la{S}{s}$,  $\gamma_i \dto \gamma_{i+1}$ para $i\in\{0, ..., k-1\}$ y $\gamma_k$ es una configuración bloqueada.
+\end{definition}
 
-    \item \textbf{Termina con éxito} si $\la{S_1}{s} \dto ^* s'$ para algún estado s'.
+Normalmente escribiremos $\gamma_0 \dto^i \gamma$ si hay $i$ pasos en la ejecución de $\gamma_0$ a $\gamma$. Si hay finitos pasos, denotamos $\gamma_0 \dto^* \gamma$. $\gamma_0 \dto^i \gamma$ y $\gamma_0 \dto^* \gamma$ no tiene por qué ser secuencias de derivación, solo si $\gamma$ es configuración final o de bloqueo.
+
+\begin{definition}
+La ejecución $\la{S}{s}$ de la expresión $S$ en un estado $s$:
+\begin{enumerate}
+    \item \textit{Termina} si existe una única secuencia de derivación finita comenzando en $\la{S}{s}$.
+
+    \item \textit{Termina con éxito} si $\la{S_1}{s} \dto ^* s'$ para algún estado $s'$.
     
-    \item \textbf{Cicla} si solo si existe una secuencia de derivación infinita comenzando en $\la{S}{s}$
+    \item \textit{Cicla} si existe una secuencia de derivación infinita comenzando en $\la{S}{s}$.
 \end{enumerate}
-\textbf{Nota:} estas definiciones son excluyentes si solo si las secuencias de derivacion son únicas, por comodidad las definimos exclusivas así si extendemos el lenguaje no nos tenemos que preocupar.
+Nótese que estas definiciones son mutuamente excluyentes si y solo si las secuencias de derivacion son únicas. Por comodidad, las definimos de este modo porque, si extendemos el lenguaje, no nos tendremos que preocupar.
+\end{definition}
+
+\begin{example}
+Supongamos que queremos extender $\nn{While}_\nn{sos}$ con la expresión $\n{repeat }S \n{ until }b$. Podemos añadir la regla:
+\begin{prooftree}
+        \AxiomC{}
+        \LeftLabel{$[\nn{repeat}_\nn{sos}]$}
+        \RightLabel{}
+        \UnaryInfC{$\la{\n{repeat }S\n{ until }b}{s}\dto \la{S; \n{if }b\n{ then skip else }(\n{repeat }S\n{ until }b)}{s}$}
+\end{prooftree}
+La idea es que la expresión $\n{repeat }S\n{ until }b$ sea equivalente a $S;\n{ while }\neg b\n{ do } S$. Se definirá posteriormente el concepto de equivalencia semántica y se demostrará este resultado.
+\end{example}
+
+\subsection{Propiedades}
+
+El método de demostración principal consiste en hacer \textit{inducción sobre la longitud de las secuencias de derivación} (finitas) que se estudian, es decir, si queremos demostrar una propiedad acerca de nuestro sistema de transiciones:
+\begin{itemize}
+    \item Demostramos que la propiedad se cumple para secuencias de derivación de longitud 0 (en ocasiones nos encontraremos que se cumple la propiedad de forma vacía).
+    \item Demostramos que si la propiedad se cumple para secuencias de longitud (a lo sumo) $k$, entonces se cumple para secuencias de longitud $k+1$.
+\end{itemize}
+A modo de ejemplo de este método, veamos el siguiente resultado:
+
+\begin{lema}\label{lemasos1}
+Si $\la{S_1;S_2}{s}\dto^k s''$, entonces existen $s'\in \mathbf{State}$, $k_1, k_2 \in \N$ tales que $k = k_1 + k_2$ y $$\la{S_1}{s}\dto^{k_1}s' \quad \text{ y }\quad \la{S_2}{s'}\dto^{k_2}s''.$$
+\end{lema}
+\begin{proof}
+Si $k=0$, entonces $\la{S_1;S_2}{s}\dto^0 s''$ implica (vacuamente) el resultado, porque $\la{S_1;S_2}{s}$ y $s''$ son distintos. Supongamos que el resultado se cumple para longitudes menores o iguales que $k$. Veamos que se sigue para $k+1$. Por tanto, tenemos la premisa $\la{S_1;S_2}{s}\dto^{k+1} s''$, es decir, que existe una configuración $\gamma$ tal que
+$$\la{S_1;S_2}{s}\dto \gamma \dto^{k} s''$$
+Por tanto, distinguimos dos casos según la regla que hemos aplicado a $\la{S_1;S_2}{s}$ para llegar a $\gamma$:
+\begin{itemize}
+    \item[(a)] Si hemos aplicado [$\nn{comp}^1_\nn{sos}$], tenemos que
+\begin{prooftree}
+    \AxiomC{$\la{S_1}{s} \dto \la{S_1'}{s'}$}
+    \LeftLabel{$[\text{comp}_{\nn{sos}}^1]$}
+    \UnaryInfC{ $\la{S_1; S_2}{s} \dto \la{S_1'; S_2}{s'}= \gamma$}
+\end{prooftree}
+luego $\la{S_1'; S_2}{s'} \dto^k s''$. Entonces, como esta derivación es de longitud $k$, podemos aplicar hipótesis de inducción, esto es, existen $s_0 \in \mathbf{State}$ y $k_1, k_2 \in \N$ con $k = k_1 + k_2$ y 
+$$\la{S_1'}{s'}\dto^{k_1}s_0 \quad \text{ y }\quad \la{S_2}{s_0}\dto^{k_2}s''.$$
+Ahora bien, como tenemos la premisa $\la{S_1}{s} \dto \la{S_1'}{s'}$ y $\la{S_1'}{s'}\dto^{k_1}s_0$, entonces tenemos que $\la{S_1}{s}\dto^{k_1 + 1}s_0$. Por otro lado, también tenemos $\la{S_2}{s_0}\dto^{k_2}s''$ y que $(k_1 + 1) + k_2 = (k_1 + k_2)+1 = k+1$. Es decir, hemos obtenido la conclusión deseada. Por tanto, hemos probado el resultado para este caso.
+
+\item[(b)] Si hemos aplicado [$\nn{comp}^2_\nn{sos}$], tenemos que
+\begin{prooftree}
+    \AxiomC{$\la{S_1}{s} \dto s'$}
+    \LeftLabel{[$\nn{comp}^2_\nn{sos}$]}
+    \UnaryInfC{ $\la{S_1; S_2}{s} \dto \la{S_2}{s'}= \gamma$}
+\end{prooftree}
+Entonces deducimos que $\la{S_2}{s'} \dto^{k}s''$. Simplemente tomando $k_1 := 1$ y $k_2 := k$ vemos que $k_1+k_2 = k+1$ y que tenemos el resultado.
+\end{itemize}
+\end{proof}
+
+\begin{example}
+Por otro lado, $\la{S_1;S_2}{s}\dto^* \la{S_2}{s'}$ no implica necesariamente que $\la{S_1}{s}\dto^* s'$. Por ejemplo, podemos tomar $S_1 := \n{skip}$, $S_2 := \n{while }\neg(\n{x}=1)\n{ do } \n{x}:=\n{x}+1$ y $s\n{x} = 3$, $s'\n{x} = s[\n{x}\mapsto 2]$.
+\end{example}
+
+
+El siguiente lema viene a decir que la ejecución de una expresión es independiente de cualquier enunciado que se ejecute después:
+
+\begin{lema}\label{lemasos2}
+Si $\la{S_1}{s}\dto^k s'$, entonces $\la{S_1;S_2}{s}\dto^k \la{S_2}{s'}$.
+\end{lema}
+\begin{proof}
+Por inducción sobre la longitud de las derivaciones. En caso de $k=0$, la premisa es falsa y el resultado se tiene directamente. Supongamos que se cumple el resultado para longitudes $\leq k$ y veámoslo para $k+1$. Nuestra suposición es que $\la{S_1}{s}\dto^{k+1} s'$. Entonces tenemos que hay cierta configuración $\gamma$ con 
+$$\la{S_1}{s}\dto \gamma \dto^k s'$$
+y además, notemos que $\gamma = \la{S}{s''}$ porque $k\leq 1$. Pero entonces, aplicando la hipótesis de inducción a $\la{S}{s''} \dto^k s'$, tenemos que $\la{S;S_2}{s''}\dto^k \la{S_2}{s'}$. 
+
+Por otro lado, de $\la{S_1}{s}\dto \la{S}{s''}$ podemos deducir que:
+\begin{prooftree}
+    \AxiomC{$\la{S_1}{s} \dto \la{S}{s''}$}
+    \LeftLabel{$[\text{comp}_{\nn{sos}}^1]$}
+    \UnaryInfC{ $\la{S_1; S_2}{s} \dto \la{S; S_2}{s''}$}
+\end{prooftree}
+Es decir, sabemos que $\la{S_1; S_2}{s} \dto \la{S; S_2}{s''}$ y que $\la{S;S_2}{s''}\dto^k \la{S_2}{s'}$. Basta componer ambas derivaciones para ver que $\la{S_1; S_2}{s}\dto^{k+1} \la{S_2}{s'}$, como queríamos.
+\end{proof}
+
+\begin{theorem}
+El sistema de transiciones $\nn{While}_\nn{sos}$ es determinista, es decir, para cualesquiera $S, s, \gamma, \gamma'$ tenemos que
+$$\la{S}{s}\dto \gamma \text{ y } \la{S}{s}\dto \gamma' \text{ implica que } \gamma = \gamma'$$
+\end{theorem}
+\begin{proof}
+Véase la demostración del Teorema \ref{determinismo}.
+\end{proof}
+
+\begin{definition}
+Dos expresiones $S_1, S_2$ se dicen \textit{semánticamente equivalentes} si, para cada $s \in \mathbf{State}$, 
+\begin{itemize}
+    \item Si $\gamma$ es estado final o bloqueado, entonces $\la{S_1}{s}\dto^* \gamma$ si y solo si $\la{S_2}{s} \dto^*\gamma$. Nótese que las longitudes de las derivaciones no tienen por qué coincidir.
+    \item La\footnote{La unicidad viene dada por el determinismo de $\nn{While}_\nn{sos}$.} secuencia de derivación empezando en $\la{S_1}{s}$ es infinita si y solo si lo es la que empieza en $\la{S_2}{s}$.
+\end{itemize} 
+\end{definition}
