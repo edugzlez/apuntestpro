@@ -25,12 +25,12 @@ Con esto ya sabríamos responder a la primera pregunta que nos hicimos para la l
 
 \section{Métodos de descripción semántica}
 
-Consideremos un programa como $\nz:= \nx; \nx := \ny; \ny := \nz$. Un análisis sintáctico nos dice que tenemos tres expresiones separadas por $`;$' y que cada una tiene la forma de una variable separada de otra por `$:=$'. El análisis semántico depende en gran medida del sintáctico. Será entonces conveniente asumir programas que están sintácticamente bien escritos, como en este ejemplo. La asignación de un valor semántico se tiene que realizar necesariamente en dos pasos: 
+Consideremos un programa como $\nz:= \nx; \nx := \ny; \ny := \nz$. Un análisis sintáctico nos dice que tenemos tres expresiones separadas por $`;$' y que cada una tiene la forma de una variable separada de otra por `$:=$'. El análisis semántico depende en gran medida del sintáctico: será entonces conveniente asumir programas que estén sintácticamente bien escritos, como en este ejemplo. La asignación de un valor semántico para tal expresión se tiene que realizar necesariamente en dos pasos: 
 \begin{itemize}
     \item[(i)] Dar un significado expresiones separadas por $`;$'.
     \item[(ii)]  Dar un significado a expresiones formadas por una variable seguida de `$:=$' y una expresión.
 \end{itemize}
-Nosotros nos centraremos en lo sucesivo en tres enfoques distintos aunque complementarios.
+Nosotros nos centraremos en lo sucesivo en tres enfoques distintos (aunque complementarios) para dar significado a expresiones bien formadas.
 
 \subsection{Semántica operacional}
 
@@ -106,7 +106,7 @@ Veamos a continuación un ejemplo que iremos desarrollando durante el curso, el 
     \item Expresiones booleanas: $b\in \mathbf{Bexp}$.
     \item Sentencias: $S\in \mathbf{Stm}$.
 \end{itemize}
-En caso de que hiciera falta emplear más de una metavariable, emplearemos, por ejemplo, $n', n'', \dots$ y $n_1, n_2, \dots$. Supondremos que las categorías $\mathbf{Num}$ y $ \mathbf{Var}$ se construyen de manera natural. Las categorías sintácticas $\mathbf{Aexp}$, $\mathbf{Bexp}$ y $\mathbf{Stm}$ se construyen de la siguiente forma:
+En caso de que hiciera falta emplear más de una metavariable, emplearemos, por ejemplo, $n', n'', \dots$ y $n_1, n_2, \dots$. Supondremos que las categorías $\mathbf{Num}$ y $ \mathbf{Var}$ se construyen de manera natural. Las categorías sintácticas $\mathbf{Aexp}$, $\mathbf{Bexp}$ y $\mathbf{Stm}$ se construyen, respectivamente, de la siguiente forma:
 \[
     \begin{array}{l}
          a ::= n\ |\ x\ |\ a_1+ a_2\ |\ a_1\times a_2\ |\ a_1-a_2 \\
@@ -366,3 +366,4 @@ Todo lo anterior justifica una noción que será importante a lo largo del curso
 \[
     \fc{C}{b_1}s = \fc{C}{b_2}s.
 \]
+De todos modos, veremos que esta noción depende en gran medida del conjunto de reglas que empleemos.

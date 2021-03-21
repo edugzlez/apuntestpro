@@ -1,0 +1,148 @@
+\cleardoublepage
+\chapter{Más semántica operacional}
+						
+$\\$
+
+
+La elección de una semántica operacional u otra para el lenguaje $\nn{While}$ es, por el Teorema de equivalencia, arbitraria. En cambio, para otros lenguajes puede ocurrir que una aproximación sea natural y la otra completamente impracticable. En esta sección estudiaremos una serie de conceptos que mostrarán la debilidad de las semánticas que hemos visto hasta ahora. 
+
+\section{Construcciones no secuenciales}
+\subsection{\n{abort}}
+
+La intención que tenemos al introducir la expresión $\n{abort}$ es la siguiente: queremos que, cuando se ejecute, pare la ejecución de todo el programa. Notemos que no podríamos, a simple vista, construir una expresión con el mismo comportamiento en $\nn{While}$. A saber, $\n{while true do skip}$ solo consigue hacer un bucle, y $\n{skip}$ permite que un programa se pueda ejecutar más tarde. Entonces, la sintaxis de las expresiones (o sentencias) queda del siguiente modo:
+\[
+    \begin{array}{l}
+         S ::= x:=a\ |\ \n{skip}\ |\ S_1;S_2\ |\ \n{if}\ b\ \n{then}\ S_1\ \n{else}\ S_2\ |\ \n{while}\ b\ \n{do}\ S \ | \ \n{abort}
+    \end{array}
+\]
+Por otro lado, anque debemos modificar ahora el comportamiento de las relaciones de transición que vimos en el anterior capítulo, no es necesario alterar los sistemas de transiciones asociados, porque tan solo queremos que cualquier configuración de la forma $\la{\n{abort}}{s}$ quede atascada, y esto no modifica el comportamiento de (las reglas asociadas a) las otras expresiones. Es decir, la expresión $\n{abort}$ no necesita de ninguna regla que determine su interpretación.
+
+Ahora bien, no es cierto que $\nn{While}_\nn{ns}$ y $\nn{While}_\nn{sos}$ se comporten, en general, del mismo modo. De hecho, $\n{abort}$ distingue entre ambos sistemas de semántica operacional. Esto se debe a que en $\nn{While}_\nn{ns}$ solo nos interesan las ejecuciones que terminan correctamente y por tanto no distinguimos entre bucles o configuraciones atascadas, mientras que en $\nn{While}_\nn{sos}$ podemos definir bucles (secuencias de derivación infinitas) y ejecuciones que terminan incorrectamente (secuencias de derivación finitas que terminan en una configuración atascada). Así, aunque $\n{abort}$ no sea semánticamente equivalente a $\n{skip}$ en $\nn{While}_\nn{ns}$, sí que lo es $\n{while true do skip}$. Por otro lado, vemos que $\n{abort}$ no puede ser semánticamente equivalente en $\nn{While}_\nn{sos}$ a $\n{while true do skip}$, porque a partir de $\la{\n{while true do skip}}{s}$ hay una secuencia de derivación infinita y a partir de $\la{\n{abort}}{s}$ no. Tampoco puede serlo $\n{skip}$, porque $\la{\n{skip}}{s}\dto s$ es la única secuencia de derivación posible empezando en $\n{skip}$ y $\la{\n{abort}}{s}$ es la correspondiente a $\n{abort}$. 
+
+\begin{example}
+Podemos extender $\nn{While}$ con la expresión $\n{assert }b\n{ before }S$. La idea es que, si $b$ es cierto, entonces ejecutamos $S$ y, si es falso, entonces la ejecución del programa se aborta. [HACER ESTO]
+\end{example}
+
+
+\subsection{\n{or}}
+
+Otra posible extensión de las expresiones de $\nn{While}$ consiste en añadir nuevas posibilidades de ejecución, es decir, forzar un tipo de no determinismo. Para ello incluimos la expresión $\n{or}$:
+\[
+    \begin{array}{l}
+         S ::= x:=a\ |\ \n{skip}\ |\ S_1;S_2\ |\ \n{if}\ b\ \n{then}\ S_1\ \n{else}\ S_2\ |\ \n{while}\ b\ \n{do}\ S \ | \ S_1 \n{ or } S_2
+    \end{array}
+\]
+Así, si por ejemplos ejecutamos $\n{x}:= 1 \n{ or } \n{x}:=2$, entonces generamos dos caminos distintos: uno en el que $\n{x}$ pasa a tener el valor 1 y otro en el que toma el valor 2. Como siempre, en caso de que sea preciso, emplearemos paréntesis para indicar de manera precisa las distintas opciones.
+
+
+A diferencia de la expresión $\n{abort}$, debemos distinguir la nueva ampliación de $\nn{While}$ en función de cada semántica operacional:
+\begin{sist*}[$\nn{While}_\nn{ns}$ con \n{op}]
+A las reglas de $\nn{While}_\nn{ns}$ añadimos:
+\begin{itemize}
+    \item[]
+\begin{prooftree}
+    \AxiomC{$\la{S_1}{s}\to s'$}
+    \LeftLabel{[$\nn{or}^1_\nn{ns}$]}
+    \RightLabel{}
+    \UnaryInfC{$\la{S_1 \n{ or } S_2}{s}\to s'$}
+    \end{prooftree}
+
+    \item[]
+\begin{prooftree}
+    \AxiomC{$\la{S_2}{s}\to s'$}
+    \LeftLabel{[$\nn{or}^2_\nn{ns}$]}
+    \RightLabel{}
+    \UnaryInfC{$\la{S_1 \n{ or } S_2}{s}\to s'$}
+    \end{prooftree}
+\end{itemize}
+\end{sist*}
+
+
+\begin{sist*}[$\nn{While}_\nn{sos}$ con \n{op}]
+A las reglas de $\nn{While}_\nn{sos}$ añadimos:
+\begin{itemize}
+    \item[]
+\begin{prooftree}
+    \AxiomC{}
+    \LeftLabel{[$\nn{or}^1_\nn{sos}$]}
+    \RightLabel{}
+    \UnaryInfC{$\la{S_1 \n{ or } S_2}{s}\dto \la{S_1}{s}$}
+    \end{prooftree}
+
+    \item[]
+\begin{prooftree}
+    \AxiomC{}
+    \LeftLabel{[$\nn{or}^2_\nn{sos}$]}
+    \RightLabel{}
+    \UnaryInfC{$\la{S_1 \n{ or } S_2}{s}\dto \la{S_2}{s}$}
+    \end{prooftree}
+\end{itemize}
+\end{sist*}
+
+De nuevo, como cabía esperar, ambos sistemas de transiciones funcionan de maneras distintas respecto del no determinismo que hemos introducido. En el caso de $\nn{While}_\nn{ns}$ tenemos que el no determinismo omite la posibilidad de que haya bucles infinitos, mientras que en $\nn{While}_\nn{sos}$ esto no ocurre. Para ilustrar esto vamos a recurrir al ejemplo de antes.
+
+En $\nn{While}_\nn{ns}$, a la configuración $\la{\n{x}:= 1 \n{ or } \n{x}:=2}{s}$ corresponden dos árboles de derivación, cada uno asociado a las siguientes transiciones:
+$$\la{\n{x}:= 1 \n{ or } \n{x}:=2}{s} \to s[\n{x}\mapsto 1]$$
+$$\la{\n{x}:= 1 \n{ or } \n{x}:=2}{s} \to s[\n{x}\mapsto 2]$$
+Además, si tuviésemos $\la{(\n{while true do skip}) \n{ or } \n{x}:=2}{s}$, entonces solo habría un árbol de derivación posible, a saber, el que no corresponde al bucle, es decir, 
+$$\la{(\n{while true do skip}) \n{ or } \n{x}:=2}{s} \to s[\n{x}\mapsto 2]$$
+En cambio, en $\nn{While}_\nn{sos}$, las secuencias de derivación para $\la{\n{x}:= 1 \n{ or } \n{x}:=2}{s}$ serían
+$$\la{\n{x}:= 1 \n{ or } \n{x}:=2}{s} \dto^* s[\n{x}\mapsto 1]$$
+$$\la{\n{x}:= 1 \n{ or } \n{x}:=2}{s} \dto^* s[\n{x}\mapsto 2]$$
+y para $\la{(\n{while true do skip}) \n{ or } \n{x}:=2}{s}$, 
+$$\la{(\n{while true do skip}) \n{ or } \n{x}:=2}{s} \dto^* s[\n{x}\mapsto 2]$$
+$$\la{(\n{while true do skip}) \n{ or } \n{x}:=2}{s} \dto \la{\n{while true do skip}}{s} \dto\dots$$
+de donde se deduce lo que dijimos arriba.
+
+
+\subsection{\n{par}}
+
+Una manera de profundizar en el no determinismo del que hablamos antes consiste en que, por ejemplo, se dé la posibilidad de ejecutar dos expresiones, pero no de forma excluyente, es decir, que ambas ejecuciones se puedan ejecutar intercalándose. Esta es la idea detrás de la expresión $\n{par}$:
+\[
+    \begin{array}{l}
+         S ::= x:=a\ |\ \n{skip}\ |\ S_1;S_2\ |\ \n{if}\ b\ \n{then}\ S_1\ \n{else}\ S_2\ |\ \n{while}\ b\ \n{do}\ S \ | \ S_1 \n{ par } S_2
+    \end{array}
+\]
+En un caso sencillo como $\n{x}:= 1 \n{ par } \n{x}:=2$, tenemos solo los resultados posibles 1 y 2, correspondientes a ejecutar primero $\n{x}:= 1$ y después $\n{x}:=2$ y viceversa. Si por ejemplo tuviésemos $\n{x}:= 1 \n{ par } (\n{x}:=2; \n{x}:\n{x}:=\n{x} + 2)$, entonces habría tres posibles resultados:
+\begin{itemize}
+    \item Si ejecutamos $\n{x}:=1$ y luego $\n{x}:=2; \n{x}:= \n{x}+2$, obtenemos $4$.
+    \item Si ejecutamos $\n{x}:=2; \n{x}:= \n{x}+2$ y luego $\n{x}:=1$, obtenemos $1$.
+    \item Si ejecutamos $\n{x}:=2$, después $\n{x}:=1$ y por último $\n{x}:= \n{x}+2$, obtenemos 3.
+\end{itemize}
+
+Veamos cómo queda el lenguaje $\nn{While}$ ampliado con esta nueva expresión. En el caso de $\nn{While}_\nn{sos}$ tenemos:
+\begin{sist*}[$\nn{While}_\nn{sos}$ con \n{par}]
+A las reglas de $\nn{While}_\nn{sos}$ añadimos:
+\begin{itemize}
+    \item[]
+\begin{prooftree}
+    \AxiomC{$\la{S_1}{s}\dto \la{S_1'}{s'}$}
+    \LeftLabel{[$\nn{par}^1_\nn{sos}$]}
+    \RightLabel{}
+    \UnaryInfC{$\la{S_1 \n{ par } S_2}{s}\dto \la{S'_1 \n{ par } S_2}{s'}$}
+    \end{prooftree}
+
+    \item[]
+\begin{prooftree}
+    \AxiomC{$\la{S_1}{s}\dto s'$}
+    \LeftLabel{[$\nn{par}^2_\nn{sos}$]}
+    \RightLabel{}
+    \UnaryInfC{$\la{S_1 \n{ par } S_2}{s}\dto \la{S_2}{s'}$}
+    \end{prooftree}
+
+   \item[]
+\begin{prooftree}
+    \AxiomC{$\la{S_2}{s}\dto \la{S_2'}{s'}$}
+    \LeftLabel{[$\nn{par}^3_\nn{sos}$]}
+    \RightLabel{}
+    \UnaryInfC{$\la{S_1 \n{ par } S_2}{s}\dto \la{S_1 \n{ par } S'_2}{s'}$}
+    \end{prooftree}
+    \item[]
+\begin{prooftree}
+    \AxiomC{$\la{S_2}{s}\dto s'$}
+    \LeftLabel{[$\nn{par}^4_\nn{sos}$]}
+    \RightLabel{}
+    \UnaryInfC{$\la{S_1 \n{ par } S_2}{s}\dto \la{S_1}{s'}$}
+    \end{prooftree}
+\end{itemize}
+\end{sist*}

@@ -20,7 +20,7 @@ Finalmente, es necesaria una \textit{relación de transición} que describa cóm
 
 \subsection{Sistema de transiciones}
 
-La relación de transición $\langle S, s\rangle \rightarrow s'$ se puede leer como que, la ejecución de $S$ desde el estado $s$ terminará y el nuevo estado será $s'$. Está determinada por las siguientes reglas\footnote{Nótese que las variables $S_1, S_2, s, s', s''$, etc. quedan fijadas en la premisa pero libres en la consecuencia.}:  
+La relación de transición $\langle S, s\rangle \rightarrow s'$ se puede leer como que, la ejecución de $S$ desde el estado $s$ terminará y el nuevo estado será $s'$. Está determinada por las siguientes reglas\footnote{Nótese que las variables $S_1, S_2, s, s', s''$, etc. son libres.}:  
 
 
 \begin{sist*}[$\nn{While}_\nn{ns}$]\mbox{}
@@ -157,7 +157,9 @@ Podemos tratar de determinar si las siguientes expresiones terminan o ciclan sie
     \item $\n{while} \, 1 \leq \n{x} \, \n{do} \, (\n{y} := \n{y} \times \n{x}; \n{x} := \n{x} - 1)$.
     \item $\n{while true do skip}$.
 \end{enumerate}
-La primera para siempre, pues si se inicializa
+La primera para si se inicializa $x$ con un valor mayor o igual que $1$ y cicla en caso contrario: nótese que si $\n{x}<1$ decrecerá continuamente, luego es imposible que la condición del bucle llegue a no cumplirse.\\ \\
+La segunda para siempre. Es parecida a la anterior salvo por el hecho de que la condición del bucle hace que, para $\n{x}<1$, se pare. \\ \\
+La tercera dejaría intacta la configuración inicial. Sin embargo, la ejecución cicla pese a no realizar ninguna acción. Esto es porque la condición del bucle es siempre cierta.
 \end{example}
 
 \subsection{Propiedades}
@@ -324,10 +326,7 @@ Ahora, combinando (a) y (b) con [$\text{comp}_{\text{ns}}$], obtenemos $\la{S_1;
 
 Notemos, por otro lado, que en general $S_1;S_2$ y $S_2; S_1$ no son semánticamente equivalentes: si tratásemos de hacer lo mismo que antes, obtendríamos las hojas $\la{S_1}{s}\rightarrow s''$ y $\la{S_2}{s''}\rightarrow s'$ por un lado y $\la{S_2}{s}\rightarrow s''$ y $\la{S_1}{s''}\rightarrow s'$ por otro, y en general no hay forma de combinar cada par de premisas para obtener la conclusión deseada.
 \end{example}
-\\
-
-
-\begin{example}
+\begin{example}\textbf{}
 Podemos expandir el sistema $\text{While}_\text{ns}$ el siguiente modo: añadimos dos reglas que permitan dar una semántica de la expresión $\n{for }x:= a_1 \n{ to } a_2\n{ do }S$, es decir, 
 \begin{itemize}
     \item[] 
@@ -360,7 +359,6 @@ Podemos expandir el sistema $\text{While}_\text{ns}$ el siguiente modo: añadimo
 \end{itemize}
 Pero debemos tener un especial cuidado con este tipo de reglas, por ejemplo, podemos descuidar que en $a_1$ aparezca la variable $\n{y}$, a saber, que $a_1$ contenga $\n{y} + 3$, y que por otro lado en $S$ tengamos $\n{y}=5$. Del mismo modo, podríamos tener que la variable $\n{x}$ ya aparece del mismo modo como $\n{x} = 4$, por ejemplo. Si $\n{x}$ apareciera en $a_2$ entonces también tendríamos este problema.
 \end{example}
-\\ \\
 
 Aunque no lo demostraremos, se puede observar que el sistema $\text{While}_\text{ns}$ es \textit{Turing-completo}, es decir, en él podemos simular cualquier computación posible en una máquina de Turing. Por tanto, se podía pensar que podemos introducir reglas para ciertas expresiones en función de su correlato en $\text{While}_\text{ns}$ (que existe, por lo anterior). Sin embargo, si quisiéramos introducir $\n{for }x:= a_1 \n{ to } a_2\n{ do }S$ como un bucle $\n{while ... do ...}$, acabaríamos teniendo apariciones de $\n{while ... do ...}$ en las reglas asociadas a $\n{for }x:= a_1 \n{ to } a_2\n{ do }S$, lo que difiere de la semántica operacional que hemos visto hasta ahora.
 \\
@@ -397,10 +395,12 @@ Podríamos extender el lenguaje While con dos reglas para la expresión $\n{repe
 \end{center}
 \end{itemize}
 \end{example}
-\\
-
 \begin{prop}
-$\n{repeat } S \n{ until } b$ es semánticamente equivalente a $S; \n{if } b \n{ then skip else } (\n{repeat } S \n{ until } b)$.
+Son semánticamente equivalentes:
+\begin{itemize}
+    \item $\n{repeat } S \n{ until } b$.
+    \item $S; \n{if } b \n{ then skip else } (\n{repeat } S \n{ until } b)$.
+\end{itemize}
 \end{prop}
 \begin{proof}
 
@@ -554,7 +554,7 @@ El sistema de transiciones $\nn{While}_{\nn{ns}}$ es determinista, es decir, par
 $$\la{S}{s}\rightarrow s' \text{ y } \la{S}{s}\rightarrow s'' \text{ implica que } s'= s''.$$
 \end{theorem}
 \begin{proof}
-Para simplificar la demostración, vamos a definir una propiedad sintáctica de las reglas del sistema $\nn{While}_\nn{ns}$. Decimos que dos reglas son \textit{independientes entre sí} cuando no es posible obtener una mediante la aplicación de la otra. Notemos que este es el caso de nuestro sistema: las reglas $[\nn{while}_\nn{ns}^\nn{tt}]$ y $[\nn{while}_\nn{ns}^\nn{ff}]$ son independientes entre sí porque ambas tienen premisas distintas (suponemos que $\mathbf{tt}$ y $\mathbf{ff}$ son distintos). Entonces, como cada regla es independiente de la otra, deducimos que, en caso de que tengamos $\la{S}{s}\rightarrow s'$ y $\la{S}{s}\rightarrow s''$, necesariamente tendremos que haber aplicado la misma única regla posible en los dos casos para llegar a las respectivas configuraciones. Es fácil convencerse entonces de que, por inducción sobre las reglas, la propiedad deseada se cumple.
+Para simplificar la demostración, vamos a definir una propiedad sintáctica de las reglas del sistema $\nn{While}_\nn{ns}$. Decimos que dos reglas son \textit{independientes entre sí} cuando no es posible obtener una mediante la aplicación de la otra. Notemos que este es el caso de nuestro sistema: las reglas $[\nn{while}_\nn{ns}^\nn{tt}]$ y $[\nn{while}_\nn{ns}^\nn{ff}]$ son independientes entre sí porque ambas tienen premisas distintas (suponemos que $\mathbf{tt}$ y $\mathbf{ff}$ son distintos). Entonces, como cada regla es independiente de la otra (y evidentemente, cada regla es determinista), deducimos que, en caso de que tengamos $\la{S}{s}\rightarrow s'$ y $\la{S}{s}\rightarrow s''$, necesariamente tendremos que haber aplicado la misma única regla posible en los dos casos para llegar a las respectivas configuraciones. Es fácil convencerse entonces de que, por inducción sobre las reglas, la propiedad deseada se cumple\footnote{Obviamente, esa demostración no es intercambiable con la demostración formal por inducción estructural. Podría demostrarse el caso general del que hemos hablado, a saber, formalizando lo que significa precisamente la independencia de dos reglas.}. 
 \end{proof}
 \\
 
@@ -716,6 +716,125 @@ $\mc{S}_\nn{ns}: \mathbf{Stm} \rightarrow (\mathbf{State}\hookrightarrow\mathbf{
 El determinismo de $\nn{While}_\nn{ns}$ implica que está bien definida. Además, es parcial porque, como vimos, la expresión $\n{while true do skip}$ siempre entra en bucle, es decir, $ \mc{S}_\nn{ns}[[\n{while true do skip}]]s = \mathrm{indefinido}$, para cada $s \in \mathbf{State}$.
 
 
+\begin{example}
+Podemos definir, por ejemplo, una semántica de paso largo para $\mathbf{Aexp}$ mediante la relación de transición $\la{a}{s}\rightarrow_A z$, donde $\la{a}{s}$ significa que $a \in \mathbf{Aexp}$ se evalúa en $s\in \mathbf{State}$ y $z\in \Z$ es un estado final:
+\begin{sist*}[$\mathbf{Aexp}_\nn{ns}$]\mbox{}
+\begin{itemize}
+    \item[]
+\begin{prooftree}
+    \AxiomC{}
+    \LeftLabel{}
+    \RightLabel{$\text{ si } n \in \mathbf{Num}$}
+    \UnaryInfC{$\la{n}{s}\rightarrow_A \fc{N}{n}$}
+\end{prooftree}
+    \item[]
+    
+\begin{prooftree}
+    \AxiomC{}
+    \RightLabel{$\text{ si } x \in \mathbf{Var}$}
+    \UnaryInfC{$\la{x}{s}\rightarrow_A s x$}
+\end{prooftree}
+
+\item[]
+ \begin{prooftree}
+    \AxiomC{$\la{a_1}{s}\rightarrow_A z_1$}
+    \AxiomC{$\la{a_2}{s}\rightarrow_A z_2$}
+    \LeftLabel{}
+    \RightLabel{}
+    \BinaryInfC{$\la{a_1 \n{ op }s a_2}{s}\rightarrow_A z_1 * z_2$}
+\end{prooftree}
+$\text{donde } \n{op} \text{ se refiere a } \oplus, \ominus, \otimes \text{ y } * \text{ a } +, -, \times$.
+\end{itemize}
+\end{sist*}
+\end{example}
+
+\begin{prop}
+Sean $a \in \mathbf{Aexp}$, $s \in \mathbf{State}$, $z \in \Z$. Entonces $\la{a}{s}\rightarrow_A z$ si y solo si $\fc{A}{a}s =z$.
+\end{prop}
+\begin{proof}
+La demostración es por inducción estructural. Los casos base son:
+\begin{itemize}
+    \item Si $a = n$, entonces $\la{a}{s}\rightarrow_A \fc{N}{n} = \fc{A}{n}s$.
+    \item Si $a = x$, entonces $\la{a}{s}\rightarrow_A sx = \fc{A}{x}s$.
+\end{itemize}
+Resumimos los casos inductivos en:
+\begin{itemize}
+    \item Si $a = a_1 \n{ op } a_2$, entonces, empleando la última regla de $\mathbf{Aexp}_\nn{ns}$, tenemos que $\la{a_i}{s}\rightarrow_A z_i$ si y solo si (por hipótesis de inducción) $\fc{A}{a_i}s = z_i$, con $i = 1, 2$. Pero entonces sabemos que $\fc{A}{a_1 \n{ op }a_2}S = \fc{A}{a_1}s * \fc{A}{a_2}s = z_1 * z_2 = z$.
+\end{itemize}
+\end{proof}
+
+\begin{example}
+Siguiendo el ejemplo anterior, podemos definir un sistema de transiciones para expresiones booleanas como sigue. Definimos $\la{b}{s}\rightarrow_B X$, donde $\la{b}{s}$ indica que $b$ se evalúa en el estado $s$ y donde $X\in Bool$. 
+\begin{sist*}[$\mathbf{Bexp}_\nn{ns}$]\mbox{}
+\begin{itemize}
+    \item[]
+    \begin{prooftree}
+    \AxiomC{}
+    \LeftLabel{}
+    \UnaryInfC{$\la{\n{true}}{s}\rightarrow_B \mathbf{tt}$}
+\end{prooftree}
+\item[]
+    \begin{prooftree}
+    \AxiomC{}
+    \LeftLabel{}
+    \UnaryInfC{$\la{\n{false}}{s}\rightarrow_B \mathbf{ff}$}
+\end{prooftree}
+    \item[]
+ \begin{prooftree}
+    \AxiomC{$\la{a_1}{s}\rightarrow_A z_1$}
+    \AxiomC{$\la{a_2}{s}\rightarrow_A z_2$}
+    \LeftLabel{}
+    \RightLabel{}
+    \BinaryInfC{$\la{a_1 = a_2}{s}\rightarrow_A X$}
+    \end{prooftree}
+    donde $X$ es el booleano correspondiente (véase la definición de $\fc{B}{\cdot}$).
+
+\item[]
+\begin{prooftree}
+    \AxiomC{$\la{a_1}{s}\rightarrow_A z_1$}
+    \AxiomC{$\la{a_2}{s}\rightarrow_A z_2$}
+    \LeftLabel{}
+    \RightLabel{}
+    \BinaryInfC{$\la{a_1 \leq s a_2}{s}\rightarrow_A X$}
+        \end{prooftree}
+    donde $X$ es el booleano correspondiente (de nuevo, empleando la definición de $\fc{B}{\cdot}$).
+\item[]\begin{prooftree}
+    \AxiomC{$\la{a_1}{s}\rightarrow_A z_1$}
+    \AxiomC{$\la{a_2}{s}\rightarrow_A z_2$}
+    \LeftLabel{}
+    \RightLabel{}
+    \BinaryInfC{$\la{a_1 \leq s a_2}{s}\rightarrow_A X$}
+    \end{prooftree}
+        donde $X$ es el booleano correspondiente.
+\item[]
+\begin{prooftree}
+    \AxiomC{$\la{b}{s}\rightarrow_B X$}
+    \LeftLabel{}
+    \RightLabel{}
+    \UnaryInfC{$\la{\neg b}{s}\rightarrow_B X'$}
+    \end{prooftree}
+    donde $X'$ es el booleano correspondiente (negación de $X$).
+
+
+\item[]
+\begin{prooftree}
+    \AxiomC{$\la{b_1}{s}\rightarrow_B X$}
+    \AxiomC{$\la{b_2}{s}\rightarrow_B Y$}
+    \LeftLabel{}
+    \RightLabel{}
+    \BinaryInfC{$\la{b_1 \land b_2}{s}\rightarrow_B Z$}
+    \end{prooftree}
+donde $Z$ es el booleano correspondiente (conjunción de $X$ e $Y$).   
+\end{itemize}
+\end{sist*}
+\end{example}
+El siguiente resultado es análogo al último que dimos antes:
+\begin{prop}
+Sean $b \in \mathbf{Bexp}$, $s \in \mathbf{State}$ y $X \in Bool$. Entonces $\la{b}{s}\rightarrow_B X$ si y solo si $\fc{B}{b}s = X$.
+\end{prop}
+\begin{proof}
+Por inducción estructural. Véase la demostración del anterior teorema y la definición de $\fc{B}{\cdot}$. La demostración es análoga.
+\end{proof}
 
 \section{Semántica operacional estructural}
 
@@ -906,3 +1025,103 @@ Dos expresiones $S_1, S_2$ se dicen \textit{semánticamente equivalentes} si, pa
     \item La\footnote{La unicidad viene dada por el determinismo de $\nn{While}_\nn{sos}$.} secuencia de derivación empezando en $\la{S_1}{s}$ es infinita si y solo si lo es la que empieza en $\la{S_2}{s}$.
 \end{itemize} 
 \end{definition}
+
+\begin{example}
+Veamos que $S$ y $S; \n{skip}$ son semánticamente equivalentes. Supongamos que $\la{S}{s}\dto^*s'$, es decir, existe $k\in\N$ tal que $\la{S}{s}\dto^*s'$. Entonces, el Lema \ref{lemasos2} nos dice que dado $\la{S}{s}\dto^k s'$ se tiene
+\[
+    \la{S; \n{skip}}{s}\dto^k \la{ \n{skip}}{s'}
+\]
+Por la regla $[\nn{skip}_\nn{sos}]$ se deduce $\la{ \n{skip}}{s'} \dto s'$ y entonces
+\[
+    \la{S;  \n{skip}}{s} \dto^* s'
+\]
+Supongamos ahora que $\la{S; \n{skip}}{s}\dto^*s''$, entonces existe $k\in\N$ tal que  $\la{S; \n{skip}}{s}\dto^k s''$. Por el Lema \ref{lemasos1} se tiene la existencia de $s'\in\textbf{State}$ y $k_1,k_2\in\N$ tal que $k = k_1 + k_2$ y
+\[
+    \la{S}{s}\dto^{k_1} s'\ \ y\ \ \la{\n{skip}}{s'}\dto^{k_2} s''
+\]
+La secuencia $\la{\n{skip}}{s'}\dto^{k_2} s''$ es cierta si y solo si $k_2 = 1$ y $s' = s''$ pues solo se puede aplicar $[\nn{skip}_\nn{sos}]$, se deduce entonces
+\[
+    \la{S}{s}\dto^{k_1} s''
+\]
+es decir, $\la{S}{s}\dto^{*} s''$.
+\end{example}
+
+\begin{example} (!!!) TO DO: Demostrar equivalencia entre  $\n{repeat }S\n{ until }b$ y a $S;\n{ while }\neg b\n{ do } S$
+\end{example}
+\subsection{Expresiones}
+
+Análogamente a como hicimos en la semántica de paso largo, podemos definir el valor semántico de las expresiones mediante una función parcial $\mc{S}_\nn{sos}: \mathbf{Stm}\rightarrow (\mathbf{State}\hookrightarrow\mathbf{State})$, donde
+\begin{align*}
+    \mc{S}_\nn{sos}[[S]]:  \mathbf{State} & \hookrightarrow  \mathbf{State} \\
+                     s               & \mapsto          \begin{cases} s' \text{, si } \la{S}{s}\dto^* s' \\ 
+                        \n{indefinido} \text{, en otro caso}
+                        \end{cases}
+\end{align*}
+Notemos que esta función está bien definida precisamente por el determinismo que vimos en el anterior apartado. La ejecución de $\la{S}{s}$ para una expresión $S$ dada una configuración inicial $s\in\textbf{State}$ puede dar lugar a tres casos
+\begin{itemize}
+    \item Que termine, y entonces existe $s'\in\textbf{State}$ tal que
+    \[
+        s\in\textbf{State} \dto^* s'
+    \]
+    y entonces $\mc{S}_\nn{sos}[[S]]s = s'$
+    \item Que se quede bloqueada, y entonces no queda otra que $\mc{S}_\nn{sos}[[S]]s = \n{indefinido}$.
+    \item Que cicle, ocurriendo nuevamente que $\mc{S}_\nn{sos}[[S]]s = \n{indefinido}$.
+\end{itemize} 
+La equivalencia semántica coincide $\mc{S}_\nn{sos}$ en el sentido de la siguiente proposición: \\
+
+\begin{prop} Si $S_1$ y $S_2$ son semánticamente equivalente si y solo si
+\[
+        \mc{S}_\nn{sos}[[S_1]] = \mc{S}_\nn{sos}[[S_2]]
+\] 
+\begin{proof} Hay que probarlo particularizando en cada $s\in\textbf{State}$ \\ \\
+Supongamos que $S_1$ y $S_2$ son semánticamente equivalentes. Se distinguen dos casos
+\begin{itemize}
+    \item Existe un estado final $s'\in\textbf{State}$ tal que
+    \[
+        \la{S_1}{s}\dto^* s'\ \ y\ \ \la{S_2}{s} \dto^* s'
+    \]
+    y trivialmente
+    \[
+        \mc{S}_\nn{sos}[[S_1]]s = s' =  \mc{S}_\nn{sos}[[S_2]]s
+    \]
+    \item Ambas secuencias son infinitas, es decir
+    \[
+        \la{S_1}{s}\text{ es infinita si y solo si } \la{S_2}{s} \text{ es infinita}
+    \]
+    y entonces
+    \[
+        \mc{S}_\nn{sos}[[S_1]]s = \n{indefinido} =  \mc{S}_\nn{sos}[[S_2]]s
+    \]
+\end{itemize} 
+Recíprocamente, supongamos que $ \mc{S}_\nn{sos}[[S_1]]s =  \mc{S}_\nn{sos}[[S_2]]s$. Se distinguen nuevamente dos casos 
+\begin{itemize}
+    \item $\mc{S}_\nn{sos}[[S_1]]s =  \mc{S}_\nn{sos}[[S_2]]s = s'$, entonces por definición $ \la{S_1}{s}\dto^* s'$ y $\la{S_2}{s}\dto^* s'$
+    \item Si $\mc{S}_\nn{sos}[[S_1]]s =  \mc{S}_\nn{sos}[[S_2]]s = s' = \n{indefinido}$ ambas secuencias no terminan, por lo que $\la{S_1}{s}$ y $\la{S_2}{s}$ también.  \\
+\end{itemize} 
+Como la configuración inicial es arbitraria se tiene el resultado. \\
+\end{proof}
+\end{prop}
+
+\section{Teorema de equivalencia}
+
+Hasta ahora hemos presentado por separado los dos sistemas de transiciones para $\nn{While}$, y hemos visto que tienen comportamientos, en general, distintos. Sin embargo, si vemos la semántica de paso largo como una extensión de la de paso corto, podemos convencernos que son esencialmente los mismo. De hecho, tienen el mismo poder expresivo. Más precisamente, el resultado clave de esta sección es:
+
+\begin{theorem}
+Consideremos el lenguaje $\nn{While}$. Para cada $S \in \mathbf{Stm}$, $\mc{S}_\nn{ns}[[S]] = \mc{S}_\nn{sos}[[S]]$.
+\end{theorem}
+\begin{proof}
+La demostración se divide en dos pasos, cada uno consiste en demostrar uno de los siguientes lemas:
+\begin{itemize}
+\item Para cada $S \in \mathbf{Stm}$, dados $s, s' \in \mathbf{State}$, $\la{S}{s}\rightarrow s'$ implica que $\la{S}{s}\dto^* s'$.
+
+Se demuestra por inducción en los árboles de derivación.
+
+\item Para cada $S \in \mathbf{Stm}$, dados $s, s' \in \mathbf{State}$ y $k \in \N$, $\la{S}{s}\dto^k s'$ implica que $\la{S}{s}\to s'$.
+
+Se demuestra por inducción en la longitud de las secuencias de derivación.
+\end{itemize}
+
+Entonces, dados $S \in \mathbf{Stm}$, $s\in \mathbf{State}$, por los dos lemas se tiene que $\mc{S}_\nn{ns}[[S]] = s'$ si y solo si $\mc{S}_\nn{sos}[[S]] = s'$. Pero entonces obtenemos que, si una de las dos funciones está definida en un estado o no, la otra lo estará también y coincidirá con ella o no estará definida, respectivamente. Es decir, ambas funciones coinciden.
+\end{proof}
+
+
