@@ -94,16 +94,19 @@ $$\la{(\n{while true do skip}) \n{ or } \n{x}:=2}{s} \dto^* s[\n{x}\mapsto 2]$$
 $$\la{(\n{while true do skip}) \n{ or } \n{x}:=2}{s} \dto \la{\n{while true do skip}}{s} \dto\dots$$
 de donde se deduce lo que dijimos arriba.
 
+\begin{example}
+Podemos extender $\nn{While}$ con la expresión $\n{random}(\n{x})$. [HACER ESTO] 
+\end{example}
 
 \subsection{\n{par}}
 
-Una manera de profundizar en el no determinismo del que hablamos antes consiste en que, por ejemplo, se dé la posibilidad de ejecutar dos expresiones, pero no de forma excluyente, es decir, que ambas ejecuciones se puedan ejecutar intercalándose. Esta es la idea detrás de la expresión $\n{par}$:
+Otra manera de ampliar el lenguaje $\nn{While}$ consiste en que, por ejemplo, se dé la posibilidad de ejecutar dos expresiones, pero no de forma excluyente, es decir, que ambas ejecuciones se puedan ejecutar intercalándose. Esta es la idea detrás de la expresión $\n{par}$:
 \[
     \begin{array}{l}
          S ::= x:=a\ |\ \n{skip}\ |\ S_1;S_2\ |\ \n{if}\ b\ \n{then}\ S_1\ \n{else}\ S_2\ |\ \n{while}\ b\ \n{do}\ S \ | \ S_1 \n{ par } S_2
     \end{array}
 \]
-En un caso sencillo como $\n{x}:= 1 \n{ par } \n{x}:=2$, tenemos solo los resultados posibles 1 y 2, correspondientes a ejecutar primero $\n{x}:= 1$ y después $\n{x}:=2$ y viceversa. Si por ejemplo tuviésemos $\n{x}:= 1 \n{ par } (\n{x}:=2; \n{x}:\n{x}:=\n{x} + 2)$, entonces habría tres posibles resultados:
+En un caso sencillo como $\n{x}:= 1 \n{ par } \n{x}:=2$, tenemos solo los resultados posibles 1 y 2, correspondientes a ejecutar primero $\n{x}:= 1$ y después $\n{x}:=2$ y viceversa. Si por ejemplo tuviésemos $\n{x}:= 1 \n{ par } (\n{x}:=2; \n{x}:=\n{x} + 2)$, entonces habría tres posibles resultados:
 \begin{itemize}
     \item Si ejecutamos $\n{x}:=1$ y luego $\n{x}:=2; \n{x}:= \n{x}+2$, obtenemos $4$.
     \item Si ejecutamos $\n{x}:=2; \n{x}:= \n{x}+2$ y luego $\n{x}:=1$, obtenemos $1$.
@@ -112,7 +115,7 @@ En un caso sencillo como $\n{x}:= 1 \n{ par } \n{x}:=2$, tenemos solo los result
 
 Veamos cómo queda el lenguaje $\nn{While}$ ampliado con esta nueva expresión. En el caso de $\nn{While}_\nn{sos}$ tenemos:
 \begin{sist*}[$\nn{While}_\nn{sos}$ con \n{par}]
-A las reglas de $\nn{While}_\nn{sos}$ añadimos:
+A las reglas de $\nn{While}_\nn{sos}$ añadimos\footnote{Se hace notar que las reglas no son mutuamente excluyentes, es decir, podemos aplicar distintas reglas indistintamente, como hemos visto en los ejemplos anteriores.}:
 \begin{itemize}
     \item[]
 \begin{prooftree}
@@ -146,3 +149,101 @@ A las reglas de $\nn{While}_\nn{sos}$ añadimos:
     \end{prooftree}
 \end{itemize}
 \end{sist*}
+\\
+
+Si intentásemos ampliar $\nn{While}_\nn{ns}$ de la misma manera, podríamos comenzar escribiendo las siguientes reglas:
+\begin{prooftree}
+    \AxiomC{$\la{S_1}{s}\to s'$}
+    \AxiomC{$\la{S_2}{s'}\to s''$}
+    \LeftLabel{}
+    \RightLabel{}
+    \UnaryInfC{$\la{S_1 \n{ par } S_2}{s}\to \la{S_1}{s''}$}
+    \end{prooftree}
+\begin{prooftree}
+    \AxiomC{$\la{S_2}{s}\to s'$}
+    \AxiomC{$\la{S_1}{s'}\to s''$}
+    \LeftLabel{}
+    \RightLabel{}
+    \UnaryInfC{$\la{S_1 \n{ par } S_2}{s}\to \la{S_1}{s''}$}
+    \end{prooftree}
+Pero entonces observamos que estas reglas únicamente expresan que $S_1$ se ejecuta antes o después de $S_2$, es decir, no parecen traducir correctamente el valor semántico que tenemos en mente para $\n{par}$. Esto se debe a que en $\nn{While}_\nn{ns}$ nos interesa solo el desarrollo general de la ejecución y, por tanto, la ejecución de una expresión no se puede descomponer en ejecuciones intermedias. 
+
+\begin{example}
+[EJEMPLO DEL protect ?????]
+\end{example}
+
+
+\section{Bloques y declaración de variables}
+
+
+Si bien en la anterior sección introdujimos nuevas expresiones que capturaran nuevos tipos de ejecuciones, lo que nos interesa ahora es añadir entornos para variables y procedimientos locales. 
+
+\subsection{Bloques y declaraciones simples}
+
+La primera extensión de $\nn{While}$ que consideraremos es el lenguaje $\nn{Block}$. Éste consiste en la siguiente extensión de la sintaxis de las expresiones de $\nn{While}$:
+\[
+    \begin{array}{l}
+         S ::= \n{x}:=a\ |\ \n{skip}\ |\ S_1;S_2\ |\ \n{if}\ b\ \n{then}\ S_1\ \n{else}\ S_2\ |\ \n{while}\ b\ \n{do}\ S \ | \ \n{begin } D_V \  S \n{ end}
+    \end{array}
+\]
+donde $D_V$ es una metavariable de la nueva categoría sintáctica $\textbf{Dec}_V$ de \textit{declaraciones de variables}:
+\[
+    D_V ::= \n{var x} := a; D_V\ |\ \varepsilon
+\]
+siendo $\varepsilon$ la \textit{declaración vacía}. El conjunto de todas las variables declaradas en $D_V$, $DVar(D_V)$, se define como sigue:
+$$DVar(\varepsilon):= \emptyset, \quad \quad DVar(\n{var x}:=a; D_V) := \{\n{x}\}\cup DVar(D_V)$$
+Queremos que esta nueva clase de expresiones se interprete como la ejecución de otra expresión cualquiera bajo la declaración de variables de $D_V$, y que éstas variables vuelvan al estado anterior después de finalizar. Es decir, la idea es que las variables declaradas dentro del \textit{bloque} $\n{begin } D_V \  S \n{ end}$ sean \textit{locales}, a diferencia de las que quedan fuera, que llamamos \textit{globales}.
+
+\begin{example}
+Consideremos la expresión $$\n{begin var y} := 1; (\n{x}:=1; \n{begin var x}:= 2 ; \n{y}:=\n{x}+1 \n{ end}; \n{x}:=\n{x}+\n{y}) \n{ end}$$
+El símbolo $\n{x}$ en $\n{y}:= \n{x}+1$ se refiere a la variable local introducida en $\n{var x}:=2$, mientras que en $\n{x}:= \n{x}+\n{y}$ se refiere a la variable global $\n{x}$ en $\n{x}:=1$. La variable $\n{y}$ es global. Por tanto, $\n{y}:=\n{x}+1$ nos da el valor $2 + 1 = 3$ para $\n{y}$ y, en $\n{x}:=\n{x}+\n{y}$, $\n{x}$ toma el valor $1 + 3 = 4$.
+\end{example}
+
+Nos podemos centrar en ampliar $\nn{While}_\nn{ns}$ (hacerlo con $\nn{While}_\nn{sos}$ es considerablemente más difícil). Tendremos que distinguir un sistema de transiciones para cada una de las dos categorías sintácticas que hemos introducido antes. Las configuraciones asociadas a $\textbf{Dec}_V$ son del tipo $\la{D_V}{s}$ o $s$, con el significado usual, y denotamos por $\la{D_V}{s}\to_D s'$ a la función de transición asociada. Entonces tenemos:
+
+\begin{sist*}[$\nn{Block}_\nn{ns}$]
+A las reglas de $\nn{While}_\nn{ns}$ añadimos:
+\begin{itemize}
+    \item[]
+    \begin{prooftree}
+        \AxiomC{$\la{D_V}{s[x\to \fc{A}{a}s]]}\to_D s'$}
+        \LeftLabel{[$\nn{var}_\nn{ns}$]}
+        \RightLabel{}
+        \UnaryInfC{$\la{\n{var } x:= a; D_V}{s}\to_D s'$}
+        \end{prooftree}
+    \item[]
+    \begin{prooftree}
+        \AxiomC{}
+        \LeftLabel{[$\nn{none}_\nn{ns}$]}
+        \RightLabel{}
+        \UnaryInfC{$\la{\varepsilon}{s}\to_D s$}
+        \end{prooftree}
+    \item[]
+    \begin{prooftree}
+        \AxiomC{$\la{D_V}{s} \to_D s'$}
+        \AxiomC{$\la{S}{s'} \to s''$}
+        \LeftLabel{[$\nn{block}_\nn{ns}$]}
+        \RightLabel{}
+        \BinaryInfC{$\la{\n{begin } D_V\ S\ \n{end}}{s}\to s''[\nn{DV}(D_v) \mapsto s]$}
+    \end{prooftree}
+\end{itemize}
+\end{sist*}
+Fíjemonos en que el objetivo de la última regla es ejecutar primero la sentencia $S$ con la declaración de variables local $D_V$ y que, después, aquellas variables dentro de $D_V$ vuelvan al estado previo al $\n{begin}$\footnote{Véase la sección 1.5.2 para la definición de sustitución múltiple.}. 
+\begin{example}
+Podríamos crear una función (sintáctica) que permita sustituir las expresiones de $\textbf{Dec}_V$ por otras de $\mathbf{Stm}$: 
+        \begin{eqnarray*}
+        \delta: \textbf{Dec}_V &\longrightarrow& \textbf{Stm}\\
+             \n{var x}:= a; Dv &\mapsto& \n{x}:=a ; \delta(D_V) \\
+            \varepsilon &\mapsto& \n{skip}
+        \end{eqnarray*}
+Entonces podríamos reinterpretar las reglas empleando la semántica que ya conocemos para $\nn{While}_\nn{ns}$. Por ejemplo, la regla $\nn{block}_\nn{bs}$ podría expresarse como:
+\begin{prooftree}
+        \AxiomC{$\la{\delta(D_V)}{s} \to s'$}
+        \AxiomC{$\la{S}{s'} \to s''$}
+        \RightLabel{}
+        \BinaryInfC{$\la{\n{begin } D_V\ S\ \n{end}}{s}\to s''[\nn{DVar}(D_V) \mapsto s]$}
+\end{prooftree}
+es decir, sin emplear la transición $\rightarrow_D$. Las otras dos reglas se seguirían de las que ya vimos en $\nn{While}_\nn{ns}$.
+\end{example}   
+
+\subsection{Procedimientos}

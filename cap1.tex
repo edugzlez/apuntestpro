@@ -361,6 +361,13 @@ De nuevo, una demostración rutinaria por inducción estructural. Los casos base
 \end{itemize}
 \end{proof}
 
+En general, si tratamos con conjuntos de variables, necesitaremos lo siguiente. Sea $X\subseteq \mathbf{Var}$ y $s, s' \in \mathbf{State}$. Dada $\n{x}\in \mathbf{Var}$, definimos la \textit{sustitución múltiple en X} como:
+$$(s'[X\mapsto s])\ x := \begin{cases} s\ x\text{, si } x\in X \\ s'\ x \text{, en otro caso}\end{cases}$$
+
+
+
+
+
 
 Todo lo anterior justifica una noción que será importante a lo largo del curso. Dada una categoría sintáctica $\textbf{Cat}$, dos expresiones $b_1, b_2 \in \textbf{Cat}$ y una función semántica $\mc{C}: \textbf{Cat}\rightarrow C$, se dice que $b_1, b_2$ son \textit{semánticamente equivalentes} si para todo $s\in \textbf{State}$ se tiene
 \[
