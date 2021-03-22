@@ -1069,7 +1069,7 @@ Notemos que esta función está bien definida precisamente por el determinismo q
 \end{itemize} 
 La equivalencia semántica coincide $\mc{S}_\nn{sos}$ en el sentido de la siguiente proposición: \\
 
-\begin{prop} Si $S_1$ y $S_2$ son semánticamente equivalente si y solo si
+\begin{prop} Si $S_1$ y $S_2$ son semánticamente equivalente entonces
 \[
         \mc{S}_\nn{sos}[[S_1]] = \mc{S}_\nn{sos}[[S_2]]
 \] 
@@ -1092,15 +1092,10 @@ Supongamos que $S_1$ y $S_2$ son semánticamente equivalentes. Se distinguen dos
     \[
         \mc{S}_\nn{sos}[[S_1]]s = \n{indefinido} =  \mc{S}_\nn{sos}[[S_2]]s
     \]
-\end{itemize} 
-Recíprocamente, supongamos que $ \mc{S}_\nn{sos}[[S_1]]s =  \mc{S}_\nn{sos}[[S_2]]s$. Se distinguen nuevamente dos casos 
-\begin{itemize}
-    \item $\mc{S}_\nn{sos}[[S_1]]s =  \mc{S}_\nn{sos}[[S_2]]s = s'$, entonces por definición $ \la{S_1}{s}\dto^* s'$ y $\la{S_2}{s}\dto^* s'$
-    \item Si $\mc{S}_\nn{sos}[[S_1]]s =  \mc{S}_\nn{sos}[[S_2]]s = s' = \n{indefinido}$ ambas secuencias no terminan, por lo que $\la{S_1}{s}$ y $\la{S_2}{s}$ también.  \\
-\end{itemize} 
-Como la configuración inicial es arbitraria se tiene el resultado. \\
+\end{itemize}
 \end{proof}
 \end{prop}
+\noindent La implicación contraria no es cierta, pues si $S_1$ es una sentencia que cicla y $S_2$ es una sentencia que se bloquea, $ \mc{S}_\nn{sos}[[S_1]] = \n{indefinido} = \mc{S}_\nn{sos}[[S_2]]$ pero $S_1$ y $S_2$ no son semánticamente equivalentes.
 
 \section{Teorema de equivalencia}
 
