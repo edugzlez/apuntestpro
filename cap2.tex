@@ -615,7 +615,7 @@ Para empezar, sabemos que $\fc{A}{x}s = 0$ si y solo si $\fc{B}{\neg (x=0) }s = 
     \item Si $ x\ne0$, entonces suponemos ciertas las siguientes premisas:
     \begin{enumerate}[a)]
         \item  \AxiomC{$\la{S; x := x+1}{s} \to s_2$} \DisplayProof
-        \item   \AxiomC{$\la{\n{forVar}\ x\ \n{do}\ S}{s_2} \to s_1$} \DisplayProof
+        \item   \AxiomC{$\la{\n{forVar}\ x\ \n{do}\ S}{s_2} \to s'$} \DisplayProof
     \end{enumerate}
     
     
@@ -741,7 +741,7 @@ Podemos definir, por ejemplo, una semántica de paso largo para $\mathbf{Aexp}$ 
     \AxiomC{$\la{a_2}{s}\rightarrow_A z_2$}
     \LeftLabel{}
     \RightLabel{}
-    \BinaryInfC{$\la{a_1 \n{ op }s a_2}{s}\rightarrow_A z_1 * z_2$}
+    \BinaryInfC{$\la{a_1 \n{ op } a_2}{s}\rightarrow_A z_1 * z_2$}
 \end{prooftree}
 $\text{donde } \n{op} \text{ se refiere a } \oplus, \ominus, \otimes \text{ y } * \text{ a } +, -, \times$.
 \end{itemize}
@@ -938,7 +938,7 @@ La ejecución $\la{S}{s}$ de la expresión $S$ en un estado $s$:
 Nótese que estas definiciones son mutuamente excluyentes si y solo si las secuencias de derivacion son únicas. Por comodidad, las definimos de este modo porque, si extendemos el lenguaje, no nos tendremos que preocupar.
 \end{definition}
 
-\begin{example}
+\begin{example}\label{examplerepeat}
 Supongamos que queremos extender $\nn{While}_\nn{sos}$ con la expresión $\n{repeat }S \n{ until }b$. Podemos añadir la regla:
 \begin{prooftree}
         \AxiomC{}
@@ -1010,7 +1010,7 @@ Por otro lado, de $\la{S_1}{s}\dto \la{S}{s''}$ podemos deducir que:
 Es decir, sabemos que $\la{S_1; S_2}{s} \dto \la{S; S_2}{s''}$ y que $\la{S;S_2}{s''}\dto^k \la{S_2}{s'}$. Basta componer ambas derivaciones para ver que $\la{S_1; S_2}{s}\dto^{k+1} \la{S_2}{s'}$, como queríamos.
 \end{proof}
 
-\begin{theorem}
+\begin{theorem}\label{teosos}
 El sistema de transiciones $\nn{While}_\nn{sos}$ es determinista, es decir, para cualesquiera $S, s, \gamma, \gamma'$ tenemos que
 $$\la{S}{s}\dto \gamma \text{ y } \la{S}{s}\dto \gamma' \text{ implica que } \gamma = \gamma'$$
 \end{theorem}
@@ -1046,7 +1046,113 @@ La secuencia $\la{\n{skip}}{s'}\dto^{k_2} s''$ es cierta si y solo si $k_2 = 1$ 
 es decir, $\la{S}{s}\dto^{*} s''$.
 \end{example}
 
-\begin{example}[] [HACER ESTO]: Demostrar equivalencia entre  $\n{repeat }S\n{ until }b$ y a $S;\n{ while }\neg b\n{ do } S$
+\begin{example} Definimos en \ref{examplerepeat} la sentencia $\n{repeat }S\n{ until }b$ y dejamos por hacer la demostración de su equivalencia con $S;\n{ while }\neg b\n{ do } S$. Hay que probar que para cada $s, s'\in\textbf{State}$ sucede que
+\[
+    \la{\n{repeat }S\n{ until }b}{s} \dto^* s' \Longleftrightarrow \la{S;\n{ while }\neg b\n{ do } S}{s} \dto^* s'
+\]
+$\Longrightarrow)$ Supongamos que  
+\[
+    \la{\n{repeat }S\n{ until }b}{s} \dto^* s'
+\]
+Sabemos por la regla $[\nn{repeat}_\nn{sos}]$
+\[
+    \la{\n{repeat }S\n{ until }b}{s} \dto^* s'  \implies \la{S;\n{ if }b\n{ then skip else }(\n{repeat }S\n{ until }b)}{s} \dto^* s'
+\]
+y por el lema \ref{lemasos1} existen $k_1, k_2\in\N$ tal que
+\[
+    \la{S}{s} \dto^{k_1} s''
+\]
+y
+\[
+    \la{\n{if }b\n{ then skip else }(\n{repeat }S\n{ until }b)}{s''} \dto^{k_2} s'
+\]
+Dividimos en casos en función del valor booleano de $b$:
+\begin{itemize}
+    \item $\fc{B}{b}s'' = \textbf{tt}$. Usando el axioma $[\nn{if}^\nn{tt}_{sos}]$ seguido de $[\nn{skip}_\nn{sos}]$ se tiene
+    \begin{eqnarray*}
+        \la{\n{if }b\n{ then skip else }(\n{repeat }S\n{ until }b)}{s''} &\overset{[\nn{if}^\nn{tt}_{sos}]}{\dto}& \la{\n{skip}}{s''} \\
+        &\overset{[\nn{skip}_\nn{sos}]}{\dto}& s''
+    \end{eqnarray*}
+    de lo que se deduce, por determinismo, que  $s' = s''$.
+    Desarrollemos ahora $\la{S;\n{ while }\neg b\n{ do } S}{s}$. Por el lema \ref{lemasos2}, como sabemos que $\la{S}{s} \dto^{k_1} s''$, deducimos que
+    \[
+        \la{S;\n{ while }\neg b\n{ do } S}{s} \dto^{k_1} \la{\n{while }\neg b\n{ do } S}{s''}
+    \]
+    Aplicando $[\nn{while}_{sos}]$ deducimos $\la{\n{if }\neg b\n{ then } S;\n{ while }\neg b\n{ do }S\n{ else skip}}{s''}$ y como $\fc{B}{\neg b} = \textbf{ff}$ entonces
+    \begin{eqnarray*}
+            \la{\n{if }\neg b\n{ then } S;\n{ while }\neg b\n{ do }S\n{ else skip}}{s''} \dto &\overset{[\nn{if}^\nn{ff}_{sos}]}{\implies}& \la{\n{skip}}{s''} \\
+            &\overset{[\nn{skip}_\nn{sos}]}{\implies}& s''
+    \end{eqnarray*}
+    concluyendo que $\la{S;\n{ while }\neg b\n{ do } S}{s} \dto^* s'$, como queríamos probar.
+    \item $\fc{B}{b}s'' = \textbf{ff}$. Aplicando $[\nn{if}_\nn{ff}]$ se tiene
+    \begin{eqnarray*}
+        \la{\n{if }b\n{ then skip else }(\n{repeat }S\n{ until }b)}{s''} &\overset{[\nn{if}^\nn{tt}_{sos}]}{\dto}& \la{\n{repeat }S\n{ until }b}{s''}
+    \end{eqnarray*}
+    y esta última sentencia $\dto^* s'$, por determinismo. Por hipótesis de inducción se deduce de $$\la{\n{repeat }S\n{ until }b}{s''} \dto^* s'$$ que
+    \[
+        \la{S;\n{ while }\neg b\n{ do } S}{s''} \dto^* s'
+    \]
+    y por el lema \ref{lemasos2} y aplicando $[\nn{while}_\nn{sos}]$
+    \begin{eqnarray*}
+        \la{S;\n{ while }\neg b\n{ do } S}{s}  \dto^* \la{\n{ while }\neg b\n{ do } S}{s''} \dto \la{\n{if }\neg b\n{ then } S;\n{ while }\neg b\n{ do }S\n{ else skip}}{s''}
+    \end{eqnarray*}
+    Dado que $\fc{B}{\neg b}s'' = \textbf{tt}$ se tiene 
+    \[
+        \la{\n{if }\neg b\n{ then } S;\n{ while }\neg b\n{ do }S\n{ else skip}}{s''} \dto \la{S;\n{ while }\neg b\n{ do } S}{s''} \dto^* s'
+    \]
+    cocluyendo el resultado $\la{S;\n{ while }\neg b\n{ do } S}{s} \dto^* s'$.
+\end{itemize}
+$\Longleftarrow)$ Suponemos $\la{S;\n{ while }\neg b\n{ do } S}{s} \dto^* s'$. Nuevamente por el lema \ref{lemasos1} se tienen $k_1, k_2\in\N$ y $s''\in\State$ tal que
+\[
+    \la{S}{s} \dto^{k_1} s''\ \ \ y\ \ \ \la{\n{while }\neg b\n{ do } S}{s''} \dto^{k_2} s'
+\]
+De $[\nn{while}_\nn{sos}]$ se tiene
+\[
+    \la{\n{while }\neg b\n{ do } S}{s''} \dto \la{\n{if }\neg b\n{ then } S;\n{ while }\neg b\n{ do }S\n{ else skip}}{s''}
+\]
+Se divide en casos según $\fc{B}{b}s''$:
+\begin{itemize}
+    \item Si $\fc{B}{b}s'' = \textbf{tt}$ ($\fc{B}{\neg b}s'' = \textbf{ff}$) entonces se aplica $[\nn{if}_\nn{sos}^\nn{ff}]$ y $[\nn{skip}_\nn{sos}]$ para deducir 
+    \[
+        \la{\n{if }\neg b\n{ then } S;\n{ while }\neg b\n{ do }S\n{ else skip}}{s''} \dto \la{\n{skip}}{s''} \dto s''
+    \]
+    y como $\la{\n{while }\neg b\n{ do } S}{s''} \dto^k_1 s'$, por determinismo debe suceder $s' = s''$. Veamos que la sentencia del $\n{repeat}$ lleva al estado $s'$. Aplicamos la regla $[\nn{repeat}_\nn{sos}]$ para obtener
+    \[
+        \la{\n{repeat }S\n{ until }b}{s} \dto \la{S; \n{if }b\n{ then skip else }(\n{repeat }S\n{ until }b)}{s}
+    \]
+    Ahora como $\la{S}{s} \dto^{k_1} s''$ aplicando el lema \ref{lemasos2} se consigue que 
+    \[
+        \la{S;\n{if }b\n{ then skip else }(\n{repeat }S\n{ until }b)}{s} \dto^{k_1} \la{\n{if }b\n{ then skip else }(\n{repeat }S\n{ until }b)}{s''}
+    \]
+    Y ahora como $\fc{B}{b}s'' = \textbf{tt}$ se consigue mediante $[\nn{if}_\nn{sos}^\nn{tt}]$ y $[\nn{skip}_\nn{sos}]$
+    \[
+        \la{\n{if }b\n{ then skip else }(\n{repeat }S\n{ until }b)}{s''} \dto \la{\n{skip}}{s''} \dto s''
+    \]
+    Dado que $s' = s''$ se consigue finalmente
+    \[
+         \la{\n{repeat }S\n{ until }b}{s} \dto^* s'
+    \]
+    \item Si $\fc{B}{b}s'' = \textbf{ff}$ ($\fc{B}{\neg b}s'' = \textbf{tt}$) entonces toca aplicar la regla $[\nn{if}_\nn{sos}^\nn{tt}]$
+    \begin{eqnarray*}
+        \la{\n{if }\neg b\n{ then } S;\n{ while }\neg b\n{ do }S\n{ else skip}}{s''} &\dto& \la{S; \n{while }\neg b\n{ do }S}{s''} \\
+        &\dto^*& s'
+    \end{eqnarray*}
+    Donde en el último paso se ha aplicado determinismo.
+    Volvemos a aplicar lo mismo de antes para el $\n{repeat}$
+    \begin{eqnarray*}
+        \la{\n{repeat }S\n{ until }b}{s} &\overset{[\nn{repeat}_\nn{sos}]}{\dto}& \la{S; \n{if }b\n{ then skip else }(\n{repeat }S\n{ until }b)}{s} \\
+        &\overset{\ref{lemasos2}}{\dto}& \la{\n{if }b\n{ then skip else }(\n{repeat }S\n{ until }b)}{s''} \\
+        &\overset{[\nn{if}_\nn{sos}^\nn{ff}]}{\dto}& \la{\n{repeat }S\n{ until }b}{s''}
+    \end{eqnarray*}
+    Por hipótesis de inducción se tiene que
+    \[
+        \la{\n{repeat }S\n{ until }b}{s''} \dto^* s' \Longleftrightarrow \la{S; \n{while }\neg b\n{ do }S}{s''} \dto^* s'
+    \]
+    de donde se deduce que $\la{\n{repeat }S\n{ until }b}{s''} \dto^* s'$ y finalmente
+    \[
+         \la{\n{repeat }S\n{ until }b}{s} \dto^* s'
+    \]
+\end{itemize}
 \end{example}
 \subsection{Expresiones}
 

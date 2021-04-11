@@ -15,12 +15,26 @@ La intención que tenemos al introducir la expresión $\n{abort}$ es la siguient
          S ::= x:=a\ |\ \n{skip}\ |\ S_1;S_2\ |\ \n{if}\ b\ \n{then}\ S_1\ \n{else}\ S_2\ |\ \n{while}\ b\ \n{do}\ S \ | \ \n{abort}
     \end{array}
 \]
-Por otro lado, anque debemos modificar ahora el comportamiento de las relaciones de transición que vimos en el anterior capítulo, no es necesario alterar los sistemas de transiciones asociados, porque tan solo queremos que cualquier configuración de la forma $\la{\n{abort}}{s}$ quede atascada, y esto no modifica el comportamiento de (las reglas asociadas a) las otras expresiones. Es decir, la expresión $\n{abort}$ no necesita de ninguna regla que determine su interpretación.
+Por otro lado, aunque debemos modificar ahora el comportamiento de las relaciones de transición que vimos en el anterior capítulo, no es necesario alterar los sistemas de transiciones asociados, porque tan solo queremos que cualquier configuración de la forma $\la{\n{abort}}{s}$ quede atascada, y esto no modifica el comportamiento de (las reglas asociadas a) las otras expresiones. Es decir, la expresión $\n{abort}$ no necesita de ninguna regla que determine su interpretación.
 
 Ahora bien, no es cierto que $\nn{While}_\nn{ns}$ y $\nn{While}_\nn{sos}$ se comporten, en general, del mismo modo. De hecho, $\n{abort}$ distingue entre ambos sistemas de semántica operacional. Esto se debe a que en $\nn{While}_\nn{ns}$ solo nos interesan las ejecuciones que terminan correctamente y por tanto no distinguimos entre bucles o configuraciones atascadas, mientras que en $\nn{While}_\nn{sos}$ podemos definir bucles (secuencias de derivación infinitas) y ejecuciones que terminan incorrectamente (secuencias de derivación finitas que terminan en una configuración atascada). Así, aunque $\n{abort}$ no sea semánticamente equivalente a $\n{skip}$ en $\nn{While}_\nn{ns}$, sí que lo es $\n{while true do skip}$. Por otro lado, vemos que $\n{abort}$ no puede ser semánticamente equivalente en $\nn{While}_\nn{sos}$ a $\n{while true do skip}$, porque a partir de $\la{\n{while true do skip}}{s}$ hay una secuencia de derivación infinita y a partir de $\la{\n{abort}}{s}$ no. Tampoco puede serlo $\n{skip}$, porque $\la{\n{skip}}{s}\dto s$ es la única secuencia de derivación posible empezando en $\n{skip}$ y $\la{\n{abort}}{s}$ es la correspondiente a $\n{abort}$. 
 
 \begin{example}
-Podemos extender $\nn{While}$ con la expresión $\n{assert }b\n{ before }S$. La idea es que, si $b$ es cierto, entonces ejecutamos $S$ y, si es falso, entonces la ejecución del programa se aborta. [HACER ESTO]
+Podemos extender $\nn{While}$ con la expresión $\n{assert }b\n{ before }S$. La idea es que, si $b$ es cierto, entonces ejecutamos $S$ y, si es falso, entonces la ejecución del programa se aborta. Para semántica operacional natural bastaría incluir la regla
+\begin{prooftree}
+    \AxiomC{$\la{S}{s} \to s'$}
+    \LeftLabel{}
+    \RightLabel{si $\fc{B}{b}s = \n{tt}$}
+    \UnaryInfC{$\la{\n{assert }b\n{ before}}{s}\to s'$}
+\end{prooftree}
+y análogamente para la semántica operacional estructural
+\begin{prooftree}
+    \AxiomC{}
+    \LeftLabel{}
+    \RightLabel{si $\fc{B}{b}s = \n{tt}$}
+    \UnaryInfC{$\la{\n{assert }b\n{ before}}{s}\dto \la{S}{s}$}
+\end{prooftree}
+Como se ha mencionado anteriormente no se añade ninguna regla para el caso $\fc{B}{b}s = \n{ff}$ pues la idea es que en esta situación actúe como un $\n{abort}$.
 \end{example}
 
 
@@ -36,7 +50,7 @@ Así, si por ejemplos ejecutamos $\n{x}:= 1 \n{ or } \n{x}:=2$, entonces generam
 
 
 A diferencia de la expresión $\n{abort}$, debemos distinguir la nueva ampliación de $\nn{While}$ en función de cada semántica operacional:
-\begin{sist*}[$\nn{While}_\nn{ns}$ con \n{op}]
+\begin{sist*}[$\nn{While}_\nn{ns}$ con \n{or}]
 A las reglas de $\nn{While}_\nn{ns}$ añadimos:
 \begin{itemize}
     \item[]
@@ -58,7 +72,7 @@ A las reglas de $\nn{While}_\nn{ns}$ añadimos:
 \end{sist*}
 
 
-\begin{sist*}[$\nn{While}_\nn{sos}$ con \n{op}]
+\begin{sist*}[$\nn{While}_\nn{sos}$ con \n{or}]
 A las reglas de $\nn{While}_\nn{sos}$ añadimos:
 \begin{itemize}
     \item[]
@@ -79,7 +93,7 @@ A las reglas de $\nn{While}_\nn{sos}$ añadimos:
 \end{itemize}
 \end{sist*}
 
-De nuevo, como cabía esperar, ambos sistemas de transiciones funcionan de maneras distintas respecto del no determinismo que hemos introducido. En el caso de $\nn{While}_\nn{ns}$ tenemos que el no determinismo omite la posibilidad de que haya bucles infinitos, mientras que en $\nn{While}_\nn{sos}$ esto no ocurre. Para ilustrar esto vamos a recurrir al ejemplo de antes.
+De nuevo, como cabía esperar, ambos sistemas de transiciones funcionan de maneras distintas respecto del no determinismo que hemos introducido. En el caso de $\nn{While}_\nn{ns}$ tenemos que el no determinismo omite la posibilidad de que haya bucles infinitos, mientras que en $\nn{While}_\nn{sos}$ esto no ocurre. Recurramos al ejemplo de antes.
 
 En $\nn{While}_\nn{ns}$, a la configuración $\la{\n{x}:= 1 \n{ or } \n{x}:=2}{s}$ corresponden dos árboles de derivación, cada uno asociado a las siguientes transiciones:
 $$\la{\n{x}:= 1 \n{ or } \n{x}:=2}{s} \to s[\n{x}\mapsto 1]$$
@@ -100,7 +114,7 @@ Podemos extender $\nn{While}$ con la expresión $\n{random}(\n{x})$. [HACER ESTO
 
 \subsection{\n{par}}
 
-Otra manera de ampliar el lenguaje $\nn{While}$ consiste en que, por ejemplo, se dé la posibilidad de ejecutar dos expresiones, pero no de forma excluyente, es decir, que ambas ejecuciones se puedan ejecutar intercalándose. Esta es la idea detrás de la expresión $\n{par}$:
+Una manera de profundizar en el no determinismo que vimos antes consiste en que, por ejemplo, se dé la posibilidad de ejecutar dos expresiones, pero no de forma excluyente, es decir, que ambas ejecuciones se puedan ejecutar intercalándose. Esta es la idea detrás de la expresión $\n{par}$:
 \[
     \begin{array}{l}
          S ::= x:=a\ |\ \n{skip}\ |\ S_1;S_2\ |\ \n{if}\ b\ \n{then}\ S_1\ \n{else}\ S_2\ |\ \n{while}\ b\ \n{do}\ S \ | \ S_1 \n{ par } S_2
@@ -168,17 +182,39 @@ Si intentásemos ampliar $\nn{While}_\nn{ns}$ de la misma manera, podríamos com
     \end{prooftree}
 Pero entonces observamos que estas reglas únicamente expresan que $S_1$ se ejecuta antes o después de $S_2$, es decir, no parecen traducir correctamente el valor semántico que tenemos en mente para $\n{par}$. Esto se debe a que en $\nn{While}_\nn{ns}$ nos interesa solo el desarrollo general de la ejecución y, por tanto, la ejecución de una expresión no se puede descomponer en ejecuciones intermedias. 
 
-\begin{example}
-[EJEMPLO DEL protect ?????]
-\end{example}
+\begin{example} Podemos desarrollar una sentencia que fuerce a que un conjunto de sentencias se ejecute de forma atómica. Por ejemplo
+\[
+    (x:=1) \n{ par } (x:=2; x:=x+2)
+\]
+podría ejecutarse hasta de 3 formas, pudiendo intercalar las sentencias de la derecha. Para evitarlo podemos forzar a que la segunda parte se ejecute de forma atómica. Se define la sintaxis para $\n{protect}$
+\[
+    \n{protect }S\n{ end}
+\]
+Para la semántica operacional natural se podría definir su semántica como
+\begin{prooftree}
+    \AxiomC{$\la{S}{s}\to s'$}
+    \LeftLabel{[$\nn{protect}_\nn{ns}$]}
+    \RightLabel{}
+    \UnaryInfC{$\la{\n{protect }S\n{ end}}{s}\to s'$}
+\end{prooftree}
+aunque sería algo ambiguo pues en $\nn{While}_{\nn{ns}}$ no es posible realizar paralelismo, como mencionamos anteriormente. \\ \\ 
+Sí se puede definir análogamente para la semántica estructural:
+\begin{prooftree}
+    \AxiomC{$\la{S}{s}\dto^* s'$}
+    \LeftLabel{[$\nn{protect}_\nn{sos}$]}
+    \RightLabel{}
+    \UnaryInfC{$\la{\n{protect }S\n{ end}}{s}\dto s'$}
+\end{prooftree}
+Se toma la premisa $\la{S}{s}\dto^* s'$ para resaltar el estado final de $S$. Nótese que se utiliza el asterisco para recalcar que ésta puede darse en una cantidad de pasos superior a uno.
 
+\end{example}
 
 \section{Bloques y declaración de variables}
 
 
 Si bien en la anterior sección introdujimos nuevas expresiones que capturaran nuevos tipos de ejecuciones, lo que nos interesa ahora es añadir entornos para variables y procedimientos locales. 
 
-\subsection{Bloques y declaraciones simples}
+\subsection{Bloques y declaraciones simples}\label{simples}
 
 La primera extensión de $\nn{While}$ que consideraremos es el lenguaje $\nn{Block}$. Éste consiste en la siguiente extensión de la sintaxis de las expresiones de $\nn{While}$:
 \[
@@ -247,3 +283,429 @@ es decir, sin emplear la transición $\rightarrow_D$. Las otras dos reglas se se
 \end{example}   
 
 \subsection{Procedimientos}
+En gran parte de los lenguajes de programación, ciertos conjuntos de instrucciones se repiten constantemente. Esto motiva el siguiente concepto: un \textit{procedimiento} será un conjunto de sentencias a las cuales les damos un nombre para, cuando queramos ejecutarlas de nuevo, sólamente debamos invocar tal nombre. Hay varias razones prácticas para hacer ésto.
+\\ 
+
+Para formalizar esta idea, consideramos una ampliación de $\nn{Block}$, $\nn{Proc}$:
+\begin{align*}
+        S ::= &\n{x}:=a\ |\ \n{skip}\ |\ S_1;S_2\ |\ \n{if}\ b\ \n{then}\ S_1\ \n{else}\ S_2\ |\ \n{while}\ b\ \n{do}\ S \ |\\ & \n{ begin }D_V\ D_P\ S\n{ end}\ |\ \n{call }p \\
+    D_V ::= &\n{var x} := a; D_V\ |\ \varepsilon \\
+    D_P ::= &\n{proc }p\n{ is }S; D_P\ |\ \varepsilon
+\end{align*}
+donde $p \in \mathbf{Pname}$ es la categoría sintáctica de los \textit{nombres de procedimientos} y $D_P \in \mathbf{Dec}_P$ es la de \textit{declaraciones de procedimientos}. Notemos que hemos modificado $\n{begin}$ y se ha añadido la sentencia $\n{call}$. $\varepsilon\in \mathbf{Dec}_P$ es la \textit{declaración vacía}.
+\\
+
+Para las variables hemos utilizado $\textbf{State}$ para guardar sus valores. Se hace más complicado replicar lo mismo para los procesos. Además hemos utilizado en la sentencia $\n{begin}$ la idea de variables locales y globales, según estuvieran definidas dentro de la sentencia $\n{begin}$ o no. Ampliaremos este concepto para hablar de variables y procedimientos según el entorno en el que estén definidos. Por ejemplo, una función generalmente modifica variables internamente sin cambiar su valor fuera de ellas. Por tanto, como ya hicimos con las variables, distinguimos entre procedimientos \textit{locales} y \textit{globales}. Los nombres de las variables y los procedimientos, según el entorno en el que estén, se referirán a cosas diferentes. Vamos a distinguir dos tipos de declaración de variables y procedimientos: el \textit{ámbito dinámico} y el \textit{estático}. Según los apliquemos a un tipo u otro de datos, tenemos las siguientes posibilidades:
+\begin{itemize}
+    \item Ámbito dinámico para variables y procedimientos
+    \item Ámbito dinámico para variables y estático para procedimientos.
+    \item Ámbito estático para variables y procedimientos.
+\end{itemize}
+A ellas nos dedicaremos en los siguientes apartados.
+
+\begin{example}
+Sea la expresión\footnote{Para mayor comodidad, empezaremos a escribir las expresiones como pseudocódigo.}:
+\begin{verbatim}
+    begin var x:= 0;
+        proc p is x:= x*2;
+        proc q is call p;
+        begin var x:=5;
+            proc p is x := x+1;
+            call q; y:=x
+        end
+    end
+\end{verbatim}
+Imaginemos cada $\n{begin}$ como una altura de un árbol. El proceso $\n{p}$ está definido en dos profundidades: en la primera (línea 2) significa multiplicar por dos y en la segunda (línea 5) significa sumar 1 a la variable $\n{x}$. El procedimiento $\n{q}$ estaría definido únicamente a profundidad 1. \\ \\
+Para hacernos a la idea, en un ámbito estático aquello definido a profundidad $n$ tomará como referencias internas solamente cosas a profundidad $\leq n$, independientemente de que se ejecute a una profundidad mayor. En un ámbito dinámico utilizará las últimas según a qué profundidad se haya ejecutado. Veamos el ejemplo con las distintas casuísticas:
+\begin{itemize}
+    \item Si se utiliza \textbf{ámbito estático para variables y procedimientos} la sentencia $\n{call q}$ (profundidad 2) hará referencia a la $\n{q}$ definida en la línea 3. Este procedimiento está definido a la profundidad 1, por lo que la referencia interna de la $\n{p}$ que utilizará solo podrá estar a profunidad menor o igual. Es decir, el la invocación de $\n{q}$ se referirá a la $\n{p}$ de la línea 2 y no a la de la línea 5 (pues esta última está definida a profundidad 2). \\ \\
+    Es decir, la ejecución de $\n{q}$ se toma a profundidad 2, pero hace referencia a un procedimiento a profundidad 1, luego no puede utilizar internamente la definición de $\n{p}$ creada en la línea 5. Cuando el ámbito es estático la referencia se fija en tiempo de compilación y no de ejecución. \\ \\
+    Como el ámbito es estático también para variables, la invocación de la $\n{p}$ definida en la segunda línea se referirá a la variable $x:=0$ definida en el primer $\n{begin}$ (sin alterar, de esta forma, el valor de la $x$ del segundo $\n{begin}$). \\ \\
+    En conclusión, el estado final en este caso será de $x:=0$ (se multiplica por dos, pero quedaría igual). De la misma forma, la variable $y$ definida localmente en el segundo $\n{begin}$ se quedará con el valor de $5$, pues la $x$ local no se modifica.
+    \item Supongamos que se utiliza \textbf{ámbito estático para procedimientos} y \textbf{dinámico para variables}. Como ocurría antes la invocación de $\n{q}$ en la línea 6 hará referencia a la $\n{p}$ de la segunda línea. Sin embargo, dado que ahora estamos suponiendo un ámbito dinámico para variables, la referencia a $x$ dentro de $\n{p}$ será la última que esté disponible en tiempo de ejecución (es decir, aunque $\n{p}$ venga dado a profundidad 1, como se ejecuta realmente a profundidad 2, podrá utilizar las variables a esta altura, pues es dinámico). Entonces la variable que se modificará será $x:=5$, definida en la línea 4, y la multiplicará por 2, quedando localmente $x=10$ e $y=x=10$. La variable $x$ de profundidad 1 se quedará tal cual estaba.
+    \item Si se da el caso en el que \textbf{procedimientos y variables están en ámbito dinámico} la invocación de $\n{q}$ hará referencia a la última $\n{p}$ referenciada en ejecución (es decir, la de la línea 5). A su vez, este procedimiento hará referencia a la última definición de la variable $x$. Quedará $x=5+1=6$ e $y=6$ localmente, con la variable $x=0$ a profundidad 1.
+\end{itemize}
+\end{example}
+
+\subsection{Ámbito dinámico para variables y procedimientos}
+
+Como hemos visto en el anterior ejemplo, la idea es que, para ejecutar $\n{call p}$, debemos ejecutar todo el procedimiento, es decir, tenemos que identificar cada procedimiento con su nombre. Para ello, definimos un \textit{entorno de procedimiento}, que es una aplicación $env_P \in \mathbf{Env}_P := \mathbf{Pname}\hookrightarrow \mathbf{Stm}$, es decir, que nos lleva cada nombre de procedimiento a tal procedimiento. 
+\\
+
+Comencemos extendiendo $\nn{While}_\nn{ns}$ con tal entorno. Debemos extender ahora las transiciones $\la{S}{s}\rightarrow s'$ usuales. Mediante la notación
+$$env_P \vdash \la{S}{s}\to s'$$
+nos referimos a que podemos acceder al entorno y por tanto hacer uso de los procedimientos declarados correspondientes, es decir, dado un entorno de procedimientos, hay una transición usual entre dos estados. Por otro lado, reflexionemos sobre el significado de $\n{ begin }D_V\ D_P\ S\n{ end}$: queremos interpretarla para que, al ejecutar $S$, tengamos disponibles los procedimientos declarados en $D_P$. Para ello es necesario actualizar el entorno que hemos definido. Más concretamente, se define una aplicación que define recursivamente un entorno para procedimientos como $\nn{upd}_P: \textbf{Dec}_P \times \mathbf{Env}_P \rightarrow \mathbf{Env}_P$ dada por
+\begin{eqnarray*}
+    \nn{udp}_P(\n{proc }p\n{ is }S;D_P, env_P) &:=& \nn{udp}_P(D_P, env_P[p\mapsto S])\\
+    \nn{upd}_P(\varepsilon, env_P) &:=& env_P\\
+\end{eqnarray*}
+Por tanto, las reglas de $\nn{Proc}$ quedan como:
+\begin{sist*}[$\nn{Proc}$, ámbito dinámico para variables y procedimientos]\mbox{}
+\begin{itemize}
+    \item[] $[\text{ass}_{\text{ns}}]$
+
+        \begin{center}
+              \centerAlignProof
+              \quad
+              \centerAlignProof
+                \AxiomC{}
+                \UnaryInfC{ $env_P \vdash \langle x:= a, s\rangle \rightarrow s[x\mapsto \fc{A}{a}s]$}
+              \DisplayProof
+        \end{center}
+
+    \item[] $[\text{skip}_{\text{ns}}]$ 
+        \begin{center}
+              \centerAlignProof
+              \quad
+              \centerAlignProof
+                \AxiomC{}
+                \UnaryInfC{$env_P \vdash \la{\n{skip}}{s}\rightarrow s$}
+                  \DisplayProof
+        \end{center}
+
+    \item[][$\text{comp}_{\text{ns}}$]
+        \begin{center}
+              \centerAlignProof
+                
+              \quad
+              \centerAlignProof
+                \AxiomC{$env_P \vdash \la{S_1}{s} \to s'$}
+                \AxiomC{$env_P \vdash \la{S_2}{s'} \to s''$}
+                \BinaryInfC{$env_P \vdash \la{S_1; S_2}{s} \to s''$}
+              \DisplayProof
+        \end{center}
+\item[][$\text{if}^{\text{tt}}_{\text{ns}}$]
+
+
+\begin{center}
+      \centerAlignProof
+        
+      \quad
+      \centerAlignProof
+        \AxiomC{$env_P \vdash \la{S_1}{s} \to s'$}
+        \UnaryInfC{$env_P \vdash \la{\n{if}\ b\ \n{then}\ S_1\ \n{else}\ S_2}{s} \to s'$}
+      \DisplayProof
+      \quad
+      \centerAlignProof
+        $\text{ si }\fc{B}{b}s = \mathbf{tt}$
+\end{center}
+\item[] [$\text{if}^{\text{ff}}_{\text{ns}}$]
+
+\begin{center}
+      \centerAlignProof
+       
+      \quad
+      \centerAlignProof
+        \AxiomC{$env_P \vdash \la{S_2}{s} \to s'$}
+        \UnaryInfC{$env_P \vdash \la{\n{if}\ b\ \n{then}\ S_1\ \n{else}\ S_2}{s} \to s'$}
+      \DisplayProof
+      \quad
+      \centerAlignProof
+        $\text{ si }\fc{B}{b}s = \mathbf{ff}$
+\end{center}
+\item[][$\text{while}^{\text{tt}}_{\text{ns}}$]
+
+\begin{center}
+      \centerAlignProof
+        
+      \quad
+      \centerAlignProof
+        \AxiomC{$env_P \vdash \la{S}{s} \to s'$}
+        \AxiomC{$env_P \vdash \la{\n{while}\ b\ \n{do}\ S}{s'} \to s''$}
+        \BinaryInfC{$env_P \vdash \la{\n{while}\ b\ \n{do}\ S}{s} \to s''$}
+      \DisplayProof
+      \quad
+      \centerAlignProof
+        $\text{ si }\fc{B}{b}s = \mathbf{tt}$
+\end{center}
+\item[] [$\text{while}^{\text{ff}}_{\text{ns}}$]
+
+\begin{center}
+      \centerAlignProof
+       
+      \quad
+      \centerAlignProof
+        \AxiomC{}
+        \UnaryInfC{$env_P \vdash \la{\n{while}\ b\ \n{do}\ S}{s} \to s$}
+      \DisplayProof
+      \quad
+      \centerAlignProof
+        $\text{ si }\fc{B}{b}s = \mathbf{ff}$
+\end{center}
+    \item[] [$\nn{block}_\nn{ns}$]
+    \begin{prooftree}
+        \AxiomC{$\la{D_V}{s} \to_D s'$}
+        \AxiomC{$\nn{upd}_P(D_P, env_P)\vdash \la{S}{s'} \to s''$}
+        \LeftLabel{[$\nn{block}_\nn{ns}$]}
+        \RightLabel{}
+        \BinaryInfC{$env_P \vdash \la{\n{begin } D_V\ S\ \n{end}}{s}\to s''[\nn{DV}(D_v) \mapsto s]$}
+    \end{prooftree}
+   
+    \item[] [$\nn{call}_\nn{ns}^\nn{rec}$]
+    \begin{center}
+      \centerAlignProof
+       
+      \quad
+      \centerAlignProof
+        \AxiomC{$env_P \vdash \la{S}{s}\to s'$}
+        \UnaryInfC{$env_P \vdash \la{\n{call p}}{s} \to s'$}
+      \DisplayProof
+      \quad
+      \centerAlignProof
+        $\text{ si }env_P(\n{p}) = S$
+    \end{center}
+    
+\end{itemize}
+\end{sist*}
+
+Notemos que las variables no deben en principio acceder al entorno de procedimientos, luego no es necesario modificar las transiciones del tipo $\la{D_V}{s}\to_D s'$ que ya vimos en $\nn{Block}$. Es importante notar que permitimos que los procedimientos sean recursivos y que, si llamamos a un procedimiento inexistente, entonces el programa abortará.
+
+\subsection{Ámbito estático para procedimientos}
+
+Para modificar $\nn{Block}$ siguiendo este enfoque, debemos asegurarnos que cada procedimiento que llamemos sea capaz de `recordar' los procedimientos que ya se habían introducido antes de que fuese declarado. Intuitivamente, debemos asociar cada nombre con el procedimiento al que se refiere, junto con el entorno de procedimientos que había en el momento de declararlo. La manera formal de hacer ésto consiste en extender $env_P$ como una función de $\mathbf{Env}_P := \mathbf{Pname} \hookrightarrow\mathbf{Stm}\times \mathbf{Env}_P$. Este tipo está bien definido, precisamente porque definiremos el entorno de cada procedimiento en función de otros menores, hasta llegar al \textit{entorno de procedimientos vacío}:
+\begin{eqnarray*}
+    \nn{udp}_P(\n{proc }p\n{ is }S;D_P, env_P) &:=& \nn{udp}_P(D_P, env_P[p\mapsto (S, env_P)])\\
+    \nn{upd}_P(\varepsilon, env_P) &:=& env_P\\
+\end{eqnarray*}
+
+Tampoco tendremos que cambiar esta vez las declaraciones de variables. Solo tenemos que cambiar las reglas para llamadas de procedimientos. Tenemos dos casos:
+\begin{itemize}
+    \item Si asumimos que los procedimientos de $\nn{Proc}$ son no recursivos, entonces solo tenemos que conocer el entorno del procedimiento para determinarlo junto con su entorno en el momento de la declaración.
+    \item Si asumimos que los procedimientos de $\nn{Proc}$ son recursivos, tenemos que asegurar que las apariciones de $\n{call }p$ en el cuerpo de $p$ se refieren al procedimiento mismo, es decir, debemos modificar el entorno del procedimiento para que contenga tal información.
+\end{itemize}
+
+Por tanto, tenemos:
+\begin{sist*}[$\nn{Proc}$, ámbito estático para procedimientos no recursivos]
+En las reglas de $\nn{Proc}$, intercambiamos [$\nn{call}_\nn{ns}^\nn{rec}$] por:
+\begin{center}
+      \centerAlignProof
+      \quad
+      \centerAlignProof
+        \AxiomC{$env'_P \vdash \la{S}{s}\to s'$}
+                      \LeftLabel{$[\nn{call}_\nn{ns}]$}
+        \UnaryInfC{$env_P \vdash \la{\n{call p}}{s} \to s'$}
+      \DisplayProof
+      \quad
+      \centerAlignProof
+        $\text{ si }env_P(\n{p}) = (S, env'_P)$
+    \end{center}
+\end{sist*}
+Y
+\begin{sist*}[$\nn{Proc}$, ámbito estático para procedimientos recursivos]
+En las reglas de $\nn{Proc}$, intercambiamos [$\nn{call}_\nn{ns}^\nn{rec}$] por\footnote{Por $env'_P$ nos referimos a otra metavariable distinta de $env_P$. Podríamos haber escogido letras como nombres, pero $env_P$ nos recuerda inmediatamente lo que simboliza.}:
+\begin{center}
+      \centerAlignProof
+      \quad
+      \centerAlignProof
+        \AxiomC{$env'_P[p\mapsto (S, env'_P)] \vdash \la{S}{s}\to s'$}
+                \LeftLabel{$[\nn{call}_\nn{ns}^\nn{rec}]$}
+        \UnaryInfC{$env_P \vdash \la{\n{call p}}{s} \to s'$}
+      \DisplayProof
+      \quad
+      \centerAlignProof
+        $\text{ si }env_P(\n{p}) = (S, env'_P)$
+    \end{center}
+\end{sist*}
+
+\subsection{Ámbito estático para variables y procedimientos}
+
+Ahora, siguiendo las modificaciones que acabamos de ver, debemos cambiar el funcionamiento de los estados. Es decir, reemplazaremos los estados con dos aplicaciones. La primera consiste en un \textit{entorno de variable}, que lleva cada variable en una \textit{ubicación}, $env_V \in \mathbf{Env}_V : \mathbf{Var}\rightarrow \mathbf{Loc}$. Conviene pensar en las ubicaciones como celdas en una memoria abstracta que se van rellenando con datos.
+\\
+
+El siguiente tipo de aplicación, llamada \textit{función de almacenamiento}, asocia cada ubicación con un entero, $sto \in \mathbf{Store}: \mathbf{Loc}\cup \{\n{next}\}\rightarrow \Z$, donde $\n{next}$ es una expresión que sirve para guardar un valor en la siguiente ubicación libre. Para que ésto quede bien formalizado, necesitamos, finalmente, $new: \mathbf{Loc} \rightarrow \mathbf{Loc}$, que lleva cada ubicación en la siguiente que esté vacía. Para \textit{actualizar} el entorno de variable y la función de almacenamiento, empleamos las declaraciones de variables.
+\\
+
+Nosotros tomaremos $\mathbf{Loc} := \Z$, es decir, iremos asociando variables a ubicaciones etiquetadas con enteros. Por tanto, en nuestro caso, la aplicación $new$ es simplemente la función sucesor. Aunque sean el mismo conjunto, denotaremos el tipo de las ubicaciones como $\mathbf{Loc}$ y a los enteros de la forma usual para mayor claridad.
+\\
+
+
+Dijimos que queríamos reemplazar los estados con estas dos aplicaciones que hemos definido. La forma de hacerlo es la siguiente: $s := sto \circ env_V$. De este modo, tenemos que:
+\begin{itemize}
+    \item Para \textit{determinar} el valor de $x \in \mathbf{Var}$, debemos determinar primero una ubicación $l := env_V(x)$ y después un valor $sto(l) \in \Z$.
+    \item Para \textit{asignar} un valor $v \in \Z$ a $x \in \mathbf{Var}$, debemos determinar primero la ubicación $l := env_V(x)$ y después actualizar (el sentido que dijimos antes) $\mathbf{Store}$ hasta que $sto(l) = v$.
+\end{itemize}
+Debemos considerar el entorno de variables y el almacenamiento inicial, es decir, debemos fijar unos valores antes de la ejecución del programa. Podríamos, por ejemplo, hacer que el entorno de variables inicial llevase todas las variables a la ubicación etiquetada por 0 y que la función de almacenamiento inicial llevase $\n{next}$ en la ubicación etiquetada por 1 (desde 0).
+\\
+
+En resumen, las configuraciones para declaraciones de variables no dependen ahora de los estados sino de las funciones $env_V$ y $sto$ (¡lo que cambia son estas funciones, no los estados!). Ahora, en vez de tener un objeto como $\fc{A}{a}s$, por ejemplo, tendremos una función $\fc{A}{a}(sto \circ env_V)$. Más precisamente, sustituimos los estados por pares del tipo $(env_V, sto)$.
+\\
+
+Conviene comparar la siguiente función de transición con la que dimos al principio de \ref{simples}:
+$$\la{D_V}{(env_V, sto)}\to_D (env'_V, sto')$$
+A continuación resumimos su semántica asociada:
+\begin{itemize}
+    \item[]
+\begin{center}
+      \centerAlignProof
+      \quad
+      \centerAlignProof
+        \AxiomC{$\la{D_V}{(env_V[x \mapsto l], sto[l\mapsto v][\n{next}\mapsto new(l)])}\to_D (env'_V, sto')$}
+
+                \LeftLabel{$[\nn{var}_\nn{ns}]$}
+                
+        \UnaryInfC{$\la{\n{var }x := a; D_V}{(env_V, sto)}\to_D (env'_V, sto')$}
+      \DisplayProof
+      \quad
+      \centerAlignProof
+\end{center}
+donde $v := \fc{A}{a}(sto \circ env_V)$ y $l := sto(\n{next})$.
+\item[]
+\begin{center}
+      \centerAlignProof
+      \quad
+      \centerAlignProof
+        \AxiomC{}
+
+                \LeftLabel{$[\nn{none}_\nn{ns}]$}
+                
+        \UnaryInfC{$\la{\varepsilon}{env_V, sto}\to_D (env_V, sto)$}
+      \DisplayProof
+      \quad
+      \centerAlignProof
+\end{center}
+\end{itemize}
+
+El siguiente paso consiste en extender el entorno de procedimientos para guardar el entorno de cada variable en el momento de la declaración. Por tanto, consideraremos funciones $env_P \in \mathbf{Env}_P:=\mathbf{Pname}\hookrightarrow \mathbf{Stm}\times \mathbf{Env}_V \times \mathbf{Env}_P$. Por otro lado, definimos:
+\begin{eqnarray*}
+    \nn{udp}_P(\n{proc }p\n{ is }S;D_P, env_V, env_P) &:=& \nn{udp}_P(D_P, env_V, env_P[p\mapsto (S, env_V, env_P)])\\
+    \nn{upd}_P(\varepsilon, env_V, env_P) &:=& env_P\\
+\end{eqnarray*}
+Las transiciones tendrán entonces la forma $env_V, env_P \vdash \la{S}{sto}\to sto'$, es decir, dados dos entornos respectivos de variable y procedimiento, hay una transición entre dos ubicaciones, una inicial y otra final. 
+
+\begin{sist*}[$\nn{Proc}$, ámbito estático para variables]\mbox{}
+\begin{itemize}
+    \item[] $[\text{ass}_{\text{ns}}]$
+
+        \begin{center}
+              \centerAlignProof
+              \quad
+              \centerAlignProof
+                \AxiomC{}
+                \UnaryInfC{ $env_V, env_P \vdash \langle x:= a, sto\rangle \rightarrow sto[l\mapsto v]$}
+              \DisplayProof
+        \end{center}
+    donde $l:= env_V(x)$ y $v:= \fc{A}{a}(sto\circ env_V)$.
+    \item[] $[\text{skip}_{\text{ns}}]$ 
+        \begin{center}
+              \centerAlignProof
+              \quad
+              \centerAlignProof
+                \AxiomC{}
+                \UnaryInfC{$env_V, env_P \vdash \la{\n{skip}}{sto}\rightarrow sto$}
+                  \DisplayProof
+        \end{center}
+
+    \item[][$\text{comp}_{\text{ns}}$]
+        \begin{center}
+              \centerAlignProof
+                
+              \quad
+              \centerAlignProof
+                \AxiomC{$env_V, env_P \vdash \la{S_1}{sto} \to sto'$}
+                \AxiomC{$env_V, env_P \vdash \la{S_2}{sto'} \to sto''$}
+                \BinaryInfC{$env_V, env_P \vdash \la{S_1; S_2}{sto} \to sto''$}
+              \DisplayProof
+        \end{center}
+\item[][$\text{if}^{\text{tt}}_{\text{ns}}$]
+
+
+\begin{center}
+      \centerAlignProof
+        
+      \quad
+      \centerAlignProof
+        \AxiomC{$env_V, env_P \vdash \la{S_1}{sto} \to sto'$}
+        \UnaryInfC{$env_V, env_P \vdash \la{\n{if}\ b\ \n{then}\ S_1\ \n{else}\ S_2}{sto} \to sto'$}
+      \DisplayProof
+      \quad
+      \centerAlignProof
+\end{center}
+        $\text{ si }\fc{B}{b}(sto\circ env_V) = \mathbf{tt}$
+
+
+\item[] [$\text{if}^{\text{ff}}_{\text{ns}}$]
+
+\begin{center}
+      \centerAlignProof
+       
+      \quad
+      \centerAlignProof
+        \AxiomC{$env_V, env_P \vdash \la{S_2}{sto} \to sto'$}
+        \UnaryInfC{$env_V,env_P \vdash \la{\n{if}\ b\ \n{then}\ S_1\ \n{else}\ S_2}{sto} \to sto'$}
+      \DisplayProof
+      \quad
+      \centerAlignProof
+\end{center}
+        $\text{ si }\fc{B}{b}(sto\circ env_V) = \mathbf{ff}$
+
+\item[][$\text{while}^{\text{tt}}_{\text{ns}}$]
+
+\begin{center}
+      \centerAlignProof
+        
+      \quad
+      \centerAlignProof
+        \AxiomC{$env_V, env_P \vdash \la{S}{sto} \to sto'$}
+        \AxiomC{$env_V, env_P \vdash \la{\n{while}\ b\ \n{do}\ S}{sto'} \to sto''$}
+        \BinaryInfC{$env_V, env_P \vdash \la{\n{while}\ b\ \n{do}\ S}{sto} \to sto''$}
+      \DisplayProof
+      \quad
+      \centerAlignProof
+       
+\end{center}
+ $\text{ si }\fc{B}{b}(sto\circ env_V) = \mathbf{tt}$
+\item[] [$\text{while}^{\text{ff}}_{\text{ns}}$]
+
+\begin{center}
+      \centerAlignProof
+       
+      \quad
+      \centerAlignProof
+        \AxiomC{}
+        \UnaryInfC{$env_V, env_P \vdash \la{\n{while}\ b\ \n{do}\ S}{sto} \to sto$}
+      \DisplayProof
+      \quad
+      \centerAlignProof
+        $\text{ si }\fc{B}{b}(sto\circ env_V) = \mathbf{ff}$
+\end{center}
+    \item[] [$\nn{block}_\nn{ns}$]
+    \begin{prooftree}
+        \AxiomC{$\la{D_V}{(env_V, sto)} \to_D (env'_V, sto')$}
+        \AxiomC{$env'_V, env'_P\vdash \la{S}{sto'} \to sto''$}
+        \LeftLabel{}
+        \RightLabel{}
+        \BinaryInfC{$env_V, env_P \vdash \la{\n{begin } D_V\ D_P \ S\ \n{end}}{sto}\to sto''$}
+    \end{prooftree}
+    donde $env'_P := \nn{upd}_P(D_P, env'_V, env_P)$.
+   
+    \item[] [$\nn{call}_\nn{ns}$]
+    \begin{center}
+      \centerAlignProof
+       
+      \quad
+      \centerAlignProof
+        \AxiomC{$env'_V, env'_P \vdash \la{S}{sto}\to sto'$}
+        \UnaryInfC{$env_V, env_P \vdash \la{\n{call p}}{sto} \to sto'$}
+      \DisplayProof
+      \quad
+      \centerAlignProof
+    \end{center}
+    donde $env_P(p) := (S, env'_V, env'_P)$.
+    
+    \item[] [$\nn{call}_\nn{ns}^\nn{rec}$]
+    \begin{center}
+      \centerAlignProof
+       
+      \quad
+      \centerAlignProof
+        \AxiomC{$env'_V, env'_P[p\mapsto (S, env'_V, env'_P)] \vdash \la{S}{sto}\to sto'$}
+        \UnaryInfC{$env_V, env_P \vdash \la{\n{call p}}{sto} \to sto'$}
+      \DisplayProof
+      \quad
+      \centerAlignProof
+    \end{center}
+    donde $env_P(p) := (S, env'_V, env'_P)$.
+    
+\end{itemize}
+\end{sist*}
+Notemos que no puede haber uan expresión parecida a $s''[DV(D_V)\mapsto s]$, porque las variables solo toman valores accediendo a su entorno asociado.

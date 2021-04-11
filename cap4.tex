@@ -1,0 +1,141 @@
+\cleardoublepage
+\chapter{Implementación correcta}
+Una pregunta a realizarse sería cómo implementar un lenguaje de programación para que funcione en un ordenador. En este capítulo se mostrará, \textit{grosso modo}, cómo realizar una implementación basándonos en cómo funciona Java. Para ello, estudiaremos los siguientes conceptos:
+\begin{itemize}
+    \item Una máquina abstracta con unas instrucciones básicas.
+    \item Traducción de $\mathbf{Stm}$ a código de la máquina abstracta.
+    \item Corrección.
+    \item Bisimulación.
+\end{itemize}
+
+La idea es que definiremos el comportamiento semántico de las instrucciones de la máquina abstracta mediante semántica operacional y después estudiaremos traducciones que lleven elementos de $\nn{While}$ en secuencias de estas instrucciones. Con \textit{corrección} nos referimos a que, si traducimos una expresión en \textit{código} y lo ejecutamos, entonces obtendremos el mismo resultado que el que ya describimos mediante $\mc{S}_\nn{ns}$ o $\mc{S}_\nn{sos}$. Finalmente, veremos de pasada la bisimulación.
+
+\section{Máquina abstracta}
+
+
+\subsection{Configuraciones e introducciones}
+
+Una \textit{configuración} de la máquina abstracta (MA) consta de:
+\begin{itemize}
+    \item Una secuencia de instrucciones a ejecutar (o código), $s$.
+    \item Una pila de evaluación, $e$.
+    \item Un almacén, $s$,
+\end{itemize}
+Denotaremos por $\mathbf{Code}$ a la categoría sintáctica de las \textit{secuencias de instrucciones}. La pila de evaluación servirá para evaluar expresiones aritméticas y booleanas. Formalmente será una lista de valores:
+\[
+    \textbf{Stack} := (\Z\cup T)^*
+\]
+De esta forma, una configuración será una terna $\conf{c}{e}{s} \in \textbf{Code}\times\textbf{Stack} \times \textbf{State}$. Para mayor simplicidad, se considerá el almacén de forma parecida a como consideramos los elementos de $\textbf{State}$ para almacenar variables.
+\\
+
+La gramática de las instrucciones de la máquina abstracta es de la siguiente forma: 
+\begin{eqnarray*}
+    inst &::=& \n{PUSH}-n\ |\ \n{ADD}\ |\ \n{MULT}\ |\ \n{SUB} \\
+        &|& \n{TRUE}\ |\ \n{FALSE}\ |\ \n{EQ}\ |\ \n{NEG}\ |\ \n{AND}\\
+        &|& \n{FETCH}-x\ |\ \n{STORE}-x\\
+        &|& \n{NOOP}\ |\ \n{BRANCH}(c,c)\ |\ \n{LOOP}(c,c)\\
+    c  &::=& \varepsilon\ |\ inst : c
+\end{eqnarray*}
+con $c \in \mathbf{Code}$.
+\\
+
+
+Se denomina \textit{configuración final} a las ternas de la forma $\langle \varepsilon, e, s\rangle$, es decir, con el código vacío. La idea va a ser que, a partir de una configuración no final, haya una transición que vaya eliminando código y modificando la pila de evaluación y el almacén.
+\\
+
+Pasemos a describir el sistema de semántica operacional asociado a la MA. Definimos una relación de transición:
+\[
+    \conf{c}{e}{s} \rhd \conf{c'}{e'}{s'}
+\]
+que significa lo siguiente: la configuración $\conf{c'}{e'}{s'}$ se obtiene de $\conf{c}{e}{s}$ \textit{en un paso de ejecución}. Nótese la similitud con la semántica operacional de paso corto. Esta relación viene determinada por el siguiente sistema de transiciones:
+
+\begin{sist*}[Semántica operacional para la MA]
+
+\begin{eqnarray*}
+    \conf{\n{PUSH}-n:c}{e}{s} &\rhd& \conf{c}{\fc{N}{n}:e}{s} \\
+    \conf{\n{ADD}:c}{z_1:z_2:e}{s} &\rhd& \conf{c}{(z_1\oplus z_2):e}{s} \quad si \ z_1, z_2 \in \mathbf{Z} \\
+    \conf{\n{MULT}:c}{z_1:z_2:e}{s} &\rhd& \conf{c}{(z_1\otimes z_2):e}{s} \quad si \ z_1, z_2 \in \mathbf{Z} \\
+    \conf{\n{SUB}:c}{z_1:z_2:e}{s} &\rhd& \conf{c}{(z_1\ominus z_2):e}{s} \quad si \ z_1, z_2 \in \mathbf{Z} \\
+    \conf{\n{TRUE}:c}{e}{s} &\rhd& \conf{c}{\textbf{tt}:e}{s} \\
+    \conf{\n{FALSE}:c}{e}{s} &\rhd& \conf{c}{\textbf{ff}:e}{s} \\
+    \conf{\n{EQ}:c}{z_1:z_2:e}{s} &\rhd& \conf{c}{(z_1 \eq z_2):e}{s} \quad si \ z_1, z_2 \in \mathbf{Z}\\
+    \conf{\n{LE}:c}{z_1:z_2:e}{s} &\rhd& \conf{c}{(z_1 \leq z_2):e}{s}\quad si \ z_1, z_2 \in \mathbf{Z} \\
+    \conf{\n{AND}:c}{t_1:t_2:e}{s} &\rhd& 
+        \left\{\begin{array}{ll} 
+            \conf{c}{\textbf{tt}:e}{s} & \text{si }t_1 = t_2 = \textbf{tt} \\
+            \conf{c}{\textbf{ff}:e}{s} & \text{caso contrario}
+        \end{array}\right. 
+    \\
+    \conf{\n{NEG}:c}{t:e}{s} &\rhd& 
+        \left\{\begin{array}{ll} 
+            \conf{c}{\textbf{ff}:e}{s} & \text{si }t = \textbf{tt} \\
+            \conf{c}{\textbf{tt}:e}{s} & \text{si }t = \textbf{ff}
+        \end{array}\right. \\
+    \conf{\n{FETCH-x}:c}{x}{e} &\rhd&  \conf{c}{s(x):e}{s}
+    \\
+    \conf{\n{STORE-x}:c}{z:e}{s} &\rhd&  \conf{c}{e}{s[x\to z]} \quad si \ z \in \mathbf{Z}
+    \\
+    \conf{\n{NOOP}:c}{e}{s} &\rhd&  \conf{c}{e}{s} 
+    \\
+    \conf{\n{BRANCH}(c_1, c_2):c}{t:e}{s} &\rhd& 
+        \left\{\begin{array}{ll} 
+            \conf{c_1:c}{e}{s} & \text{si }t = \textbf{tt} \\
+            \conf{c_2:c}{e}{s} & \text{si }t = \textbf{ff}
+        \end{array}\right.
+    \\
+    \conf{\n{LOOP}(c_1,c_2):c}{e}{s} &\rhd&  \conf{c_1 : \n{BRANCH}(c_2, \n{LOOP}(c_1,c_2), \n{NOOP}:c}{e}{s} 
+\end{eqnarray*}
+\end{sist*}
+Donde hemos usado `:' con doble sentido: por un lado, nos referimos a la concatenación de dos secuencias de isntrucciones (algo similar a `;' para $\mathbf{Stm}$) y, por otro, a la operación de anteponer un elemento a una tal secuencia. También conviene aclarar algunos de los códigos. El código $\n{LOOP}(c_1,c_2)$ es el más complejo y es el que servirá más adelante para traducir la sentencia $\n{While}$. El código $\n{BRANCH}(c_1, c_2)$ toma la idea de actuar como un $\n{if}$, siendo la condición la que esté en la cima de la pila.
+\\ 
+
+\subsection{Propiedades semánticas}
+
+Como ya hemos dicho, el sistema de transiciones anterior no es más que un sistema de semántica operacional estructural. Por tanto, podemos reescribir los conceptos que ya vimos anteriomente para esta semántica. Por ejemplo, las secuencias de derivación se denominan \textit{secuencias de cómputo}. Una secuencia de cómputo para un código $c$ y un almacén $s$ puede ser \textit{finita}, es decir, de la forma
+\[
+    \gamma_0 \rhd \gamma_1 \rhd ... \rhd \gamma_k
+\]
+siendo $\gamma_i \in \textbf{Code}\times\textbf{Stack} \times \textbf{State}$ para todo $i\leq k$ y cumpliendo $\gamma_i \rhd \gamma_{i+1}$ para $i<k$. Por otro lado, denotamos una secuencia de cómputo \textit{infinita} como
+\[
+    \gamma_0 \rhd \gamma_1 \rhd ...
+\]
+con  $\gamma_i \rhd \gamma_{i+1}$ para $i\geq 0$. En ambos casos, la configuración inicial será de la forma $\gamma_0 := \conf{c}{\varepsilon}{s}$, es decir, las secuencias empiezan con la pila vacía. Además, decimos que una secuencia de cómputo:
+\begin{itemize}
+    \item \textit{Termina} si y solo si es finita.
+    \item \textit{Cicla} si y solo si es infinita.
+\end{itemize}
+Nótese que, en el primer caso, se puede terminar con una configuración final o con una \textit{configuración atascada}, como por ejemplo $\langle \n{ADD}, \varepsilon, s\rangle$.
+\\
+
+Para no repetir las demostraciones que ya hemos visto, enunciaremos las diferentes propiedades básicas del sistema que acabamos de presentar:
+
+\begin{lema}
+Si $\conf{c_1}{e_1}{s}\rhd^k \conf{c'}{e'}{s'}$, entonces $\conf{c_1:c_2}{e_1:e_2}{s}\rhd^k \conf{c':c_2}{e':e_2}{s'}$.
+\end{lema}
+\begin{proof}
+Véase la demostración del Lema \ref{lemasos2}.
+\end{proof}
+
+\begin{lema}
+Si $\conf{c_1:c_2}{e}{s} \rhd^k \conf{\varepsilon}{e''}{s''}$, entonces existe una configuración $\conf{\varepsilon}{e'}{s'}$ y $k_1, k_2 \in \N$ tales que $k = k_1 + k_2$ y 
+$$\conf{c_1}{e}{s} \rhd^{k_1} \conf{\varepsilon}{e'}{s'} \quad\text{ y }\quad \conf{c_2}{e'}{s'} \rhd^{k_2} \conf{\varepsilon}{e''}{s''}.$$
+\end{lema}
+\begin{proof}
+Véase la demostración del Lema \ref{lemasos1}.
+\end{proof}
+
+\begin{theorem}
+El sistema de transiciones para el código de la máquina abstracta es determinista, es decir, 
+$$\gamma \rhd \gamma'  \text{ y }\gamma \rhd \gamma'' \quad \text{ implica } \quad \gamma' = \gamma''$$
+\end{theorem}
+\begin{proof}
+Véase la demostración del Teorema \ref{teosos}.
+\end{proof}
+
+\subsection{Función de ejecución}
+
+De nuevo, por analogía sobre lo que ya comentamos en el capítulo de semántica operacional estructural, aparece la idea de una función que  permita definir el valor semántico de cada expresión (aquí, secuencia de instrucciones). Más concretamente, definimos la función parcial $\mc{M}: \mathbf{Code} \rightarrow (\mathbf{State} \hookrightarrow \mathbf{State})$:
+$$\fc{M}{c}s := \begin{cases}s' \text{, si } \conf{c}{\varepsilon}{s}\rhd^* \conf{\varepsilon}{e}{s'}\\ \n{INDEFINIDO} \text{, en otro caso.}\end{cases}$$
+Que $\mc{M}$ esté bien definida se sigue por determinismo. Conviene hacer notar que esta definición requiere que la componente del código, en la configuración final, sea vacía.
+
+\section{Traducción}
