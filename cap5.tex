@@ -1,0 +1,175 @@
+\cleardoublepage
+\chapter{Semántica denotacional}
+
+
+Hasta ahora, lo que nos ha interesado de los programas era su ejecución. En cambio, como ya dijimos en la introducción, lo que queremos estudiar ahora es el efecto de esta ejecución, es decir, la relación entre los estados iniciales y los finales asociados a ella.  Para ello, lo que haremos es definir una función semántica para cada categoría sintáctica, en el sentido de que cada construcción sintáctica será interpretada mediante un objeto matemático, el `efecto' de ejecutar tal construcción. 
+\\
+
+Este enfoque no es del todo desconocido para nosotros. Por ejemplo, las funciones semánticas $\mc{A}$ y $\mc{B}$ que ya hemos empleado son un ejemplo típico de definición denotacional: a cada expresión aritmética asociamos un objeto abstracto, más concretamente, una función de tipo $\mathbf{State}\rightarrow \mathbf{Z}$. Y lo mismo ocurre con las expresiones booleanas y las correspondientes funciones de $\mathbf{State}\rightarrow \mathbf{Bool}$. Recordemos que una característica importante de esta definiciones era la composicionalidad (véase la introducción). Por tanto, las funciones $\mc{S}_\nn{ns}$ y $\mc{S}_\nn{sos}$ no se corresponden con la idea de definición denotacional que hemos descrito.
+
+\section{Sistema para While}
+
+\subsection{Función semántica}
+
+Las sentencias modifican el estado en el que se encuentran. Por tanto, en el enfoque denotacional, se define una aplicación que, dada una sentencia, devuelve una función (parcial) que transforma estados en estados:
+\[
+    \mc{S}_\nn{ds} : \mathbf{Stm} \to (\State \hookrightarrow \State)
+\]
+Notemos que $ \mc{S}_\nn{ds}$ es parcial precisamente por la sentencia $\n{while true do skip}$. Veamos, caso por caso, qué función es exactamente la que asignamos.
+\\
+
+Si reflexionamos en lo que implica la ejecución de $x:= a$, parecerá natural que le corresponda una aplicación que modifica, en cada estado, el valor que toma $x$. Más precisamente, una definición de este tipo sería:
+\[
+    \mc{S}_\nn{ds} [[x:=a]] : s \mapsto s[x\mapsto \fc{A}{a}s]
+\]
+es decir, dado un estado $s$, lo convertiremos a un estado en el cual la variable $x$ toma el valor $\fc{A}{a}s$. 
+\\
+
+En el caso de $\nskip$ queremos que no se ejecute ningún cambio en el estado. Lo reflejamos mediante la identidad $id : \State \to \State$, dada por $id(s) := s$\footnote{Se hace notar que podríamos dar definiciones de las aplicaciones recurriendo a imágenes de estados arbitrarios. En este caso no se ha utilizado la variable estado $s$, porque no la necesitamos para modificar el estado posterior (en el caso anterior necesitamos $s$ para saber el valor de la expresión aritmética $a$). Se podría haber definido, de forma equivalente, $\mc{S}_\nn{ds} [[\nskip]]s := s$, para todo $s \in \mathbf{State}$.}:
+\[
+    \mc{S}_\nn{ds} [[\nskip]] := id
+\]
+
+Para la composición de dos sentencias, $S_1; S_2$, simplemente queremos recibir el estado al que se llega tras ejecutar $S_1$ y después aplicar $S_2$. Esto lo podemos hacer mediante la composición:
+\[
+    \mc{S}_\nn{ds} [[S_1;S_2]] := \mc{S}_\nn{ds} [[S2]] \circ \mc{S}_\nn{ds} [[S_1]]
+\]
+Es muy importante tener en cuenta que $\mc{S}_\nn{ds} [[S_1]]$ se evalúa antes, pasando su resultado a $\mc{S}_\nn{ds} [[S_2]]$. 
+\\
+
+La idea para el condicional es la siguiente:
+\[
+    \mc{S}_\nn{ds} [[\nif b\nthen S_1\nelse S_2]]s := 
+    \begin{cases}  
+        \mc{S}_\nn{ds} [[S1]]s\text{, si } \fc{B}{b}s = \textbf{tt} \\
+        \mc{S}_\nn{ds} [[S2]]s\text{, si } \fc{B}{b}s = \textbf{ff}
+   \end{cases}
+\]
+donde sencillamente se ha utilizado el valor $\fc{B}{b}s$ para separar en dos casos y, según el resultado, aplicar una sentencia u otra. Pero, como dijimos antes, suele ser más cómodo emplear notación funcional. Podemos definir entonces una aplicación auxiliar $\n{cond} : (\State \to \mathbf{Bool}) \times (\State \hookrightarrow  \State) \times (\State \hookrightarrow  \State) \to (\State \hookrightarrow  \State)$, bajo la idea de que el primer parámetro será la evaluación de la expresión booleana (en función del estado) y las otras dos serán las evaluaciones de las sentencias $S_1$ y $S_2$\footnote{Hemos empleado el producto de tipos para mayor simplicidad. También podríamos haber escrito $\n{cond} : (\State \to \mathbf{Bool}) \to (\State \hookrightarrow  \State) \to (\State \hookrightarrow  \State) \to (\State \hookrightarrow  \State)$ y por tanto prescindir de paréntesis. Puede que, en un aspecto puramente formal, esta diferencia no sea relevante. En cambio, sí que es importante señalarla desde el punto de vista de los tipos de datos que emplea $\n{cond}$. También podríamos haber sustituido el tipo de funciones $\mathbf{State}\to \mathbf{Bool}$ por el tipo simple $\mathbf{Bool}$ pero, de nuevo, recordemos que es preferible trabajar con funciones.}. Para ello, según el valor que retorne el booleano, se devolverá el primer parámetro o el segundo, es decir:
+\[
+    \n{cond}(f_b, f_1, f_2) s := 
+    \begin{cases}
+        
+        f_1s\text{, si } f_bs = \textbf{tt}  \\
+        f_2 s\text{, si } f_bs = \textbf{ff} 
+    \end{cases}
+\]
+Por tanto, la definición deseada es:
+\[
+    \mc{S}_\nn{ds} [[\nif b\nthen S_1\nelse S_2]] := \n{cond}(\fc{B}{b}, \mc{S}_\nn{ds} [[S_1]], \mc{S}_\nn{ds} [[S_2]])
+\]
+Esto es, si $b$ es cierto en el estado actual, se toma la primera sentencia y, en caso contrario, la segunda. 
+\\
+
+Hemos visto que ha sido posible definir las expresiones básicas mediante aplicaciones relativamente sencillas. No ocurrirá lo mismo con la sentencia $\nwhile b \ndo S$. Podríamos intentar usar lo anterior, junto con la equivaencia semántica con la sentencia $\n{if }b\n{ then }(S; \n{while }b\n{ do }S)\n{ else skip}$, y así obtendríamos:
+$$\mc{S}_\nn{ds}[[\nwhile b \ndo S]] := \n{cond}(\fc{B}{b}, \mc{S}_\nn{ds}[[\n{while }b\n{ do }S]]\circ \mc{S}_\nn{ds}[[S]], id)$$
+Pero, ¿acaso es esto una definición aceptable? Entre otras cosas, no es composicional, y por tanto no podemos aceptarla. La igualdad anterior sí que significa, por otro lado, algo, a saber: que $\mc{S}_\nn{ds}[[\nwhile b \ndo S]]$ es \textit{punto fijo} de la función $F$ dada por $F(g) := \n{cond}(\fc{B}{b}, g\circ \mc{S}_\nn{ds}[[S]], id)$. De hecho, $F$ sí que admite una definición composicional porque en lo anterior solo aparecen construcciones estructuralmente más sencillas que $\nwhile b \ndo S$. Por tanto, la siguiente definición es más satisfactoria:
+$$\mc{S}_\nn{ds}[[\nwhile b \ndo S]] := \n{fix}(F)$$
+donde $\n{fix}: ((\mathbf{State}\hookrightarrow \mathbf{State})\to (\mathbf{State}\hookrightarrow \mathbf{State}))\to (\mathbf{State}\hookrightarrow \mathbf{State})$ nos lleva una aplicación (de apliaciones) a su punto fijo. 
+
+\begin{example}
+Sea $\n{while } \neg(\n{x} = 0)\n{ do skip}$. El funcional asociado es, en este caso:
+$$G(g)s := \begin{cases}
+    gs \text{, si } s\n{x} \neq 0\\
+    s \text{, en otro caso}
+\end{cases}$$
+¿Hay algún punto fijo para $G$? Probemos con 
+$$g_1s := \begin{cases}
+    \n{INDEFINIDO} \text{, si } s\n{x}\neq 0 \\
+    s \text{, en otro caso}
+\end{cases}$$
+En efecto, 
+$$G(g_1)s = \begin{cases}
+    g_1s \text{, si } s\n{x} \neq 0\\
+    s \text{, en otro caso}
+\end{cases} = \begin{cases}
+    \n{INDEFINIDO} \text{, si } s\n{x}\neq 0 \\
+    s \text{, en otro caso}
+\end{cases} = g_1s$$
+Luego $g_1 = \n{fix}(G)$. Por otro lado, $g_2 \equiv \n{INDEFINIDO}$ no puede ser punto fijo de $G$ porque, si $s \in \mathbf{State}$ verifica $sx = 0$, entonces $G(g_2)s = s \neq \n{INDEFINIDO} = g_2s$.
+\end{example}
+
+
+Entonces, de momento, tenemos las siguientes reglas: 
+
+\begin{sist*}[Semántica denotacional para $\nn{While}$]
+\begin{eqnarray*}
+    \mc{S}_\nn{ds} [[x:=a]]s &:=& s[x\mapsto \fc{A}{a}s] \\
+    \mc{S}_\nn{ds} [[\nskip]] &:=& id \\
+    \mc{S}_\nn{ds} [[S_1;S_2]] &:=& \mc{S}_\nn{ds} [[S2]] \circ \mc{S}_\nn{ds} [[S_1]] \\
+    \mc{S}_\nn{ds} [[\nif b\nthen S_1\nelse S_2]]s &=&  \n{cond}(\fc{B}{b}, \mc{S}_\nn{ds} [[S_1]], \mc{S}_\nn{ds} [[S_2]])\\
+    \mc{S}_\nn{ds} [[\nwhile b \ndo S]] &:=&  \n{fix}(F)\\
+\end{eqnarray*}
+donde $F(g) := \n{cond}(\fc{B}{b}, g\circ \mc{S}_\nn{ds}[[S]], id)$.
+\end{sist*}
+
+\subsection{Requisitos de punto fijo}
+
+Ahora bien, si examinamos la definición que hemos dado para $\mc{S}_\nn{ds} [[\nwhile b \ndo S]]$, veremos que volvemos a tener problemas. Esta vez el obstáculo se encuentra en que hemos supuesto que cada aplicación asociada a una sentencia de la forma $\nwhile b \ndo S$ tiene \textit{un} punto fijo. La realidad es bien distinta: puede haber varios puntos fijos o incluso ninguno, como ilustran los siguientes ejemplos.
+
+\begin{example}
+Cualquier elemento $f \in  \mathbf{State}\hookrightarrow \mathbf{State}$, tal que $fs =s$ si $sx = 0$, es punto fijo de la aplicación $G$ del anterior ejemplo.
+\end{example}
+
+\begin{example}
+Sean $g_1, g_2 \in \mathbf{State}\hookrightarrow\mathbf{State}$. La aplicación 
+$$H(g) := \begin{cases}
+     g_1 \text{, si } g = g_2\\
+     g_2 \text{, en otro caso}
+\end{cases}$$
+no admite ningún punto fijo si $g_1 \neq g_2$ porque, si $H(g) = g$, entonces, o bien $g \neq g_2$ y $H(g)= g_2$, o bien $g = g_2$ y $H(g)= g_2 \neq g_1=g$.
+\end{example}
+
+Por tanto, como no podemos admitir que $\n{fix}$ devuelva un conjunto de candidatos a puntos fijos, parece irremediable dar una serie de requerimientos para seleccionar \textit{el} que nos interesa. La tarea, entonces, es doble, porque debemos probar que al menos y a lo sumo uno de los posibles puntos fijos verifica tales condiciones.
+¿Qué condiciones dar? No entraremos mucho en detalle aquí, pero conviene tener una idea general de por qué exigimos determinadas restricciones. Podemos comenzar estudiando las diferentes configuraciones que se obtienen al ejecutar $\nwhile b \ndo S$ desde un estado $s_0$. Sea $F$ la aplicación asociada. Tenemos los siguientes casos:
+\begin{itemize}
+    \item[(a)] La ejecución termina. Por ejemplo, con $\n{while } 0≤\n{x do x} := \n{x}−1$ desde cualquier estado en el que $\n{x}\geq 0$.
+    \item[(b)] La ejecución entra en un bucle local, es decir, hay alguna subexpresión en $S$ que entra en bucle. Por ejemplo, en $\n{while }0≤\n{x do }(\n{if x}=0 \n{ then }(\n{while true do skip})\n{ else x}:= \n{x}−1)$ desde cualquier estado con $\n{x}\geq 0$.
+    \item[(c)] La ejecución entra en un bucle global, es decir, se entra en bucle al ejecutar la expresión completa. Por ejemplo, con $\n{while } ¬(\n{x}=0)\n{ do skip}$ desde cualquier estado con $\n{x}\neq 0$.
+\end{itemize}
+Más concretamente, 
+\begin{itemize}
+    \item[(a)] Hay una secuencia de estados $s_1, \dots, s_n$ tales que $\fc{B}{b}$ toma el valor $\mathbf{ff}$ únicamente en $s_n$ y con $\mc{S}_\nn{ds}[[S]]s_i=s_{i+1}$ para $i <n$. Si $F(g) = g$, entonces
+    $$gs_i = F(g)s_i = \n{cond}(\fc{B}{b}, g\circ \mc{S}_\nn{ds}[[S]], id)$$
+    y entonces es claro que $gs_i = s_{i+1}$, si $i <n$, y $gs_i = s_i$ si $i = n$. Pero entonces $gs_0 = s_n$.
+    \item[(b)] Hay una secuencia de estados $s_1, \dots, s_n$ tales que $\fc{B}{b}$ toma el valor $\mathbf{tt}$ para cada $i \leq n$ y tales que $\mc{S}_\nn{ds}[[S]]s_i = s_{i+1}$, si $i <n$, y $\mc{S}_\nn{ds}[[S]]s_i = \n{INDEFINIDO}$, si $i = n$. Por un razonamiento análogo al anterior, podemos determinar que todo $g = F(g)$ verifica que $gs_0 = \n{INDEFINIDO}$.
+    \item[(c)] Existe una secuencia infinita de estados $s_1, s_2, \dots$ tales que $\fc{B}{b}s_i =\mathbf{tt}$ y $\mc{S}_\nn{ds}[[S]]s_i = s_{i+1}$, para cada $i=1, 2, \dots$. Entonces, es fácil ver que, si $F(g)=g$,
+$$gs_{i} = gs_{i+1}, \text{ para todo } i \in \N$$
+Pero entonces $gs_0 = gs_i$, para cada $i\in \N$. Por tanto, siguiendo este método no podemos determinar el valor de $gs_0$.
+\end{itemize}
+
+Precisamente, esta anomalía del caso (c) es lo que nos indica que los posibles puntos fijos de $F$ pueden diferir entre sí. Para mayor claridad, centrémonos en el siguiente ejemplo:
+
+\begin{example}
+Consideremos $\n{while } ¬(\n{x}=0)\n{ do skip}$, ejecutado desde un estado $s_0$ con $\n{x}\neq 0$. En este caso, 
+$$F(g)s := \begin{cases}
+    gs \text{, si } s\n{x} \neq 0\\
+    s \text{, en otro caso}
+\end{cases}$$
+Pero ya vimos que cualquier $g \in \mathbf{State}\hookrightarrow\mathbf{State}$ con $gs = s$ si $s\n{x} = 0$ era punto fijo de $F$. Por otro lado, está claro que la intuición nos dice que sería deseable tener
+$$\mc{S}_\nn{ds}[[\n{while } ¬(\n{x}=0)\n{ do skip}]]s_0 := \begin{cases}
+    \n{INDEFINIDO} \text{, si } s_0\n{x} = 0 \\
+    s_0 \text{, en otro caso}
+\end{cases}$$
+Pero entonces, si tomamos ahora
+$$hs := \begin{cases}
+    \n{INDEFINIDO} \text{, si } s\n{x} = 0 \\
+    s \text{, en otro caso}
+\end{cases}$$
+es claro que $F(h) = h$ y, \textit{además}, que $hs = s'$ implica $h's = s'$, para cualquier otro punto fijo $h'$ de $F$, pero no al contrario. 
+\end{example}
+\\
+
+Este ejemplo muestra que, en resumen, el candidato a $\n{fix}(F)$ debe ser cierto $h \in \mathbf{State}\hookrightarrow\mathbf{State}$ tal que:
+\begin{itemize}
+    \item[(1)] $F(h)=h$.
+    \item[(2)] Sean $s, s' \in \mathbf{State}$. Si $g \in \mathbf{State}\hookrightarrow\mathbf{State}w$ verifica (1), entonces
+    $$hs =s' \text{ implica que } gs=s'$$
+\end{itemize}
+Nótese que, si $hs = \n{INDEFINIDO}$ entonces no se verifica (2). 
+
+\section{Teoría del punto fijo}
+
+
+
+

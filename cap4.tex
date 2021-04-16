@@ -139,3 +139,178 @@ $$\fc{M}{c}s := \begin{cases}s' \text{, si } \conf{c}{\varepsilon}{s}\rhd^* \con
 Que $\mc{M}$ esté bien definida se sigue por determinismo. Conviene hacer notar que esta definición requiere que la componente del código, en la configuración final, sea vacía.
 
 \section{Traducción}
+
+Ahora estudiamos cómo generar código para la máquina abstracta. Para ello, debemos precisar el comportamiento de expresiones y sentencias, así como la relación con $\n{While}$.
+
+\subsection{Expresiones y sentencias}
+
+Para traducir expresiones (aritméticas y booleanas) debemos proceder composicionalmente. Recordemos que esto era relevante a la hora de especificar una propiedad o (como en nuestro caso) una aplicación sobre elementos sintácticos. Conseguimos la composicionalidad con las siguientes definiciones:
+\begin{align*}
+    \mc{CA}: \mathbf{Aexp} &\longrightarrow\mathbf{Code}\\
+    n &\mapsto \n{PUSH}-n\\
+    x &\mapsto \n{FETCH}-x\\
+    a_1 + a_2&\mapsto \fc{CA}{a_2}:\fc{CA}{a_1}: \n{ADD}\\
+    a_1 * a_2&\mapsto \fc{CA}{a_2}:\fc{CA}{a_1}: \n{MULT}\\
+    a_1 - a_2&\mapsto \fc{CA}{a_2}:\fc{CA}{a_1}: \n{SUB}
+\end{align*}
+
+\begin{align*}
+    \mc{CB}: \mathbf{Bexp} &\longrightarrow\mathbf{Code}\\
+    \n{true} &\mapsto \n{TRUE}\\
+    \n{false} &\mapsto \n{FALSE}\\
+    a_1 = a_2&\mapsto \fc{CA}{a_2}:\fc{CA}{a_1}: \n{EQ}\\
+    a_1 \leq a_2&\mapsto \fc{CA}{a_2}:\fc{CA}{a_1}: \n{LE}\\
+    \neg b&\mapsto \fc{CB}{b}:\n{NEG}\\
+    b_1 \land b_2&\mapsto \fc{CB}{b_2}:\fc{CB}{b_1}: \n{AND}
+\end{align*}
+Se deben distinguir, evidentemente, los casos base y los inductivos. El orden que seguimos para el código no es arbitrario: véase el sistema de transiciones asociado a la máquina abstracta. 
+
+\begin{example}
+$\fc{CA}{\n{x}+1}= \fc{CA}{1}:\fc{CA}{\n{x}}:\n{ADD} = \n{PUSH}-1:\n{FETCH}-x:\n{ADD}$.
+\end{example}
+
+Conviene indicar que, precisamente por el hecho de que mediante las aplicaciones $\mc{CA}$ y $\mc{CB}$ vamos `apilando' información, se puede dar el caso de que dos expresiones que son iguales en $\nn{While}$ no lo son en el código. Por ejemplo, $\fc{A}{a_1+(a_2 + a_3)}= \fc{A}{(a_1+a_2)+a_3}$ pero $\fc{CA}{a_1+(a_2 + a_3)}\neq \fc{CA}{(a_1+a_2)+a_3}$. Únicamente podemos decir que ambas expresiones se `comportan' de la misma forma.
+\\
+
+Siguiendo un razonamiento similar al anterior, definimos la aplicación:
+\begin{align*}
+    \mc{CB}: \mathbf{Stm} &\longrightarrow\mathbf{Code}\\
+    x;=a &\mapsto \fc{CA}{a}:\n{STORE}-x\\
+    \n{skip} &\mapsto \n{NOOP}\\
+    S_1;S_2&\mapsto \fc{CA}{S_2}:\fc{CA}{S_1}\\
+    \n{if }b\n{ then } S_1 \n{ else }S_2&\mapsto \fc{CB}{b}:\n{BRANCH}(\fc{CS}{S_1}, \fc{CS}{S_1})\\
+    \n{while }b\n{ do }S&\mapsto \n{LOOP}(\fc{CB}{b}, \fc{CS}{S})
+\end{align*}
+Notemos que, de nuevo, esta definición es composicional. Además, no se genera nunca código vacío. 
+
+\begin{example}
+Supongamos que queremos generar código para la expresión $\n{repeat }S \n{ until }b$. Podríamos tratar de definir (composicionalmente) una secuencia de instrucciones a partir de esta expresión. Una alternativa consiste en emplear que esta expresión es semánticamente a $S; \n{while }\neg b \n{ do }S$ y simplemente traducirla usando las aplicaciones que acabamos de introducir.
+\end{example}
+
+\subsection{La función semántica para la máquina abstracta}
+Tras haber convertido las expresiones aritméticas, booleanas y las sentencias del lenguaje $\nn{While}$ se puede proceder a definir una función $\mc{S}_\nn{am}[[\cdot]]: \textbf{Stm}\to (\textbf{State} \hookrightarrow \textbf{State})$ que primero traduzca a código de la máquina y después aplique la función de ejecución. Matemáticamente se puede definir como
+\[
+    \mc{S}_\nn{am} := \mathcal{M}\circ \mathcal{CS}
+\]
+
+\begin{example} Veamos por ejemplo el resultado de aplicar $ \mc{S}_\nn{am}$ a la sentencia $x:=1; y:= x+1$. Se traduce a código máquina
+\begin{eqnarray*}
+    \fc{CS}{x:=1; y:= x+1} &=& \fc{CS}{x:=1}: \fc{CS}{y:= x+1} \\
+    &=& \fc{CA}{1}:\n{STORE}-x:\fc{CS}{y:= x+1} \\
+    &=& \fc{CA}{1}:\n{STORE}-x:\fc{CA}{x+1}:\n{STORE}-y \\
+    &=& \n{PUSH}-1:\n{STORE}-x:\fc{CA}{x}:\fc{CA}{1}:\n{ADD}:\n{STORE}-y \\
+    &=& \n{PUSH}-1:\n{STORE}-x:\n{FETCH}-x:\n{PUSH}-1:\n{ADD}:\n{STORE}-y
+\end{eqnarray*}
+y ahora se pasa dicho código por ejecución
+\begin{eqnarray*}
+    && \conf{\n{PUSH}-1:\n{STORE}-x:\n{FETCH}-x:\n{PUSH}-1:\n{ADD}:\n{STORE}-y}{ \varepsilon}{s} \\
+    &\rhd& \conf{\n{STORE}-x:\n{FETCH}-x:\n{PUSH}-1:\n{ADD}:\n{STORE}-y}{1}{s} \\
+    &\rhd& \conf{\n{FETCH}-x:\n{PUSH}-1:\n{ADD}:\n{STORE}-y}{\varepsilon}{s[x\mapsto 1]}\\
+    &\rhd& \conf{\n{PUSH}-1:\n{ADD}:\n{STORE}-y}{s[x\mapsto 1](x)}{s[x\mapsto 1]}\\
+    &\rhd& \conf{\n{PUSH}-1:\n{ADD}:\n{STORE}-y}{1}{s[x\mapsto 1]}\\
+    &\rhd& \conf{\n{ADD}:\n{STORE}-y}{2:1}{s[x\mapsto 1]}\\
+    &\rhd& \conf{\n{STORE}-y}{3}{s[x\mapsto 1]}\\
+    &\rhd& \conf{\varepsilon}{\varepsilon}{(s[x\mapsto 1])[y\mapsto 3]}
+\end{eqnarray*}
+luego $\mc{S}_\nn{am}[[x:=1; y:= x+1]] = (s[x\mapsto 1])[y\mapsto 3]$.
+\end{example}
+
+\section{Corrección}
+
+Recordemos que el objetivo ahora consiste en comprobar que, si ejecutamos un código para una expresión de $\nn{While}$ en $\mathbf{Code}$, el resultado es el mismo que obtendríamos siguiendo la semántica operacional de $\nn{While}$. Por tanto, la forma de proceder vuelver a ser composicional, es decir, debemos realizar un razonamiento que siga cierta inducción estructural.
+\\
+
+Para expresiones, tenemos unos resultados precisos:
+
+\begin{lema}
+Sea $a \in \mathbf{Aexp}$. Entonces $\conf{\fc{CA}{a}}{\varepsilon}{s}\rhd^*\conf{\varepsilon}{\fc{A}{a}s}{s}$ y cada configuración intermedia de esta secuencia de derivación tendrá pila no vacía.
+\end{lema}
+
+\begin{lema}
+Sea $b \in \mathbf{Bexp}$. Entonces $\conf{\fc{CB}{b}}{\varepsilon}{s}\rhd^*\conf{\varepsilon}{\fc{B}{b}s}{s}$ y cada configuración intermedia de esta secuencia de derivación tendrá pila no vacía.
+\end{lema}
+
+Una pregunta natural es: ¿qué semántica de $\nn{While}$ emplear para comprobar la corrección de la traducción? Nosotros usaremos la semántica natural. Sin embargo, en la siguiente sección discutiremos una alternativa a este enfoque. El enunciado preciso es el siguiente:
+
+\begin{theorem}
+Sea $S \in \mathbf{Stm}$. Entonces, $\mc{S}_\nn{ns}[[S]] = \mc{S}_\nn{am}[[S]]$.
+\end{theorem}
+\begin{proof}
+La demostración consiste en dos lemas:
+\begin{lema}
+Dados $S \in \mathbf{Stm}$ y $s, s' \in \mathbf{State}$, 
+$\la{S}{s}\to s'$ implica que $\conf{\fc{CS}{S}}{\varepsilon}{s}\rhd^* \conf{\varepsilon}{\varepsilon}{s'}.$
+\end{lema}
+En este caso, la demostración se realiza por inducción sobre la forma del árbol de derivación (recordemos que trabajamos con semántica natural).
+\begin{lema}
+Dados $S \in \mathbf{Stm}$ y $s, s' \in \mathbf{State}$, 
+$\conf{\fc{CS}{S}}{\varepsilon}{s} \rhd^k \conf{\varepsilon}{e}{s'}$ implica que $\la{S}{s}\to s'$ y $e=\varepsilon.$ Es decir, si la ejecución de un código para $S$ desde el almacén $s$ termina, entonces la semántica natural de $S$ desde $s$ terminará en un estado igual que el almacén de la configuración terminal correspondiente.
+\end{lema}
+Aquí se emplea inducción sobre la longitud de las secuencias de computación (derivación) de la máquina abstracta. Se podría consultar el Teorema \ref{theq} para tomar una idea del procedimiento general.
+\end{proof}
+
+Notemos que el teorema anterior implica dos propiedades. Por un lado, tenemos que, si la ejecución de una sentencia $S$ termina en uno de los dos sistemas de transiciones, entonces también termina en el otro, y los resultados coinciden. Por otro lado, también se sigue que, si la ejecución de $S$ en uno de estos sistemas entra en bucle, ocurrirá lo mismo en el otro.
+
+\section{Bisimulación}
+
+Del teorema previo, junto con el teorema de equivalencia, podemos concluir que $\mc{S}_\nn{sos}[[S]] = \mc{S}_\nn{am}[[S]]$. En cambio, podemos dar un procedemiento mucho más directo para demostrar esto y, de hecho, un resultado que emplee la semántica operacional estructural de $\nn{While}$ será más natural, dado que, como ya dijimos, la semántica de la máquina abstracta también es de paso corto.
+\\
+
+De este modo, podríamos haber definido una relación de \textit{bisimulación} entre las configuraciones de $\nn{While}$ y la máquina abstracta como:
+\begin{align*}
+    \la{S}{s} & \approx \conf{\fc{CS}{S}}{\varepsilon}{s}\\
+    s & \approx \conf{\varepsilon}{\varepsilon}{s}
+\end{align*}
+Notemos que ésta fue la motivación informal que dimos en su momento. Lo siguiente consiste en demostrar que la bisimulación enlaza caminos paralelos, es decir, siempre que una configuración de la semántica operacional estructural cambie en un paso, existe una secuencia de pasos en la semántica de la AM que hará un cambio similar en la configuración correspondiente. Más concretamente:
+\begin{lema}
+Si $\gamma_\nn{sos} \approx \gamma_\nn{am}$ y $\gamma_\nn{sos}\dto\delta_\nn{sos}$, entonces existe una configuración $\delta_\nn{am}$ tal que $\gamma_\nn{am} \rhd^+ \delta_\nn{am} \approx \delta_\nn{sos}.$ 
+
+De hecho, si $\la{S}{s}\dto^* s'$, entonces $\conf{\fc{CS}{S}}{\varepsilon}{s}\rhd^* \conf{\varepsilon}{\varepsilon}{s'}$.
+\end{lema}
+
+Recíprocamente, hay que demostrar que, si la máquina abstracta realiza una serie de movimientos con la pila vacía (es decir, cambia de una configuración a otra y ambas tienen la pila vacía, esto es, son de la forma $\conf{c}{\varepsilon}{s}$) entonces se pueden realizar otros movimientos paralelos en la semántica operacional estructural. Notemos que en la semántica operacional las variables se evalúan en un paso mientras que, en la máquina abstracta, esto puede llevar más de uno. Tenemos entonces:
+\begin{lema}
+Sean $\gamma_\nn{sos}\approx \gamma_\nn{am}^1 \rhd \dots \rhd \gamma_\nn{am}^k$, con $k>1$ y de modo que solo $\gamma_\nn{am}^1$ y $\gamma_\nn{am}^k$ tienen la pila vacía. Entonces, existe una configuración $\delta_\nn{sos}$ tal que $\gamma_\nn{sos}\dto \delta_\nn{sos}\approx \gamma_\nn{am}^k$. 
+
+De hecho, si $\conf{\fc{CS}{S}}{\varepsilon}{s}\rhd^* \conf{\varepsilon}{\varepsilon}{s'}$, entonces $\la{S}{s}\dto^* s'$.
+\end{lema}
+
+Por tanto, obtenemos:
+\begin{theorem}
+Dado $S \in \mathbf{Stm}$, $\mc{S}_\nn{sos}[[S]]= \mc{S}_\nn{am}[[S]]$.
+\end{theorem}
+
+En el fondo, hemos podido demostrar este resultado de este modo por el siguiente motivo: es posible encontrar configuraciones en secuencias de derivaciones paralelas que se corresponden entre ellos (esta es la definición de bisimulación). Esta idea no se aplica, naturalmente, a la semántica operacional natural: deja de haber pasos intermedios en una de las dos derivaciones paralelas. 
+\\
+
+En general, la \textit{demostración por bisimulación} (para la corrección) consiste en dos pasos: 
+\begin{itemize}
+     \item[(i)] Asociamos pasos individuales en la semántica operacional estructural a procedimientos de la máquina abstracta y después extendemos esta asociación a secuencias de pasos.
+     \item[(ii)] Demostramos que secuencias especiales de la máquina abstracta pueden ser asociadas con secuencias de la semántica correspondiente y después demostramos a secuencias generales.
+\end{itemize}
+
+\begin{example}
+Supongamos que, en el sistema $\nn{While}_\nn{sos}$, cambiamos la regla 
+\begin{prooftree}
+    \AxiomC{}
+    \LeftLabel{$[\nn{while}_\nn{sos}]$}
+    \RightLabel{}
+    \UnaryInfC{$\la{\n{while }b\n{ do }S}{s}\dto \la{\n{if }b\n{ then }(S; \n{while }b\n{ do }S)\n{ else skip}}{s}$}
+\end{prooftree}    
+Por las dos reglas:
+\begin{prooftree}
+    \AxiomC{}
+    \LeftLabel{$[\nn{while'}^\nn{tt}_\nn{sos}]$}
+    \RightLabel{si $\fc{B}{b}s = \mathbf{tt}$}
+    \UnaryInfC{$\la{\n{while }b\n{ do }S}{s}\dto' \la{S;\n{while }b\n{ do }S}{s}$}
+\end{prooftree}    
+\begin{prooftree}
+    \AxiomC{}
+    \LeftLabel{$[\nn{while'}^\nn{ff}_\nn{sos}]$}
+    \RightLabel{si $\fc{B}{b}s = \mathbf{tt}$}
+    \UnaryInfC{$\la{\n{while }b\n{ do }S}{s}\dto' s$}
+\end{prooftree}
+Podríamos preguntarnos si, una vez que tenemos la función semántica modificada, $\mc{S}'_\nn{sos}$, se verifica que, para cada $S \in  \mathbf{Stm}$,
+$$\mc{S}_\nn{sos}[[S]]= \mc{S}'_\nn{sos}[[S]].$$
+Podríamos aplicar el método de demostración que acabamos de ver, es decir, podemos asociar $\la{\n{while }b\n{ do }S}{s}$ y $s$ en cada sistema y, por otro lado, tendríamos que $\la{\n{while }b\n{ do }S}{s} \dto^* \la{S;\n{while }b\n{ do }S}{s}$ mientras que $\la{\n{while }b\n{ do }S}{s}\dto' \la{S;\n{while }b\n{ do }S}{s}$, si si $\fc{B}{b}s = \mathbf{tt}$, y $\la{\n{while }b\n{ do }S}{s}\dto^* s$ mientras que $\la{\n{while }b\n{ do }S}{s}\dto' s$. Con esto podemos convencernos de la afirmación anterior.
+\end{example}
