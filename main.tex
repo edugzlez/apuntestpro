@@ -19,9 +19,13 @@
 \usepackage{syllogism}
 \usepackage{bussproofs}
 \usepackage{enumitem}
-
+\usepackage{comment}
 \usepackage[T1]{fontenc}
 \usepackage{titlesec, blindtext, color}
+\usepackage{tikz-cd}
+
+
+
 \definecolor{gray75}{gray}{0.75}
 \newcommand{\hsp}{\hspace{20pt}}
 \titleformat{\chapter}[hang]{\Huge\bfseries}{\thechapter\hsp\textcolor{gray75}{|}\hsp}{0pt}{\Huge\bfseries}
@@ -88,6 +92,7 @@
 \newcommand{\mc}[1]{\mathcal{#1}}
 \newcommand{\fc}[2]{\mc{#1}[\![#2]\!]}
 \newcommand{\la}[2]{\langle #1, #2 \rangle}
+\newcommand{\lac}[4]{\langle #1, #2 , #3, #4  \rangle}
 \newcommand{\dto}{\Rightarrow}
 \newcommand{\nn}[1]{\mathrm{#1}}
 
@@ -170,6 +175,7 @@
 \include{cap5}
 
 \appendix
+
 %    Include appendix "chapters" here.
 
 

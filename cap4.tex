@@ -261,7 +261,7 @@ De este modo, podríamos haber definido una relación de \textit{bisimulación} 
     \la{S}{s} & \approx \conf{\fc{CS}{S}}{\varepsilon}{s}\\
     s & \approx \conf{\varepsilon}{\varepsilon}{s}
 \end{align*}
-Notemos que ésta fue la motivación informal que dimos en su momento. Lo siguiente consiste en demostrar que la bisimulación enlaza caminos paralelos, es decir, siempre que una configuración de la semántica operacional estructural cambie en un paso, existe una secuencia de pasos en la semántica de la AM que hará un cambio similar en la configuración correspondiente. Más concretamente:
+Notemos que ésta fue la motivación informal que dimos en su momento para comprender el funcionamiento de la máquina abstracta. Lo siguiente consiste en demostrar que la bisimulación enlaza caminos paralelos, es decir, siempre que una configuración de la semántica operacional estructural cambie en un paso, existe una secuencia de pasos en la semántica de la AM que hará un cambio similar en la configuración correspondiente. Más concretamente:
 \begin{lema}
 Si $\gamma_\nn{sos} \approx \gamma_\nn{am}$ y $\gamma_\nn{sos}\dto\delta_\nn{sos}$, entonces existe una configuración $\delta_\nn{am}$ tal que $\gamma_\nn{am} \rhd^+ \delta_\nn{am} \approx \delta_\nn{sos}.$ 
 
@@ -313,4 +313,35 @@ Por las dos reglas:
 Podríamos preguntarnos si, una vez que tenemos la función semántica modificada, $\mc{S}'_\nn{sos}$, se verifica que, para cada $S \in  \mathbf{Stm}$,
 $$\mc{S}_\nn{sos}[[S]]= \mc{S}'_\nn{sos}[[S]].$$
 Podríamos aplicar el método de demostración que acabamos de ver, es decir, podemos asociar $\la{\n{while }b\n{ do }S}{s}$ y $s$ en cada sistema y, por otro lado, tendríamos que $\la{\n{while }b\n{ do }S}{s} \dto^* \la{S;\n{while }b\n{ do }S}{s}$ mientras que $\la{\n{while }b\n{ do }S}{s}\dto' \la{S;\n{while }b\n{ do }S}{s}$, si si $\fc{B}{b}s = \mathbf{tt}$, y $\la{\n{while }b\n{ do }S}{s}\dto^* s$ mientras que $\la{\n{while }b\n{ do }S}{s}\dto' s$. Con esto podemos convencernos de la afirmación anterior.
+\end{example}
+
+\begin{example}
+    Hemos realizado una modificación de la máquina abstracta de tal forma que ahora el código es fijo y disponemos de un contador de programa $pc$ que indica la instrucción en ejecución (tal y como aparece en la máquina $\mathbf{A M}_{2}$ ). También se han reemplazado las instrucciones $\n{BRANCH}$ y $\n{LOOP}$ por las siguientes: $\n{JUMP}-z$
+y $\n{JUMPFALSE}-z$. Pero se ha mantenido el estado. La configuración es una cuaterna definida de la siguiente forma:
+
+$$ \lac{pc}{cs}{e}{s} \in \N \times \mathbf{Code} \times \mathbf{Stack} \times \mathbf{State} $$
+Se presentan las nuevas instrucciones:
+\begin{center}
+    $ \lac{pc}{cs}{e}{s} \rhd \lac{pc+1}{cs}{\fc{N}{n}:e}{s} \quad \mathbf{si} \ cs[pc] = \n{PUSH}-n \\
+
+ \lac{pc}{cs}{e}{s} \rhd \lac{pc+z}{cs}{\fc{N}{n}:e}{s} \quad \mathbf{si} \ cs[pc] = \n{JUMP}-z \\
+ 
+ \lac{pc}{cs}{\n{ff}: e}{s} \rhd \lac{pc+z}{cs}{\fc{N}{n}:e}{s} \quad \mathbf{si} \ cs[pc] = \n{JUMPFALSE}-z \\
+ 
+  \lac{pc}{cs}{\n{tt}: e}{s} \rhd \lac{pc+1}{cs}{\fc{N}{n}:e}{s} \quad \mathbf{si} \ cs[pc] = \n{JUMPFALSE}-z
+$
+\end{center}
+
+Los nuevos esquemas de tradución son los mismos salvo $\n{if},\  \n{while}$:\\
+
+$ \fc{CS}{\n{if }b\n{ then } S_1 \n{ else }S_2} = \fc{CS}{b}: \n{JUMPFALSE-}(z_1 +1) : \fc{CS}{S_1}:\n{JUMP-}z_2 : \fc{CS}{S_1} $
+\begin{center}
+    $\text{donde la longitud de }\fc{CB}{S_1}, \fc{CB}{S_2} = z_1, z_2$
+\end{center}
+\\
+$ \fc{CS}{\n{while }b\n{ do }S} = \fc{CS}{b}: \n{JUMPFALSE-}(z_1 +1) : \fc{CS}{S}:\n{JUMP-}(-(z_0+z_1+1)) : \fc{CS}{S_1} $
+\begin{center}
+    $\text{donde la longitud de }\fc{CB}{b}, \fc{CB}{S} = z_0, z_1$
+\end{center}
+Demostremos la equivalencia de esta nueva máquina con la anterior
 \end{example}

@@ -92,7 +92,7 @@ Luego $g_1 = \n{fix}(G)$. Por otro lado, $g_2 \equiv \n{INDEFINIDO}$ no puede se
 
 Entonces, de momento, tenemos las siguientes reglas: 
 
-\begin{sist*}[Semántica denotacional para $\nn{While}$]
+\begin{sist*}[Semántica denotacional para $\nn{While}$]\label{whileds}
 \begin{eqnarray*}
     \mc{S}_\nn{ds} [[x:=a]]s &:=& s[x\mapsto \fc{A}{a}s] \\
     \mc{S}_\nn{ds} [[\nskip]] &:=& id \\
@@ -102,6 +102,15 @@ Entonces, de momento, tenemos las siguientes reglas:
 \end{eqnarray*}
 donde $F(g) := \n{cond}(\fc{B}{b}, g\circ \mc{S}_\nn{ds}[[S]], id)$.
 \end{sist*}
+
+Notemos que podríamos haber intentado definir 
+$$\mc{S}_{ds}[[\n{while } b \n{ do } S]]s := \mc{S}_{ds}^{\delta(b, S)s}s$$
+con 
+$$\delta(b, S)s := \begin{cases}
+    0 \text{, si } \fc{B}{b}s = \mathbf{ff} \\
+    1 + \delta(b, S)s' \text{, en otro caso}
+\end{cases}$$
+Sería una definición composicional pero, en cambio, la aplicación $\delta(b, S)$ no está bien definida como función recursiva, porque podría darse el caso de que no devolviera ningún valor bien definido.
 
 \subsection{Requisitos de punto fijo}
 
@@ -159,17 +168,485 @@ $$hs := \begin{cases}
 es claro que $F(h) = h$ y, \textit{además}, que $hs = s'$ implica $h's = s'$, para cualquier otro punto fijo $h'$ de $F$, pero no al contrario. 
 \end{example}
 \\
-
 Este ejemplo muestra que, en resumen, el candidato a $\n{fix}(F)$ debe ser cierto $h \in \mathbf{State}\hookrightarrow\mathbf{State}$ tal que:
 \begin{itemize}
     \item[(1)] $F(h)=h$.
-    \item[(2)] Sean $s, s' \in \mathbf{State}$. Si $g \in \mathbf{State}\hookrightarrow\mathbf{State}w$ verifica (1), entonces
+    \item[(2)] Sean $s, s' \in \mathbf{State}$. Si $g \in \mathbf{State}\hookrightarrow\mathbf{State}$ verifica (1), entonces
     $$hs =s' \text{ implica que } gs=s'$$
 \end{itemize}
 Nótese que, si $hs = \n{INDEFINIDO}$ entonces no se verifica (2). 
 
-\section{Teoría del punto fijo}
+
+\begin{example}[Ejercicio 5.2] El funcional F asociado con la sentencia
+\[
+    \nwhile \neg(x=0) \ndo x:= x-1
+\]
+es, por definición $F(g) = \n{cond}(\fc{B}{\neg(x=0)}, g\circ\mathcal{S}_\nn{ds}[[x:= x-1]], \n{id})$, que aplicado a un estado $s$ puede verse de la forma
+\begin{eqnarray*}
+    F\ g (s) &=& \left\{\begin{array}{ll}
+          g\circ\mathcal{S}_\nn{ds}[[x:= x-1]], \n{id}) (s) & \fc{B}{\neg(x=0)}s = \textbf{tt} \\
+          s &  c.c
+    \end{array}\right. \\
+    &=& \left\{\begin{array}{ll}
+          g(s[x \mapsto (s\ x) - 1]) & s\ x\neq 0 \\
+          s &  s\ x = 0
+    \end{array}\right.
+\end{eqnarray*}
+Ahora vamos a ver varios ejemplos de función $g$ y comprobaremos si son puntos fijos por $F$:
+\begin{enumerate}
+    \item La aplicación
+    \[
+        g_1\ s := \n{INDEFINIDO},\ \ \forall s\in\State
+    \]
+    no es un punto fijo. Tomemos por ejemplo un estado $s\in\State$ tal que $s\ x = 1$, entonces
+    \begin{eqnarray*}
+        s' &:=& (F\ g_1)\  s \\
+        &=& \left\{\begin{array}{ll}
+        g_1\ s[x \mapsto 0] & x\neq 0 \\
+          s &  c.c\end{array}\right. \\
+        &=& g_1\ s[x \mapsto 0]
+    \end{eqnarray*}
+    luego $s'\ x = \n{INDEFINIDO} \neq 1 = s\ x$, por lo que $g$ no es un punto fijo.
+    \item La aplicación
+    \[
+         g_2\ s = \left\{\begin{array}{ll}
+          s[x\mapsto 0] & s\ x \geq 0 \\
+          \n{INDEFINIDO} &  s\ x < 0
+    \end{array}\right.
+    \]
+    sí es un punto fijo. Sea $s\in\State$, supongamos $s\ x > 0$:
+    \begin{eqnarray*}
+        s' &:=& (F\ g_2)\  s \\
+        &=& \left\{\begin{array}{ll}
+        g_2\ s[x \mapsto s\ x - 1] & s\ x\neq 0 \\
+          s &  s\ x=0\end{array}\right. \\
+        &=& g_2\ s[x \mapsto s\ x - 1] \\
+        &=& s[[x \mapsto s\ x - 1]][x \mapsto 0] \\
+        &=& s[x \mapsto 0] = g_2\ s
+    \end{eqnarray*}
+    Para el caso $s\ x = 0$ sucede que
+    \[
+        (F\ g_2)\  s = s = s[x\mapsto 0] = g_2\ s
+    \]
+    Y finalmente si $x<0$, informalmente el bucle sería infinito:
+    \[
+        (F\ g_2)\  s = \n{INDEFINIDO} = g_2\ s
+    \]
+    Por lo que se deduce que $F\ g_2 = g_2$, luego es un punto fijo.
+    \item Consideremos la aplicación
+     \[
+         g_3\ s = \left\{\begin{array}{ll}
+          s[x\mapsto 0] & s\ x \geq 0 \\
+          s &  s\ x < 0
+    \end{array}\right.
+    \]
+    Tomemos $s\ x = -1$ entonces
+    \begin{eqnarray*}
+        (F\ g_3)\  s  &=&  g_3\ s[x \mapsto -2] \\
+        &=& g_3\ s[x \mapsto -2] \neq s = g_3\ s
+    \end{eqnarray*}
+    Por lo que $F\ g_3 \neq g_3$ y entonces $g_3$ no es punto fijo.
+    \item Definimos ahora $g_4\ s = s[x\mapsto 0]$ para todo $s\in\State$. Esta función es punto fijo:
+    \begin{eqnarray*}
+        (F\ g_4)\  s  &=& \left\{\begin{array}{ll}
+        g_4\ s[x \mapsto s\ x -1] & s\ x\neq 0 \\
+          s &  s\ x=0\end{array}\right. \\
+        &=& \left\{\begin{array}{ll}
+        s[x \mapsto 0] & x\neq 0 \\
+        s &  s\ x = 0 \end{array}\right. \\
+        &=& s[x \mapsto 0] = g_4\ s
+    \end{eqnarray*}
+    \item La aplicación identidad $g_5\ s = s$ no es un punto fijo. Sea $s\in\State$ tal que $s\ x = 1$ entonces
+    \begin{eqnarray*}
+        (F\ g_5)\ s  &=& g_5\ s[x\mapsto 0] \neq s = g_5\ s
+    \end{eqnarray*}
+    de lo que se deduce que $F\ g_5 \neq g_5$.
+\end{enumerate}
+\end{example}
+
+\begin{example}[Ejercicio 5.3] Consideramos ahora la sentencia
+\[
+    \nwhile \neg(x=1)\ndo (y:=y*x; x:= x-1)
+\]
+Tiene por funcional $F$:
+\begin{eqnarray*}
+    (F\ g) s &=& \left\{\begin{array}{ll}
+          g\circ\mathcal{S}_\nn{ds}[[y:=y*x; x:= x-1]], \n{id}) (s) & \fc{B}{\neg(x=1)}s = \textbf{tt} \\
+          s &  c.c
+    \end{array}\right. \\
+    &=& \left\{\begin{array}{ll}
+          g\ s[y\mapsto (s\ y)*(s\ x)][x\mapsto (s\ x)-1]& s\ x\neq 1 \\
+          s &  s\ x = 1
+    \end{array}\right.
+\end{eqnarray*}
+Este bucle hace un cálculo de $y\cdot x!$, por lo que es previsible que el punto fijo represente este hecho. \\ \\
+Un ejemplo de punto fijo es la aplicación
+\[
+    f_1\ s = \left\{\begin{array}{ll}
+    s[y\mapsto (s\ y)*(s\ x)!][x\mapsto 1] & si\ s\ x\geq 1 \\
+    \n{INDEFINIDO} & \text{caso contrario}
+    \end{array}\right.
+\]
+pues
+\begin{eqnarray*}
+    (F\ f_1)\ s &=& \left\{\begin{array}{ll}
+          f_1\ s[y\mapsto (s\ y)*(s\ x)][x\mapsto (s\ x)-1]& s\ x\neq 1 \\
+          s &  s\ x = 1
+    \end{array}\right. \\
+    &=& \left\{\begin{array}{ll}
+          f_1\ s'[y\mapsto (s'\ y)*(s'\ x)][x\mapsto 1] & s\ x\neq 1 \land s'\geq 1 \\
+          \n{INDEFINIDO} & s\ x\neq 1 \land s'< 1 \\
+          s &  s\ x = 1
+    \end{array}\right. \\
+    &=& \left\{\begin{array}{ll}
+          f_1\ s[y\mapsto (s\ y)*(s\ x)!][x\mapsto 1] & s\ x \geq 2 \\
+          \n{INDEFINIDO} & s\ x < 1 \\
+          s &  s\ x = 1
+    \end{array}\right.\\ &=& f_1\ s
+\end{eqnarray*}
+donde $s' := s[y\mapsto (s\ y)*(s\ x)][x\mapsto (s\ x)-1]$-
+También es un punto fijo
+\[
+    f_2\ s = s[y\mapsto (s\ y)*(s\ x)!][x\mapsto 1]
+\]
+pues es igual a $f_1$ salvo en los puntos en los que la primera función está indefinida.
+\end{example}
+
+\section{Conjuntos parcialmente ordenados}
+
+Antes de formalizar todas las ideas anteriores, conviene repasar algunos resultados básicos sobre conjuntos parcialmente ordenados. Posteriormente, haremos referencia a éstos, aplicados a un caso especial que describiremos más adelante.
+
+\begin{definition}
+Un par $(D,  \sqsubseteq)$ formado por un conjunto $D$ y una relación $\sqsubseteq \ \subseteq D^2$ se dice \textit{conjunto parcialmente ordenado} si $\sqsubseteq$ es reflexiva, antisimétrica y transitiva. 
+\end{definition}
+
+Recordemos también que un elemento $d \in D$ se dice $\sqsubseteq$-\textit{mínimo} si, para cada $d' \in D$, $d \sqsubseteq d'$.
+
+\begin{lema}
+Si un conjunto parcialmente ordenado $(D, \sqsubseteq)$ tiene un elemento mínimo, entonces es único. 
+\end{lema}
+\begin{proof}
+En otro caso, si hubiera dos mínimos, bastaría aplicar la definición de elemento mínimo y la antisimetría del orden parcial para comprobar que son iguales.
+\end{proof}
+
+Por tanto, si existe, denotaremos a tal elemento mínimo como $\bot$.
+
+\begin{definition} 
+Dados $(D, \sqsubseteq)$ parcialmente ordenado y $Y\subset D$, se dice que $d\in D$ es una \textit{cota superior} de $Y$ si, para cada $d' \in Y$, $d' \sqsubseteq d$.
+\end{definition}
+
+Llamaremos \textit{supremo} de $Y \subseteq D$ a la menor cota superior de $Y$ (respecto de $\sqsubseteq$).
+
+\begin{lema}
+Si $Y \subseteq D$ tiene un supremo respecto de un orden parcial, entonces es único.
+\end{lema}
+\begin{proof}
+Basta repetir la demostración del lema anterior, esta vez para cotas superiores.
+\end{proof}
+
+Si existe tal supremo en $Y$, lo denotamos por $\bigsqcup Y$. Pasemos ahora a un concepto que será relevante más adelante. Recordemos que un conjunto $A$ se dice \textit{totalmente ordenado} por una relación de orden $<$ si, dados arbitrarios $x, y \in A$, $x < y$ o $y < x$.
+
+\begin{definition}
+Un subconjunto $C$ de un conjunto parcialmente ordenado $(D, \sqsubseteq)$ se llama \textit{cadena} si es totalmente ordenado.
+\end{definition}
+
+\begin{definition}
+Un conjunto parcialmente ordenado $(D, \sqsubseteq)$ se llama \textit{completo} si, dada una cadena cualquiera $C$, existe $\bigsqcup C$. Si lo mismo ocurre para todos los subconjuntos de $D$, lo denominamos \textit{retículo completo}.
+\end{definition}
+
+\begin{prop}
+Sea $(D, \sqsubseteq)$ es un conjunto parcialmente ordenado y completo. Entonces tiene un elemento mínimo $\bot := \bigsqcup \emptyset$.
+\end{prop}
+\begin{proof}
+Claramente, $\emptyset$ es cadena (verifica la afirmación de forma vacía) y, como $D$ es completo por hipótesis, existe $\bigsqcup \emptyset$. Ahora bien, dado $d \in D$, por la definición de $\bigsqcup \emptyset$ es directo que se verifica $\bigsqcup\emptyset \sqsubseteq d$, luego obtenemos el resultado.
+\end{proof}
+
+\begin{definition}
+Sean $(D, \leq)$ y $(E, \preccurlyeq)$ conjuntos ordenados. Una aplicación $f: D \to E$ se dice \textit{monótona} si $d \leq d'$ implica que $f(d) \preccurlyeq f(d')$, para cualesquiera $d, d' \in D$. 
+\end{definition}
+
+Es directo comprobar que la composición de aplicaciones monótonas es monótona.
+
+\begin{lema}
+Sean $(D, \sqsubseteq), (E, \preccurlyeq)$ conjuntos parcialmente ordenados completos y $f: D \to E$ monótona. Entonces, si $C \subseteq D$ es cadena, $f(C) \subseteq E$ también lo es. Además\footnote{Nótese que, en la expresión que aparece en el teorema, nos referimos, primero a un $\preccurlyeq$-supremo, y después a un $\sqsubseteq$-supremo. Confiamos en el lector para que esté atento al uso en cada caso.},
+$$\bigsqcup f(C) \preccurlyeq f\left(\bigsqcup C\right).$$
+\end{lema}
+\begin{proof}
+Si $C = \emptyset$, entonces $f(\emptyset)= \emptyset$ y, como $\bot_E\preccurlyeq f(\bot_D)$, tenemos el resultado. Por tanto, supongamos que $C \neq \emptyset$. Sean $e_1, e_2 \in f(C)$. Entonces existen $d_1, d_2 \in C$ con $f(d_1)=e_1$ y $f(d_2)=e_2$. Por ser $C$ cadena, $d_1 \sqsubseteq d_2$ o $d_2 \sqsubseteq d_1$ y, por monotonía de $f$, $e_1 \preccurlyeq e_2$ o $e_2 \preccurlyeq e_1$, luego $f(C)$ es efectivamente cadena.
+\\
+
+Para lo segundo, sea $d \in C$. Entonces, por definición, $d \sqsubseteq \bigsqcup C$ y, por monotonía, $f(d) \preccurlyeq f(\bigsqcup C)$. Es decir, $f(\bigsqcup C)$ es cota superior de $f(C)$. Pero entonces, por definición, $\bigsqcup f(C) \preccurlyeq f(\bigsqcup C)$.
+\end{proof}
+
+Aunque, en general, no es cierto que las aplicaciones monótonas preserven supremos, nos centraremos en ellas a continuación:
+\begin{definition}
+Sean $(D, \sqsubseteq), (E, \preccurlyeq)$ conjuntos parcialmente ordenados completos y $f: D \to E$ monótona. Decimos que $f$ es \textit{continua} si $\bigsqcup f(C) = f(\bigsqcup C)$ para cada cadena $C \neq \emptyset$. Si, además, $f(\bot_D) = \bot_E$, decimos que $f$ es \textit{estricta}.
+\end{definition}
+
+Es fácil comprobar que, si $f: D \to E$ es continua, entonces es monótona. También es fácil ver que composición de funciones continuas es continua, y que lo mismo ocurre para las funciones estrictas. 
+\\
+
+Llegamos de este modo al concepto que ha motivado toda la sección:
+
+\begin{theorem}\label{fixth}
+Sea $(D, \sqsubseteq)$ conjunto parcialmente ordenado completo. Sea $f: D \to D$ continua. Entonces,
+$$\text{\n{fix}}(f) := \bigsqcup\{f^m(\bot) \, | \, m \in \N\}$$
+define un elemento de $D$ y es precisamente el menor punto fijo de $f$\footnote{Aquí empleamos la notación $f^0 := id$, $f^{n+1} := f^n\circ f$.}.
+\end{theorem}
+\begin{proof}
+Veamos que $\n{fix}(f)$ está bien definido. Primero, $id(\bot) = \bot$ y, claramente, $\bot \sqsubseteq d$ para cada $d \in D$. Supongamos que $f^n(\bot) \sqsubseteq f^n(d)$ para cada $d \in D$ y cierto $n > 0$. Entonces, por monotonía, $f^{n+1}(\bot) = f(f^n{\bot}) \sqsubseteq f(f^n(d)) = f^{n+1}(d)$. Entonces, es fácil comprobar que $f^n(\bot) \sqsubseteq f^{m}(\bot)$ si $n \leq m$. Pero entonces, $C:= \{f^n(\bot) \, | \, n \in \N\}$ es cadena no vacía en $D$ y, por completitud, existe $\n{fix}(f)$.
+\\
+
+Veamos que $f(\n{fix}(f)) = \n{fix}(f)$:
+$$f(\n{fix}(f)) = f\left(\bigsqcup\{f^n(\bot) \, | \, n \geq 0\}\right) = \bigsqcup\{f^{n+1}(\bot) \, | \, n \geq 0\} = \bigsqcup\{f^{n}(\bot) \, | \, n \geq 1\}$$ 
+porque $f$ es continua. Ahora, usando que $\bigsqcup (C \cup \{\bot\}) = \bigsqcup C$, para cada cadena $C$, y que $\bot = f^0(\bot)$,
+$$\bigsqcup\{f^{n}(\bot) \, | \, n \geq 1\} = \bigsqcup(\{f^{n}(\bot) \, | \, n \geq 1\}\cup \{\bot\}) = \bigsqcup\{f^{n}(\bot) \, | \, n \geq 0\} = \n{fix}(f).$$
+Finalmente, veamos que es el menor punto fijo. Sea $d$ otro punto fijo de $f$. Como $\bot \sqsubseteq d$, por monotonía se tiene que $f^n(\bot) \sqsubseteq f^n(d)$, para cada $n \geq 0$. Como $d$ es punto fijo, $f^n(\bot) \sqsubseteq d$, para cada $n \geq 0$, es decir, $d$ es cota superior de la cadena $\{f^n(d) \, | \, n \geq 0\}$. Pero, por definición, $\n{fix}(f) \sqsubseteq d$.
+\end{proof}
+
+\begin{prop}
+Sea $f: D \to D$ continua con $(D, \sqsubseteq)$ parcialmente ordenado y completo. Sea $d \in D$ tal que $f(d)\sqsubseteq d$. Entonces, $\n{fix}(f) \sqsubseteq d$.
+\end{prop}
+\begin{proof}
+Para empezar, por monotonía, deducimos que $f^n(d)\sqsubseteq \dots \sqsubseteq f(d) \sqsubseteq d$ y que $f^{n}(\bot) \sqsubseteq f^n(d)$, para cada $n \in N$. Pero, entonces, 
+$$\n{fix}(f) := \bigsqcup\{f^n(\bot) \, | \, n \geq 0\} \sqsubseteq \bigsqcup\{f^n(d) \, | \, n \geq 0\} \sqsubseteq d.$$
+\end{proof}
 
 
+\section{Estudio del punto fijo}
 
 
+\subsection{Descripción}
+
+Regresemos entonces a nuestro problema original. Para empezar, vamos a definir un orden parcial en $\mathbf{State}\hookrightarrow \mathbf{State}$, recordando los requisitos de punto fijo que ya expusimos anteriormente:
+\begin{definition}
+Dadas $g_1, g_2 \in \mathbf{State}\hookrightarrow \mathbf{State}$, decimos que $g_1$ \textit{está menos definida que} $g_2$ si, para arbitrarios $s, s' \in \mathbf{State}$, $g_1 s = s'$ implica que $g_2 s = s'$. Simbolizaremos esta relación como $\sqsubseteq$. 
+\end{definition}
+Evidentemente, la anterior definición se puede reformular mediante pares, de modo que dice que $\nn{G}(g_1)\subseteq G(g_2)$, donde $G(f)$ denota el \textit{grafo} de $f$, es decir, el conjunto de los pares de los que se compone $f$.
+
+\begin{lema}
+$(\mathbf{State}\hookrightarrow \mathbf{State}, \sqsubseteq)$ es conjunto parcialmente ordenado con elemento mínimo dado por $\bot \equiv \n{INDEFINIDO}$.
+\end{lema}
+\begin{proof}
+Las propiedades reflexiva y transitiva son directas. Veamos la antisimétrica. Sean $g_1 \sqsubseteq g_2 \sqsubseteq g_1$. Si $g_1s = s'$, entonces evidentemente se sigue que $g_2s = s'$. Si $g_1s = \n{INDEFINIDO}$, entonces $g_2s = \n{INDEFINIDO}$ porque, en otro caso, digamos que $g_2s = s'$, tendríamos que $g_1s=s'$, lo que es imposible.
+
+Veamos lo segundo. Evidentemente, $\bot \in \mathbf{State}\hookrightarrow \mathbf{State}$. Además, $\bot s = s'$ implica de forma vacía que $gs = s'$, para cada $g \in \mathbf{State}\hookrightarrow \mathbf{State}$.
+\end{proof}
+
+\begin{example}
+Sean $g_1, g_2, g_3, g_4 \in \mathbf{State}\hookrightarrow \mathbf{State}$:
+$$g_1 := id$$
+$$g_2 s := \begin{cases}
+    s \text{, si } sx \geq 0 \\
+    \n{INDEFINIDO} \text{, en otro caso}
+\end{cases}$$
+$$g_3 s := \begin{cases}
+    s \text{, si } sx = 0 \\
+    \n{INDEFINIDO} \text{, en otro caso}
+\end{cases}$$
+$$g_4 s := \begin{cases}
+    s \text{, si } sx \leq 0 \\
+    \n{INDEFINIDO} \text{, en otro caso}
+\end{cases}$$
+Entonces es claro que tenemos el siguiente diagrama de Hasse: 
+$$
+\begin{tikzcd}
+&g_1& \\
+&& \\
+g_2\arrow[uur]{} && g_4\arrow[uul]{} \\
+&& \\
+&g_3\arrow[uul]{} \arrow[uur]{}&
+\end{tikzcd}
+$$
+Donde cada arista indica que se da la relación de orden entre los nodos (en el sentido especificado). No aparecen las aristas obtenidas mediante transitividad (dicho de otro modo, la transitividad viene dada por llegar de un nodo a otro mediante un camino válido).
+\end{example}
+\\
+
+Entonces, las propiedades que debía cumplir un punto fijo para un funcional $F$ quedan como: 
+\begin{itemize}
+    \item[(a)] $F(\n{fix}(F)) =  \n{fix}(F)$.
+    \item[(b)] Si $g$ es punto fijo de $F$, $\n{fix}(F) \sqsubseteq g$.
+\end{itemize}
+Además, es claro que, si $F$ tiene al menos un $\sqsubseteq$-menor punto fijo, entonces es único, por la antisimetría del orden.
+\\
+
+El siguiente ejemplo muestra cómo podemos hablar de cadenas en $\mathbf{State}\hookrightarrow \mathbf{State}$:
+\begin{example}
+Consideremos la sucesión $(g_n)\subseteq \mathbf{State}\hookrightarrow \mathbf{State}$ dada por
+$$g_n\ s := \begin{cases}
+    \n{INDEFINIDO} \text{, si } s\ x > n \\
+    s[\n{x} \mapsto -1] \text{, si } 0 \leq s\ x < n\\
+    s \text{, si } s\ x < 0
+\end{cases}$$
+Notemos que $g_n \sqsubseteq g_m$ si $n \leq m$ porque $g_n$ está indefinida para más casos que $g_m$. Entonces, $C: \{g_n \, | \, n \in \N\}$ es cadena. $C$ está acotada superiormente por
+$$g\ s := \begin{cases}
+    s[\n{x} \mapsto -1] \text{, si } 0 \leq s\ x\\
+    s \text{, si } s\ x < 0
+\end{cases}$$
+y, de hecho, $g$ es supremo de $C$.
+\end{example}
+
+Tenemos el siguiente resultado:
+
+\begin{lema}
+$(\mathbf{State}\hookrightarrow \mathbf{State}, \sqsubseteq)$ es conjunto parcialmente ordenado completo. Si $C$ es una cadena en $\mathbf{State}\hookrightarrow \mathbf{State}$, entonces\footnote{Nótese que esto quiere decir que $(\bigsqcup C)s = s'$ si y solo si $gs = s'$, para cierta $g \in C$.}
+$$G\left(\bigsqcup C\right) = \bigcup\{G(g) \, | \, g \in C\}.$$
+\end{lema}
+\begin{proof}
+Veamos que $\bigcup\{G(g) \, | \, g \in C\}$ es grafo de una función parcial en $\mathbf{State}\hookrightarrow \mathbf{State}$. Sean $(s, s'), (s, s'')$ elementos de este conjunto. Entonces existen $g, h \in C$ tales que $gs = s'$ y $hs = s''$. Como $C$ es cadena, $h$ y $g$ son comparables, luego obtenemos $s' = gs = hs = s''$, como queríamos. 
+\\
+
+Sea entonces $g_0$ tal función parcial con $G(g_0) = \bigcup\{G(g) \, | \, g \in C\}$. Veamos que $g_0$ es cota superior de $C$: como es obvio que $G(g) \subseteq G(g_0)$ para cada $g \in C$, tenemos que $g \sqsubseteq g_0$.
+\\
+
+Finalmente, veamos que $g_0$ es el supremo de $C$. En efecto, si $g_1$ es otra cota superior de $C$, tendremos que $G(g) \subseteq G(g_1)$, para cada $g \in C$. Tomando la unión en cada lado, tenemos que 
+$$G(g_0) = \bigcup\{G(g) \, | \, g \in C\} \subseteq G(g_1)$$
+es decir, $g_0 \sqsubseteq g_1$, como queríamos.
+\end{proof}
+
+Con el siguiente ejemplo vemos qué aspecto tiene una aplicación continua en el caso especial que estudiamos:
+\begin{example}
+Recordemos el siguiente funcional asociado a $\n{while} \neg(\n{x}=0)\n{do skip}$:
+$$F(g)s := \begin{cases}
+    gs \text{, si } s\n{x} \neq 0\\
+    s \text{, en otro caso}
+\end{cases}$$
+Veamos que es continuo. Tenemos que ver que $F$ es monótona y que $F(\bigsqcup C) = \bigsqcup F(C)$ para una cadena arbitraria $C\neq \emptyset$. Sean $g \sqsubseteq h$ cualesquiera. Entonces, basta ver la definición para notar que la relación de $F(g)$ y $F(h)$ depende únicamente de la que ya había entre $g$ y $h$, porque, si $F(g)s = s'$, entonces tenemos que $F(g)s$ puede ser $gs = s' = hs$ o bien puede ser $s$, es decir, $F(g)\sqsubseteq F(h)$. 
+\\
+
+Por otro lado, sea $C \neq \emptyset$ cadena y sea $\bigsqcup C$. Consideremos $F(\bigsqcup C)$. Sean $a$
+\end{example}
+
+\subsection{Existencia}
+
+El Teorema \ref{fixth} aplicado al orden $\sqsubseteq$ nos dice que, bajo determinadas condiciones, $\n{fix}(\cdot)$ permite definir una función. En esta sección queremos estudiar estas condiciones. Para empezar, recordemos que definíamos 
+$$\mc{S}_\nn{ds} [[\nwhile b \ndo S]] :=  \n{fix}(F),$$
+siendo $F(g) := \n{cond}(\fc{B}{b}, g\circ \mc{S}_\nn{ds}[[S]], id)$. Por tanto, debemos verificar que $F$ verifica las condiciones de las que hablamos. El siguiente Lema nos da un resultado en esta dirección:
+
+\begin{lema}
+Sea $p \in \mathbf{State}\to\mathbf{Bool}$. La aplicación $\Phi(g, h) := \n{cond}(p, g, h)$ es continua en las dos variables $g, h$, es decir, tanto
+$$F(g) := \n{cond}(p, g, g_0) \quad \text{como} \quad H(g) := \n{cond}(p, g_0, g)$$
+son continuas, siendo $g_0 \in \mathbf{State}\hookrightarrow\mathbf{State}$.
+\end{lema}
+\begin{proof}
+Vamos a demostrar la continuidad de $F$, el otro caso es análogo. Primero veamos la monotonía de $F$. Sean $g_1 \sqsubseteq g_2$. Supongamos que $F(g_1)s = s'$. Si $ps = \mathbf{tt}$, $F(g_1)s = g_1s = s'$ implica $s' = g_2s = F(g_2)s$. Si $ps = \mathbf{ff}$, $F(g_1)s = g_0s = F(g_2)s$ y el resultado es trivial.
+\\
+
+Veamos ahora la continuidad. Basta ver que, si $C \subseteq \mathbf{State}\hookrightarrow\mathbf{State}$ es una cadena arbitraria no vacía, $F(\bigsqcup C) \sqsubseteq \bigsqcup F(C)$ (la otra dirección viene dada, en general, por monotonía). Por lo que ya vimos antes, podemos ver que $G(F(\bigsqcup C)) \subseteq \bigcup \{G(F(g)) \, | \, g \in C\}$ para tener el resultado. Sea $(s, s')\in G(F(\bigsqcup C))$. Si $ps = \mathbf{tt}$, $F(\bigsqcup C)s = g_0s= s'$. Pero entonces, para cada $g \in C$, $F(g)s = g_0s = s'$. Si $ps = \mathbf{tt}$, $F(\bigsqcup C)s = (\bigsqcup C)s = s'$, es decir, $(s, s')\in G(\bigsqcup C) = \bigcup \{G(g) \, | \, g \in C\}$, luego existe cierta $h \in C$ con $hs = s'$, es decir, $F(h)s = s'$, lo que nos da el resultado.
+\end{proof}
+
+\begin{lema}
+La aplicación $\Psi(g, h) := g \circ h$ es continua en las dos variables, es decir, tanto
+$$F(g) := g \circ g_0\quad \text{como}\quad H(g) := g_0 \circ g$$
+son continuas, siendo $g_0 \in \mathbf{State}\hookrightarrow\mathbf{State}$.
+\end{lema}
+\begin{proof}
+Veamos el caso $F$. $F$ es monótona: $g_1 \sqsubseteq g_2$ implica $G(g_1)\subseteq G(g_2)$, luego
+$$G(g_0)\circ G(g_1) \subseteq G(g_0)\circ G(g_2)$$
+que prueba que $F(g):=g_0\circ g_1\sqsubseteq g_0\circ g_2 =: F(g_2)$.
+\\
+$F$ es continua: sea $C$ cadena no vacía cualquiera. Entonces, 
+$$G\left(F\left(\bigsqcup C\right)\right) = G\left(\bigsqcup C \circ g_0\right) = G(g_0)\circ G\left(\bigsqcup C\right)$$
+donde hemos empleado $\circ$ en el segundo miembro como la composición de relaciones\footnote{Sean $R \subseteq A \times B, S \subseteq B \times C$. La \textit{composición} de $R$ y $S$ se define como
+$$R \circ S := \{(x, z) \in A \times C \, | \, \exists y \in B.(xRy \land ySz)\}$$
+Entonces, notemos que el orden de composición difiere del que tenemos para las funciones, es decir, $$G(f \circ g) = G(g) \circ G(f).$$}.
+Ahora bien, lo anterior es igual a
+$$G(g_0)\circ \bigcup \{G(g) \, | \, g \in C\} = \bigcup \{G(g_0)\circ G(g) \, | \, g \in C\} = G\left(\bigsqcup F(C)\right).$$
+\end{proof}
+
+
+\begin{theorem}
+El sistema de semántica denotacional para $\n{While}$ define una función total $\mc{S}_\nn{ds}:\mathbf{Stm}\to (\mathbf{State}\hookrightarrow\mathbf{State})$.
+\end{theorem}
+\begin{proof}
+Como tenemos definiciones composicionales, la demostración es por inducción estructural sobre la metavariable $S \in \mathbf{Stm}$. Los casos base son:
+\begin{itemize}
+    \item[(i)] Si $S$ es de la forma $x := a$, entonces basta comprobar que la aplicación $s \mapsto s[x \mapsto \fc{A}{a}s]$ está bien definida. Pero esto es directo.
+    \item[(ii)] Si $S = \n{skip}$, la aplicación asociada es la identidad, que está bien definida. 
+\end{itemize}
+Los casos inductivos son:
+\begin{itemize}
+    \item[(i)] Si $S = S_1;S_2$, entonces $\mc{S}_\nn{ds}[[S]] = \mc{S}_\nn{ds}[[S_2]]\circ \mc{S}_\nn{ds}[[S_1]]$, que es composición, por hipótesis de inducción, de funciones bien definidas.
+    \item[(ii)] Si $S = \n{if }b \n{ then }S_1 \n{ else }S_2$, de nuevo tenemos que $\mc{S}_\nn{ds}[[S_1]]$ y $\mc{S}_\nn{ds}[[S_2]]$ están bien definidas por hipótesis. Pero es directo comprobar que esto se mantiene por la aplicación $\n{cond}$.
+    \item[(iii)] Si $S= \n{while }b \n{ do }S_1$, sabemos que $\mc{S}_\nn{ds}[[S_1]]$ está bien definida. Pero las aplicaciones
+    $$F_1(g) := \n{cond}(\fc{B}{b}, g, id), \quad F_2(g) := g \circ \mc{S}_\nn{ds}[[S_1]]$$
+    son continuas por los lemas previos. Como sabemos que composición de continuas es continua, tenemos que $F(g) := F_1(F_2(g))$ es continua y, por el Teorema \ref{fixth}, $\n{fix}(F)$ está bien definido, como queríamos ver.
+\end{itemize}
+\end{proof}
+
+\begin{example} Veamos cómo aplica $\mc{S}_\nn{ds}$ a la sentencia
+\[
+    S \equiv \n{y}:=\n{1}; \nwhile \neg(\n{x}=1) \ndo (\n{y}:=\n{y}*\n{x}; \n{x}:=\n{x}-\n{1})
+\]
+y cómo obtener el punto fijo para su bucle. Aplicamos la reglas del sistema denotacional para While (\ref{whileds}) y nos sale
+\[
+    \mc{S}_\nn{ds}[[S]] s_0 = \n{fix}(F)\ s_0[\n{y} \mapsto \n{1}]
+\]
+donde
+\[
+    (F\ g)\ s = \left\{\begin{array}{ll}
+         g\ (\mc{S}_\nn{ds}[[\n{y}*\n{x}; \n{x}:=\n{x}-\n{1}]]s) & \fc{B}{\neg(\n{x} = \n{1})}s = \textbf{tt} \\
+         s & \fc{B}{\neg(\n{x} = \n{1})}s = \textbf{ff} 
+    \end{array}\right.
+\]
+Aplicando nuevamente las reglas de $\mc{S}_\nn{ds}$ se puede reescribir como
+\[
+    (F\ g)\ s = \left\{\begin{array}{ll}
+         g\ (s[\n{y}\mapsto (s\ \n{y})*(s\ \n{x})][\n{x}\mapsto(s\ \n{x})-\n{1}]) & s\ \n{x} \neq \n{1} \\
+         s & s\ \n{x} = \n{1}
+    \end{array}\right.
+\]
+Ahora computamos $F^n\ \bot$ para obtener el menor punto fijo
+\begin{eqnarray*}
+    (F^0 \bot)\ s &=& \n{INDEFINIDO} \\
+    (F^1 \bot)\ s &=& \left\{\begin{array}{ll}
+         \n{INDEFINIDO} & s\ \n{x} \neq 1 \\
+         s & s\ \n{x} = 1
+    \end{array}\right. \\
+    (F^2 \bot)\ s &=& \left\{\begin{array}{ll}
+         \n{INDEFINIDO} & s\ \n{x} \neq 1 \land s\ \n{x} \neq 2 \\
+         s[\n{y}\mapsto (s\ \n{y})*2][x\mapsto 1] & s\ \n{x} = 2 \\
+         s & s\ \n{x} = 1
+    \end{array}\right. \\
+\end{eqnarray*}
+Cada evaluación de $F$ representa el cómputo del cuerpo del bucle tantas veces como la condición booleana se cumpla. La fórmula general es
+\[
+    (F^n \bot)\ s = \left\{\begin{array}{ll}
+         \n{INDEFINIDO} & s\ \n{x} < 1 \lor s\ \n{x} > \n{n} \\
+         s[\n{y}\mapsto (s\ \n{y})*j*...*2*1][x\mapsto 1] & s\ \n{x} = j \land 1\leq j \land j\leq n \\
+    \end{array}\right.
+\]
+y se tiene que el punto fijo es
+\[
+    (\n{fix}\ F)\ s = \left\{\begin{array}{ll}
+         \n{INDEFINIDO} & s\ \n{x} < 1 \\
+         s[\n{y}\mapsto (s\ \n{y})*(s\ \n{x})!][x\mapsto 1] & s\ \n{x}\geq 1 \\
+    \end{array}\right.
+\]
+Si se toma por ejemplo un estado $s_0\in\State$ tal que $s_0\ \n{x} = 3$ se tendría
+\[
+     (\n{fix}(F)\ s_0[\n{y} \mapsto \n{1}])\ \n{y} = 1*3*2*1 = 6
+\]
+\end{example}
+
+\subsection{Equivalencia semántica}
+
+Ahora que ya disponemos de un sistema de semántica denotacional, parece lógico repetirse las mismas preguntas que ya nos hicimos en su momento con la semántica operacional.
+
+\begin{definition}
+Dos sentencias $S_1, S_2 \in \mathbf{Stm}$ se dicen \textit{semánticamente equivalentes} si $\mc{S}_\nn{ds}[[S_1]] = \mc{S}_\nn{ds}[[S_2]]$.
+\end{definition}
+
+\begin{example}
+EJERCICIO 5.53
+\end{example}
+
+\section{Teorema de equivalencia}
+
+Como siempre, cuando introducimos un nuevo sistema de semántica, nos interesa estudiar si se encuentra relacionado con otros que ya hemos presentado antes. Más concretamente, nos interesa el siguiente enunciado:
+
+\begin{theorem}
+Para cada $S \in \mathbf{Stm}$, $\mc{S}_\nn{sos}[[S]] = \mc{S}_\nn{ds}[[S]]$.
+\end{theorem}
+
+Notemos que, tanto $\mc{S}_\nn{sos}[[S]]$ como $\mc{S}_\nn{ds}[[S]]$ son elementos de $\mathbf{State}\hookrightarrow\mathbf{State}$, que es un conjunto ordenado por $\sqsubseteq$, luego basta demostrar que $\mc{S}_\nn{sos}[[S]] \sqsubseteq \mc{S}_\nn{ds}[[S]]$ y $\mc{S}_\nn{ds}[[S]] \sqsubseteq \mc{S}_\nn{sos}[[S]]$, para $S \in \mathbf{Stm}$ arbitrario.
