@@ -170,7 +170,7 @@ Dos expresiones $S_1, S_2$ se dicen \textit{semánticamente equivalentes} si par
 $$\la{S_1}{s}\rightarrow s' \text{ si y solo si } \la{S_2}{s}\rightarrow s'.$$
 \end{definition}
 
-\begin{lema}
+\begin{lema}\label{lemans}
 \normalfont $\n{while } b \n{ do } S$ \textit{es semánticamente equivalente a} $\n{if } b \n{ then } (S; \n{while } b \n{ do } S)\n{ else skip}$.
 \end{lema}
 \begin{proof}
@@ -471,7 +471,7 @@ Ahora, usando que $\text{ si }\fc{B}{b}s' = \mathbf{ff}$,
 \end{center}
 
 Pero entonces, 
- \begin{center}
+\begin{center}
               \centerAlignProof
               \quad
               \centerAlignProof
@@ -479,12 +479,8 @@ Pero entonces,
                 \AxiomC{$\la{\n{if}\ b\ \n{then skip else}\ (\n{repeat } S \n{ until } b)}{s''} \to s'$}
                 \BinaryInfC{$\la{S; \n{if } b \n{ then skip else } (\n{repeat } S \n{ until } b)}{s} \to s'$}[$\text{comp}_{\text{ns}}$]
               \DisplayProof
-        \end{center}
-\\
-
-
+\end{center}
 \noindent\textit{Parte 2.} Supongamos que $\la{S;\n{ if } b \n{ then } \n{skip } \n{else } \n{repeat } S \n{ until } b}{s}\to s'$. La única posibilidad es haber aplicado la regla $[\text{comp}_{\text{ns}}]$
-
 \begin{center}
     \centerAlignProof
     \quad
@@ -545,8 +541,6 @@ Para poder demostrar que una propiedad como la anterior se verifica en árboles 
     \item Primero comprobamos que la propiedad se verifica para los axiomas del sistema.
     \item Para cada regla, suponiendo que las premisas verifican la propiedad , comprobamos que también se cumple para la conclusión (siempre y cuando se verifiquen las condiciones de la regla).
 \end{enumerate}
-\\
-
 El siguiente resultado nos dice que, en general, hay \textit{una} manera de deducir una configuración mediante las reglas del sistema de transición $\nn{While}_\nn{ns}$:
 
 \begin{theorem}\label{determinismo}
@@ -556,9 +550,6 @@ $$\la{S}{s}\rightarrow s' \text{ y } \la{S}{s}\rightarrow s'' \text{ implica que
 \begin{proof}
 Para simplificar la demostración, vamos a definir una propiedad sintáctica de las reglas del sistema $\nn{While}_\nn{ns}$. Decimos que dos reglas son \textit{independientes entre sí} cuando no es posible obtener una mediante la aplicación de la otra. Notemos que este es el caso de nuestro sistema: las reglas $[\nn{while}_\nn{ns}^\nn{tt}]$ y $[\nn{while}_\nn{ns}^\nn{ff}]$ son independientes entre sí porque ambas tienen premisas distintas (suponemos que $\mathbf{tt}$ y $\mathbf{ff}$ son distintos). Entonces, como cada regla es independiente de la otra (y evidentemente, cada regla es determinista), deducimos que, en caso de que tengamos $\la{S}{s}\rightarrow s'$ y $\la{S}{s}\rightarrow s''$, necesariamente tendremos que haber aplicado la misma única regla posible en los dos casos para llegar a las respectivas configuraciones. Es fácil convencerse entonces de que, por inducción sobre las reglas, la propiedad deseada se cumple\footnote{Obviamente, esa demostración no es intercambiable con la demostración formal por inducción estructural. Podría demostrarse el caso general del que hemos hablado, a saber, formalizando lo que significa precisamente la independencia de dos reglas.}. 
 \end{proof}
-\\
-
-
 \begin{example} Podemos añadir una semántica $\n{forVar}\ x\ \n{do}\ S$ que ejecute la sentencia $S$ siempre que $x$ sea distinto de $0$ y lo incremente en $1$ en cada iteración. Veamos que sería semánticamente equivalente a $\n{while}\ \neg (x=0)\ \n{do}\ (S; x:=x+1)$.
 \\ \\
 Primero, definimos la semantica de $\n{forVar}\ x\ \n{do}\ S$:
@@ -577,7 +568,6 @@ Primero, definimos la semantica de $\n{forVar}\ x\ \n{do}\ S$:
               \centerAlignProof
               \quad
               \centerAlignProof
-                \AxiomC{}
                 \LeftLabel{$[\text{for}^{\ne 0}]$ }
                 \RightLabel{si $\fc{A}{x}s \ne 0$}
                 \AxiomC{ $\la{S; x := x+1}{s} \to s'$ }
@@ -613,7 +603,7 @@ Para empezar, sabemos que $\fc{A}{x}s = 0$ si y solo si $\fc{B}{\neg (x=0) }s = 
     \end{center}    
     
     \item Si $ x\ne0$, entonces suponemos ciertas las siguientes premisas:
-    \begin{enumerate}[a)]
+    \begin{enumerate}[label=\alph*)]
         \item  \AxiomC{$\la{S; x := x+1}{s} \to s_2$} \DisplayProof
         \item   \AxiomC{$\la{\n{forVar}\ x\ \n{do}\ S}{s_2} \to s'$} \DisplayProof
     \end{enumerate}
@@ -690,7 +680,6 @@ y además deducimos que $x \neq 0$. Si aplicamos hipótesis de inducción sobre 
               \centerAlignProof
               \quad
               \centerAlignProof
-                \AxiomC{}
                 \LeftLabel{$[\text{for}^{\ne 0}]$ }
                 \RightLabel{}
                 \AxiomC{ $\la{S; x := x+1}{s} \to s'$ }
@@ -701,8 +690,6 @@ y además deducimos que $x \neq 0$. Si aplicamos hipótesis de inducción sobre 
 luego obtenemos el resultado.
 \end{enumerate}
 \end{example}
-\\
-
 \subsection{Expresiones}
 
 Finalmente, podemos definir el valor semántico de cada $S \in \mathbf{Stm}$ mediante una aplicación
@@ -897,10 +884,7 @@ La nueva relación de transición queda determinada por el conjunto de reglas:
 \end{prooftree}    
 \end{itemize}
 \end{sist*}
-\\ \\
-
 Notemos que podríamos haber incluido, por ejemplo, dos reglas para la semántica de $\n{while }b \n{ do }S$:
- 
 \begin{prooftree}
     \AxiomC{}
     \LeftLabel{$[\nn{while}_\nn{sos}^\nn{ff}]$}
@@ -914,8 +898,6 @@ y
     \RightLabel{ si $\fc{B}{s}= \mathbf{tt}$}
     \UnaryInfC{$\la{\n{while }b\n{ do }S}{s}\dto \la{S;\n{while }b\n{ do }S}{s}$}
 \end{prooftree}    
-\\
-
 \begin{definition}
 Se dirá que $\la{S}{s}$ está \textit{bloqueada} si no existe $\gamma$ tal que $\la{S}{s} \dto \gamma$. Una secuencia de derivación es finita cuando llega a un bloqueo o a un estado final:
 \[
@@ -1212,15 +1194,51 @@ Consideremos el lenguaje $\nn{While}$. Para cada $S \in \mathbf{Stm}$, $\mc{S}_\
 \end{theorem}
 \begin{proof}
 La demostración se divide en dos pasos, cada uno consiste en demostrar uno de los siguientes lemas:
+\begin{lema}
+Para cada $S \in \mathbf{Stm}$, dados $s, s' \in \mathbf{State}$, $\la{S}{s}\rightarrow s'$ implica que $\la{S}{s}\dto^* s'$.
+\end{lema}
+\begin{proof}
+La demostración vuelve a ser rutinaria, es decir, por inducción en la forma del árbol de derivación. Los casos base son:
 \begin{itemize}
-\item Para cada $S \in \mathbf{Stm}$, dados $s, s' \in \mathbf{State}$, $\la{S}{s}\rightarrow s'$ implica que $\la{S}{s}\dto^* s'$.
-
-Se demuestra por inducción en los árboles de derivación.
-
-\item Para cada $S \in \mathbf{Stm}$, dados $s, s' \in \mathbf{State}$ y $k \in \N$, $\la{S}{s}\dto^k s'$ implica que $\la{S}{s}\to s'$.
-
-Se demuestra por inducción en la longitud de las secuencias de derivación.
+    \item[($\nn{ass}_\nn{ns}$)] Si suponemos que $\la{x:=a}{s}\to s$, el axioma $[\nn{ass}_\nn{sos}]$ nos da el resultado.
+    \item[($\nn{skip}_\nn{ns}$)] Análogo.
 \end{itemize}
+Los casos inductivos son:
+\begin{itemize}
+    \item[($\nn{comp}_\nn{ns}$)]  Supongamos que $\la{S_1;S_2}{s}\to s''$. Esto necesariamente se ha deducido de las premisas $\la{S_1}{s}\to s'$ y $\la{S_2}{s'}\to s''$ y, aplicando la hipótesis de inducción, $\la{S_1}{s}\dto^*s'$ y $\la{S_2}{s'}\dto^* s''$. Por el Lema \ref{lemasos2}, $\la{S_1;s_2}{s}\dto^* \la{S_2}{s'}\dto^* s''$.
+    \item[($\nn{if}_\nn{ns}^\nn{tt}$)] Supongamos que hemos obtenido $\la{\n{if }b \n{ then }S_1\n{ else }S_2}{s}\to s'$ a partir de $\fc{B}{b}s = \mathbf{tt}$ y $\la{S_1}{s}\to s'$. Pero entonces, aplicando $[\nn{if}_\nn{sos}^\nn{tt}]$, $\la{\n{if }b \n{ then }S_1\n{ else }S_2}{s}\dto \la{S_1}{s}$ y, por la hipótesis de inducción en $\la{S_1}{s}\to s'$, $\la{S_1}{s}\dto^* s'$.
+    \item[($\nn{if}_\nn{ns}^\nn{ff}$)] Análogo.
+    \item[($\nn{while}_\nn{ns}^\nn{tt}$)] Supongamos que $\la{\n{while }b \n{ do }S}{s}\to s''$ se ha deducido de las premisas $\fc{B}{b}s = \mathbf{tt}$, $\la{S}{s}\to s'$ y $\la{\n{while }b \n{ do }S}{s'}\to s''$. La hipótesis de inducción en las dos últimas nos da que $\la{S}{s}\dto^* s'$ y que $\la{\n{while }b \n{ do }S}{s'}\dto^* s''$. Por el Lema \ref{lemasos2}, 
+    $$\la{S_1;\n{while }b \n{ do }S}{s} \dto^* \la{\n{while }b \n{ do }S}{s'}\dto^* s''$$
+    Juntando ésto y aplicando en orden $[\nn{while}_\nn{sos}^\nn{tt}]$ y $[\nn{if}_\nn{sos}^\nn{tt}]$, 
+    $$\la{\n{while }b \n{ do }S}{s} \dto \la{\n{if }b\n{ then }(S; \n{while }b \n{ do }S) \n{ else skip}}{s} \dto \la{S;\n{while }b \n{ do }S}{s}\dto^* s''$$
+    \item[($\nn{while}_\nn{ns}^\nn{ff}$)] Análogo.
+\end{itemize}
+\end{proof}
+
+\begin{lema}
+Para cada $S \in \mathbf{Stm}$, dados $s, s' \in \mathbf{State}$ y $k \in \N$, $\la{S}{s}\dto^k s'$ implica que $\la{S}{s}\to s'$.
+\end{lema}
+\begin{proof}
+Se demuestra por inducción en la longitud de las secuencias de derivación. El caso base es $k=0$ y, como la premisa es falsa, la implicación es cierta directamente.
+\\
+
+Supongamos que el resultado se cumple si $k \leq k_0$ y veamos que es cierto para $k_0 +1$. Tenemos que distinguir casos en función de la regla que ha sido aplicada para obtener el primer paso de la derivación $\la{S}{s}\dto^{k_0+1}s'$.
+\begin{itemize}
+    \item[($\nn{ass}_\nn{sos}$)] Es evidente porque no requiere ninguna premisa. Además, $k_0 = 0$ (se obtiene la derivación en un paso).
+    \item[($\nn{skip}_\nn{sos}$)] Análogo.
+    \item[($\nn{comp}_\nn{sos}^{1, 2}$)] Supongamos que $\la{S_1;S_2}{s}\dto^{k_0+1}s''$. Por el Lema \ref{lemasos1}, existen un estado $s'$ y enteros $k_1 + k_2 = k_0 + 1$ tales que 
+    $$\la{S_1}{s}\dto^{k_1}s' \quad \text{ y } \quad \la{S_2}{s'}\dto^{k_2}s''.$$
+    Como $k_1, k_2 \leq k_0$, podemos aplicar la hipótesis de inducción en cada caso, y obtenemos que $\la{S_1}{s}\to s'$ y $\la{S_2}{s'}\to s''$. Aplicando $[\nn{comp}_\nn{ns}]$, obtenemos que $\la{S_1;S_2}{s}\to s''$.
+    \item[($\nn{if}_\nn{sos}^\nn{tt}$)] Supongamos que el primer paso es de la forma:
+    $$\la{\n{if }b\n{ then }S_1\n{ else }S_2}{s}\dto \la{S_1}{s} \dto^{k_0} s'$$
+    es decir, con $\fc{B}{b}s = \mathbf{tt}$. Aplicando la hipótesis de inducción a la segunda secuencia, $\la{S_1}{s} \to s'$, luego basta aplicar $[\nn{if}_\nn{ns}^\nn{tt}]$ para tener el resultado.
+    \item[($\nn{if}_\nn{sos}^\nn{ff}$)] Análogo.
+    \item[($\nn{while}_\nn{sos}$)] Supongamos que tenemos:
+    $$\la{\n{while }b \n{ do }S}{s}\dto \la{\n{if }b \n{ then }(S; \n{while }b\n{ do }S)\n{ else skip}}{s} \dto^{k_0}s''$$
+    Aplicando la hipótesis de inducción al segundo paso, $\la{\n{if }b \n{ then }(S; \n{while }b\n{ do }S)\n{ else skip}}{s} \to s''$. Por el Lema \ref{lemans}, tenemos el resultado.
+\end{itemize}
+\end{proof}
 
 Entonces, dados $S \in \mathbf{Stm}$, $s\in \mathbf{State}$, por los dos lemas se tiene que $\mc{S}_\nn{ns}[[S]] = s'$ si y solo si $\mc{S}_\nn{sos}[[S]] = s'$. Pero entonces obtenemos que, si una de las dos funciones está definida en un estado o no, la otra lo estará también y coincidirá con ella o no estará definida, respectivamente. Es decir, ambas funciones coinciden.
 \end{proof}

@@ -58,7 +58,7 @@ que significa lo siguiente: la configuración $\conf{c'}{e'}{s'}$ se obtiene de 
     \conf{\n{SUB}:c}{z_1:z_2:e}{s} &\rhd& \conf{c}{(z_1\ominus z_2):e}{s} \quad si \ z_1, z_2 \in \mathbf{Z} \\
     \conf{\n{TRUE}:c}{e}{s} &\rhd& \conf{c}{\textbf{tt}:e}{s} \\
     \conf{\n{FALSE}:c}{e}{s} &\rhd& \conf{c}{\textbf{ff}:e}{s} \\
-    \conf{\n{EQ}:c}{z_1:z_2:e}{s} &\rhd& \conf{c}{(z_1 \eq z_2):e}{s} \quad si \ z_1, z_2 \in \mathbf{Z}\\
+    \conf{\n{EQ}:c}{z_1:z_2:e}{s} &\rhd& \conf{c}{(z_1 = z_2):e}{s} \quad si \ z_1, z_2 \in \mathbf{Z}\\
     \conf{\n{LE}:c}{z_1:z_2:e}{s} &\rhd& \conf{c}{(z_1 \leq z_2):e}{s}\quad si \ z_1, z_2 \in \mathbf{Z} \\
     \conf{\n{AND}:c}{t_1:t_2:e}{s} &\rhd& 
         \left\{\begin{array}{ll} 
@@ -321,24 +321,17 @@ y $\n{JUMPFALSE}-z$. Pero se ha mantenido el estado. La configuración es una cu
 
 $$ \lac{pc}{cs}{e}{s} \in \N \times \mathbf{Code} \times \mathbf{Stack} \times \mathbf{State} $$
 Se presentan las nuevas instrucciones:
-\begin{center}
-    $ \lac{pc}{cs}{e}{s} \rhd \lac{pc+1}{cs}{\fc{N}{n}:e}{s} \quad \mathbf{si} \ cs[pc] = \n{PUSH}-n \\
-
- \lac{pc}{cs}{e}{s} \rhd \lac{pc+z}{cs}{\fc{N}{n}:e}{s} \quad \mathbf{si} \ cs[pc] = \n{JUMP}-z \\
- 
- \lac{pc}{cs}{\n{ff}: e}{s} \rhd \lac{pc+z}{cs}{\fc{N}{n}:e}{s} \quad \mathbf{si} \ cs[pc] = \n{JUMPFALSE}-z \\
- 
-  \lac{pc}{cs}{\n{tt}: e}{s} \rhd \lac{pc+1}{cs}{\fc{N}{n}:e}{s} \quad \mathbf{si} \ cs[pc] = \n{JUMPFALSE}-z
-$
-\end{center}
-
-Los nuevos esquemas de tradución son los mismos salvo $\n{if},\  \n{while}$:\\
-
+\begin{eqnarray*}
+    \lac{pc}{cs}{e}{s} \rhd \lac{pc+1}{cs}{\fc{N}{n}:e}{s} &\quad& \mathbf{si} \ cs[pc] = \n{PUSH}-n \\
+    \lac{pc}{cs}{e}{s} \rhd \lac{pc+z}{cs}{\fc{N}{n}:e}{s} &\quad& \mathbf{si} \ cs[pc] = \n{JUMP}-z \\
+    \lac{pc}{cs}{\n{ff}: e}{s} \rhd \lac{pc+z}{cs}{\fc{N}{n}:e}{s} &\quad& \mathbf{si} \ cs[pc] = \n{JUMPFALSE}-z \\
+    \lac{pc}{cs}{\n{tt}: e}{s} \rhd \lac{pc+1}{cs}{\fc{N}{n}:e}{s} &\quad& \mathbf{si} \ cs[pc] = \n{JUMPFALSE}-z
+\end{eqnarray*}
+Los nuevos esquemas de tradución son los mismos salvo $\n{if},\  \n{while}$:
 $ \fc{CS}{\n{if }b\n{ then } S_1 \n{ else }S_2} = \fc{CS}{b}: \n{JUMPFALSE-}(z_1 +1) : \fc{CS}{S_1}:\n{JUMP-}z_2 : \fc{CS}{S_1} $
 \begin{center}
     $\text{donde la longitud de }\fc{CB}{S_1}, \fc{CB}{S_2} = z_1, z_2$
 \end{center}
-\\
 $ \fc{CS}{\n{while }b\n{ do }S} = \fc{CS}{b}: \n{JUMPFALSE-}(z_1 +1) : \fc{CS}{S}:\n{JUMP-}(-(z_0+z_1+1)) : \fc{CS}{S_1} $
 \begin{center}
     $\text{donde la longitud de }\fc{CB}{b}, \fc{CB}{S} = z_0, z_1$

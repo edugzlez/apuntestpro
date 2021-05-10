@@ -92,7 +92,7 @@ Luego $g_1 = \n{fix}(G)$. Por otro lado, $g_2 \equiv \n{INDEFINIDO}$ no puede se
 
 Entonces, de momento, tenemos las siguientes reglas: 
 
-\begin{sist*}[Semántica denotacional para $\nn{While}$]\label{whileds}
+\begin{sist*}[$\nn{While}_\nn{ds}$]\label{whileds}
 \begin{eqnarray*}
     \mc{S}_\nn{ds} [[x:=a]]s &:=& s[x\mapsto \fc{A}{a}s] \\
     \mc{S}_\nn{ds} [[\nskip]] &:=& id \\
@@ -167,7 +167,6 @@ $$hs := \begin{cases}
 \end{cases}$$
 es claro que $F(h) = h$ y, \textit{además}, que $hs = s'$ implica $h's = s'$, para cualquier otro punto fijo $h'$ de $F$, pero no al contrario. 
 \end{example}
-\\
 Este ejemplo muestra que, en resumen, el candidato a $\n{fix}(F)$ debe ser cierto $h \in \mathbf{State}\hookrightarrow\mathbf{State}$ tal que:
 \begin{itemize}
     \item[(1)] $F(h)=h$.
@@ -460,8 +459,6 @@ g_2\arrow[uur]{} && g_4\arrow[uul]{} \\
 $$
 Donde cada arista indica que se da la relación de orden entre los nodos (en el sentido especificado). No aparecen las aristas obtenidas mediante transitividad (dicho de otro modo, la transitividad viene dada por llegar de un nodo a otro mediante un camino válido).
 \end{example}
-\\
-
 Entonces, las propiedades que debía cumplir un punto fijo para un funcional $F$ quedan como: 
 \begin{itemize}
     \item[(a)] $F(\n{fix}(F)) =  \n{fix}(F)$.
@@ -629,6 +626,11 @@ Si se toma por ejemplo un estado $s_0\in\State$ tal que $s_0\ \n{x} = 3$ se tend
 \]
 \end{example}
 
+\begin{example}
+Consideremos $\mc{S}_\nn{ds}[[\n{while true do skip}]]$. Tenemos que, $F(g) := \n{cond}(\fc{B}{\n{true}}, g\circ\mc{S}_\nn{ds}[[\n{skip}]], id) =  \n{cond}(\fc{B}{\n{true}}, g\circ id, id) = g$, luego cada aplicación es punto fijo de $F$, y evidentemente, $\bot$ es el menor de todos ellos.
+
+\end{example}
+ 
 \subsection{Equivalencia semántica}
 
 Ahora que ya disponemos de un sistema de semántica denotacional, parece lógico repetirse las mismas preguntas que ya nos hicimos en su momento con la semántica operacional.
@@ -637,9 +639,22 @@ Ahora que ya disponemos de un sistema de semántica denotacional, parece lógico
 Dos sentencias $S_1, S_2 \in \mathbf{Stm}$ se dicen \textit{semánticamente equivalentes} si $\mc{S}_\nn{ds}[[S_1]] = \mc{S}_\nn{ds}[[S_2]]$.
 \end{definition}
 
-\begin{example}
-EJERCICIO 5.53
+\begin{example} 
+EJERCICIO 5.53: Demostrar que los siguientes statements son enquivalentes:
+\begin{itemize}
+    \item $S; \n{skip  y S}$
+    \item $S_1;(S_2;S_3) \n{ y } (S_1; S_2);S_3$ 
+    \item $\n{while } b \n{ do } S $ y $\n{if } b \n{ then } (S; \n{while } b \n{ do } S ) \n{ else skip}  $
+\end{itemize}
 \end{example}
+
+\begin{example}
+EJERCICIO 5.54 Demostrar la equivalencia entre $\n{repeat } S \n{ until } b $ y $S; \n{while } \neg b \n{do} S $
+
+$$ \mc{S}_\nn{S}[[ \n{repeat } S \n{ until } b ]] := \n{cond}(\fc{B}{b, \n{skip}}$$
+
+\end{example}
+
 
 \section{Teorema de equivalencia}
 

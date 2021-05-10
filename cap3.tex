@@ -163,23 +163,19 @@ A las reglas de $\nn{While}_\nn{sos}$ añadimos\footnote{Se hace notar que las r
     \end{prooftree}
 \end{itemize}
 \end{sist*}
-\\
-
 Si intentásemos ampliar $\nn{While}_\nn{ns}$ de la misma manera, podríamos comenzar escribiendo las siguientes reglas:
 \begin{prooftree}
     \AxiomC{$\la{S_1}{s}\to s'$}
     \AxiomC{$\la{S_2}{s'}\to s''$}
-    \LeftLabel{}
-    \RightLabel{}
-    \UnaryInfC{$\la{S_1 \n{ par } S_2}{s}\to \la{S_1}{s''}$}
-    \end{prooftree}
+    \BinaryInfC{$\la{S_1 \n{ par } S_2}{s}\to \la{S_1}{s''}$}
+\end{prooftree}
 \begin{prooftree}
     \AxiomC{$\la{S_2}{s}\to s'$}
     \AxiomC{$\la{S_1}{s'}\to s''$}
     \LeftLabel{}
     \RightLabel{}
-    \UnaryInfC{$\la{S_1 \n{ par } S_2}{s}\to \la{S_1}{s''}$}
-    \end{prooftree}
+    \BinaryInfC{$\la{S_1 \n{ par } S_2}{s}\to \la{S_1}{s''}$}
+\end{prooftree}
 Pero entonces observamos que estas reglas únicamente expresan que $S_1$ se ejecuta antes o después de $S_2$, es decir, no parecen traducir correctamente el valor semántico que tenemos en mente para $\n{par}$. Esto se debe a que en $\nn{While}_\nn{ns}$ nos interesa solo el desarrollo general de la ejecución y, por tanto, la ejecución de una expresión no se puede descomponer en ejecuciones intermedias. 
 
 \begin{example} Podemos desarrollar una sentencia que fuerce a que un conjunto de sentencias se ejecute de forma atómica. Por ejemplo

@@ -1,0 +1,165 @@
+\cleardoublepage
+\chapter{Más semántica denotacional}
+
+
+Queremos estudiar ahora diferentes extensiones de $\nn{While}$ desde el enfoque de la semántica denotacional. Como nos centraremos en bloques y procedimientos, muchas de las ideas que ya vimos en el capítulo 3 volverán a aparecer de nuevo. Confiamos en el lector para que se dé cuenta de estas similitudes a lo largo de este tema.
+
+\section{Entornos y almacenamientos}
+
+Comenzamos extendiendo $\nn{While}$ añadiendo bloques que declaren variables locales y procedimientos. Llamaremos Proc al nuevo lenguaje. Constará de las siguientes categorías sintácticas:
+\begin{align*}
+        S ::= &\n{x}:=a\ |\ \n{skip}\ |\ S_1;S_2\ |\ \n{if}\ b\ \n{then}\ S_1\ \n{else}\ S_2\ |\ \n{while}\ b\ \n{do}\ S \ |\\ & \n{ begin }D_V\ D_P\ S\n{ end}\ |\ \n{call }p \\
+    D_V ::= &\n{var x} := a; D_V\ |\ \varepsilon \\
+    D_P ::= &\n{proc }p\n{ is }S; D_P\ |\ \varepsilon
+\end{align*}
+donde recordemos que $p \in \mathbf{Pname}$ es la categoría sintáctica de los \textit{nombres de procedimientos} y $D_P \in \mathbf{Dec}_P$ es la de \textit{declaraciones de procedimientos}. $\varepsilon\in \mathbf{Dec}_P$ denotará de nuevo la \textit{declaración vacía}. Admitiremos procedimientos recursivos. 
+\\
+
+Nos limitaremos a estudiar el ámbito estático, es decir, el efecto de llamar a un procedimiento que modifique una variable y se encuentre en un bloque interno consistirá en modificar el valor de la variable global (véase el capítulo 3). Por tanto, debemos regresar a la idea de \textit{ubicación}: cada variable es asociada a una ubicación, y cada ubicación es asociada a un valor. Cada vez que declaremos un variable, será asociada a una ubicación no usada, y lo que cambiará será el valor de esta ubicación. Por tanto, las variables locales y globales tendrán diferentes ubicaciones.
+\\
+
+De nuevo, queremos reemplazar los estados por \textit{almacenamientos} y \textit{entornos de variable}. Para las ubicaciones, tomaremos $\mathbf{Loc} := \mathbf{Z}$ y, por tanto, $new: \mathbf{Loc}\to \mathbf{Loc}$ volverá a ser la función sucesor. Por otro lado, si denotamos por $\n{next}$ para denotar la siguiente ubicación libre, definimos $sto \in \mathbf{Store}:= \mathbf{Loc}\cup\{\n{next}\}\to \mathbf{Z}$. Por último, recordemos que teníamos $env_V \in \mathbf{Env}_V := \mathbf{Var}\to \mathbf{Loc}$ y que, en definitiva, todo esto nos permitía identificar un estado $s$ con una composición $sto \circ env_V$.
+\\
+
+Ahora recordemos cuál era la intención de la semántica denotacional, es decir, debemos retomar el punto de vista funcional. Por tanto, definimos una aplicación
+$$lookup : \mathbf{Env}_V \to \mathbf{Store}\to \mathbf{State}: env_v \mapsto lookup(env_V)(sto) := sto \circ env_V$$
+Recordemos que, originalmente, teníamos una aplicación del tipo $\mc{S}_\nn{ds} : \mathbf{Stm} \to (\State \hookrightarrow \State)$. Aprovechando lo que acabamos de presentar, redefinimos esta función semántica como:
+$$\mc{S}'_\nn{ds}: \mathbf{Stm}\to \mathbf{Env}_V \to (\mathbf{Store}\hookrightarrow \mathbf{Store})$$
+Antes de presentar la definición de esta aplicación, conviene definir también:
+$$\n{cond}': (\mathbf{Sto}\to \mathbf{Bool})\times (\mathbf{Store}\hookrightarrow \mathbf{Store}) \times (\mathbf{Store}\hookrightarrow \mathbf{Store}) \to (\mathbf{Store}\hookrightarrow \mathbf{Store})$$
+definida como la función $\n{cond}$ que ya conocemos.
+\\
+
+El sistema queda como:
+\begin{sist*}[$\nn{While}_\nn{ds}$, ámbito estático]
+\begin{eqnarray*}
+    \mc{S}'_\nn{ds} [[x:=a]](env_V)(sto) &:=& sto[env_V(x)\mapsto \fc{A}{a}(lookup(env_V)(sto))] \\
+    \mc{S}'_\nn{ds} [[\nskip]](env_V) &:=& id \\
+    \mc{S}'_\nn{ds} [[S_1;S_2]](env_V) &:=& \mc{S}'_\nn{ds} [[S_2]](env_V) \circ \mc{S}'_\nn{ds} [[S_1]](env_V) \\
+    \mc{S}'_\nn{ds} [[\nif b\nthen S_1\nelse S_2]](env_V) &:=&  \n{cond}'(\fc{B}{b}\circ (lookup(env_V)), \mc{S}'_\nn{ds} [[S_1]](env_V), \mc{S}'_\nn{ds} [[S_2]](env_V))\\
+    \mc{S}'_\nn{ds} [[\nwhile b \ndo S]](env_V) &:=&  \n{fix}(F)
+\end{eqnarray*}
+donde $F(g) := \n{cond}'(\fc{B}{b}\circ lookup(env_V), g\circ \mc{S}_\nn{ds}[[S]](env_V), id)$.
+\end{sist*}
+Se puede comprobar que $\mc{S}'_\nn{ds}$ está bien definida (véase el capítulo anterior, la demostración es similar a la de $\mathcal{S}_\nn{ds}$).  
+
+\section{Actualización de entornos de variable}
+
+Queremos que el entorno de variable se actualice cada vez que examinemos un bloque que contenga declaraciones locales. Para ello, definimos una función semántica:
+$$\mc{D}_\nn{ds}^V: \mathbf{Dec}_V \to (\mathbf{Env}_V \times \mathbf{Store})\to (\mathbf{Env}_V \times \mathbf{Store})$$
+definida por lo siguiente:
+\begin{eqnarray*}
+    \mc{D}_\nn{ds}^V [[\nvar x:=a; D_V]](env_V)(sto) &:=& \mc{D}_\nn{ds}^V[[D_V]](env_V[x\mapsto l], sto[l\mapsto v][\n{next}\mapsto new(l)])\\
+    \mc{D}_\nn{ds}^V [[\varepsilon]] &:=& id
+\end{eqnarray*}
+donde $l = sto(\n{next})$ y $v = \fc{A}{a}(\nn{lookup}\ env_V\ sto)$. La idea es la siguiente
+\begin{enumerate}
+    \item Tomamos la siguiente posición libre en el almacenamiento ($l = sto(\n{next})$)
+    \item Modificamos el entorno dirigiendo la variable $x$ a esa nueva posición.
+    \item Para esa posición, establecemos en el almacenamiento su valor $sto[l\mapsto v]$ (la posición $l$ redirige al valor $v$). El valor $v$ es simplemente la interpretación de la expresión aritmética $a$ bajo las referencias $env_V$ y $sto$ anteriores.
+    \item Finalmente fijamos que en almacenamiento $\n{next}$ redirija a la futura próxima localicación $new\ l$. Imagina que $l = 3$: si $new$ representa la función \textit{sucesor}, la próxima posición en memoria a rellenar sería la $4$.
+\end{enumerate}
+Ahora estamos en condiciones de fijar una semántica para las sentencias del tipo $\nbegin D_v\ S \nend$. Más adelante se incluirán también los procedimientos.
+\begin{sist*}[$\nn{While}_\nn{ds}$, ámbito estático, con entornos de variables]
+A las reglas de antes, añadimos:
+\begin{eqnarray*}
+    \mc{S}'_\nn{ds} [[\nbegin D_v\ S \nend]](env_V)(sto) &:=&  \mc{S}'_\nn{ds} [[S]]\ (env_V')(sto')
+\end{eqnarray*}
+donde $(env_V', sto') = \mc{D}_\nn{ds}^V [[D_V]](env_V, sto)$.
+\end{sist*}
+
+\begin{example} Veamos cómo actúan las definiciones y construcciones anteriores en el siguiente código:
+\begin{verbatim}
+begin var y:=0; var x:=1;
+    begin var x:=7; x:=x+1 end;
+    y := x
+end
+\end{verbatim}
+Denotaremos
+\begin{eqnarray*}
+    S_3 &:=&  y := x \\
+    S_2 &:=&  \nbegin \nvar x:=7; \nvar x:=x+1; \n{skip} \nend \\
+    S_1 &:=&  S_2;S_3 \\
+    S   &:=&  \nbegin \nvar y:=0; \nvar x:=1; S_1 \nend 
+\end{eqnarray*}
+Computamos sobre $(env_V, sto)\in \mathbf{Env}_V\times\mathbf{Store}$ la declaración de variables del bloque exterior
+\begin{eqnarray*}
+    \mc{D}_\nn{ds}^V [[\nvar y:=0; \nvar x:=1;]](env_V, sto) &=& \mc{D}_\nn{ds}^V [[\nvar x:=1;]](env_V', sto')
+\end{eqnarray*}
+siendo $env_V' = env_V[y\mapsto l_0]$, $sto' = sto[l_0\mapsto 0][\n{next}\mapsto new(l_0)]$ y $l_0 = sto(\n{next})$. Por simplicidad vamos a suponer que $sto(\n{next}) = 1$ es la primera posición que se establece, $new = suc$ (sucesor) y que $env_V$ está completamente indefinido. De esta forma
+$$
+    env_V' = env_V[y\mapsto 1]\ \ \ y\ \ \ sto' = sto[1\mapsto 0][\n{next}\mapsto 2]
+$$
+Ahora seguimos computando la declaración de variables:
+\begin{eqnarray*}
+    \mc{D}_\nn{ds}^V [[\nvar x:=1]](env_V', sto') = (env_V'', sto'')
+\end{eqnarray*}
+siendo
+$$
+    env_V'' = env_V'[x\mapsto 2]\ \ \ y\ \ \ sto'' = sto'[2\mapsto 1][\n{next}\mapsto 3]
+$$
+De esta forma:
+\[
+    env_V'' = \left\{\begin{array}{lcl}
+         y & \to & 1 \\
+         x & \to & 2
+    \end{array}\right.,\ \ sto'' = \left\{\begin{array}{lcl}
+         1 & \to & 0 \\
+         2 & \to & 1 \\
+         \n{next} & \to & 3
+    \end{array}\right.
+\]
+quedando de esta forma
+\[
+    \nn{lookup}(env_V'')(sto'') = \left\{\begin{array}{lcl}
+         y & \to & 0 \\
+         x & \to & 1
+    \end{array}\right.
+\]
+Por lo tanto
+\begin{eqnarray*}
+    \mc{S}'_\nn{ds} [[S]](env_V)(sto) &=& \mc{S}'_\nn{ds} [[\nbegin \nvar y:=0; \nvar x:=1;\ S_1 \nend]](env_V)(sto) \\
+    &=& \mc{S}'_\nn{ds}[[S_1]](env_V'')(sto'') \\
+    &=& \mc{S}'_\nn{ds}[[S_2; S_3]](env_V'')(sto'') \\
+    &=& (\mc{S}'_\nn{ds}[[S_3]](env_V'') \circ \mc{S}'_\nn{ds}[[S_2]](env_V'')) (sto'')
+\end{eqnarray*}
+Ahora para computar $\mc{S}'_\nn{ds}[[S_2]](env_V'') (sto'')$ atendemos a su declaración de variables, que se resuelve de forma análoga al anterior
+\begin{eqnarray*}
+    \mc{D}_\nn{ds}^V [[\nvar x:=7; \nvar x:=x+1;]](env_V'', sto'') = (env_V''', sto''')
+\end{eqnarray*}
+con
+\[
+    env_V''' = \left\{\begin{array}{lcl}
+         y & \to & 1 \\
+         x & \to & 3
+    \end{array}\right.,\ \ sto''' = \left\{\begin{array}{lcl}
+         1 & \to & 0 \\
+         2 & \to & 1 \\
+         3 & \to & 2 \\
+         \n{next} & \to & 4
+    \end{array}\right.
+\]
+Luego
+\begin{eqnarray*}
+    \mc{S}'_\nn{ds}[[S_2]](env_V'') (sto'') &=& \mc{S}'_\nn{ds}[[\nskip]](env_V''') (sto''') \\
+    &=& sto'''
+\end{eqnarray*}
+Fíjate que ahora lo único que se envía a la siguiente sentencia es el estado actual del almacén, pero el entorno desaparece y se vuelve a utilizar el anterior:
+\begin{eqnarray*}
+    \mc{S}'_\nn{ds} [[S]](env_V)(sto)
+    &=& (\mc{S}'_\nn{ds}[[S_3]](env_V'') \circ \mc{S}'_\nn{ds}[[S_2]](env_V'')) (sto'') \\
+    &=& \mc{S}'_\nn{ds}[[S_3]](env_V'')(sto''') \\
+    &=& \mc{S}'_\nn{ds}[[y:=x]](env_V'')(sto''') \\
+    &=& sto'''[env_V''(y) \mapsto \mathcal{A}[[x]](lookup(env_V'')(sto'''))]\\
+    &=& sto'''[1 \mapsto sto'''(env''(x))] \\
+    &=& sto'''[1 \mapsto sto'''(2)] \\
+    &=& sto'''[1 \mapsto 1] \\
+    &=& \left\{\begin{array}{lcl}
+         1 & \to & 1 \\
+         2 & \to & 1 \\
+         3 & \to & 2 \\
+         \n{next} & \to & 4
+    \end{array}\right.
+\end{eqnarray*}
+Bajo el entorno $env''$ la variable $y$ apunta a la posición $1$, que en el almacén redirige al valor entero $1$. Por lo tanto, dentro del primer bloque $\n{begin}$ la variable $y$ toma el valor $1$. Si el entorno de variables fuera dinámico habría tomado el valor $8$.
+\end{example}

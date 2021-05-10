@@ -2,8 +2,6 @@
 \chapter{Introducción}
 						
 \pagenumbering{arabic}
-$\\$
-
 \section{Un ejemplo de la lógica}
 La pregunta que motiva todo lo siguiente es: ¿qué es el significado? O, más concretamente, ¿cuál es la relación entre la sintaxis y la semántica? Aunque aquí nos centraremos principalmente en especificar el comportamiento de programas, parece conveniente presentar un ejemplo relacionado con la lógica. Recordemos que, en lógica de primer orden, disponíamos de un método para asignar un valor semántico a cada expresión. En este caso, el valor semántico que nos interesa es la \textit{denotación}, es decir, que por ejemplo $\varphi \lor \psi$ denota lo verdadero en función de $\varphi$ y $\psi$. El método consistía en:
 \begin{itemize}
@@ -142,8 +140,8 @@ Primero recordemos que una función $f: A \rightarrow B$ es \textit{parcial} si 
 \begin{prop}
 La función $\mc{N}: \mathbf{Num} \to \Z$ es total.
 \end{prop}
-\begin{proof}[Demostración]
-Por inducción. De los siguientes casos, $(a), (b)$ son los \texttit{casos base} y $(c), (d)$ los \textit{inductivos}:
+\begin{proof}
+Por inducción. De los siguientes casos, $(a), (b)$ son los \textit{casos base} y $(c), (d)$ los \textit{inductivos}:
 \begin{itemize}
     \item[(a)] Si $n = \n{0}$, $\fc{N}{n} = 0$.
     \item[(b)] Si $n = \n{1}$, $\fc{N}{n} = 1$.
@@ -260,7 +258,7 @@ Dada una expresión aritmética $a$, su conjunto de \textit{variables libres}, $
 El siguiente resultado nos dice que $\mathrm{FV}(a)$ determina el valor semántico de $a$:
 
 \begin{lema}
-Sea $a\in \mathbf{Aexp}$. Sean $s, s' \in \mathbf{State}$ tales que, para cada $x \in \mathrm{FV}(a)$, $s\ x = s'\x$. Entonces $\fc{A}{a}s = \fc{A}{a}s'$.
+Sea $a\in \mathbf{Aexp}$. Sean $s, s' \in \mathbf{State}$ tales que, para cada $x \in \mathrm{FV}(a)$, $s\ x = s'\ x$. Entonces $\fc{A}{a}s = \fc{A}{a}s'$.
 \end{lema}
 \begin{proof}[Demostración]
 Veamos los casos base:
@@ -290,7 +288,7 @@ De la misma forma, para expresiones booleanas, tenemos:
 La demostración del anterior lema se puede repetir de nuevo:
 
 \begin{lema}
-Sea $b\in \mathbf{Bexp}$. Sean $s, s' \in \mathbf{State}$ tales que, para cada $x \in \mathrm{FV}(b)$, $s\ x = s'\x$. Entonces $\fc{B}{b}s = \fc{B}{b}s'$.
+Sea $b\in \mathbf{Bexp}$. Sean $s, s' \in \mathbf{State}$ tales que, para cada $x \in \mathrm{FV}(b)$, $s\ x = s'\ x$. Entonces $\fc{B}{b}s = \fc{B}{b}s'$.
 \end{lema}
 \begin{proof}[Demostración]
 Casos base:
