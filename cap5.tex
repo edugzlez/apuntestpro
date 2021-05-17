@@ -45,7 +45,7 @@ La idea para el condicional es la siguiente:
         \mc{S}_\nn{ds} [[S2]]s\text{, si } \fc{B}{b}s = \textbf{ff}
    \end{cases}
 \]
-donde sencillamente se ha utilizado el valor $\fc{B}{b}s$ para separar en dos casos y, según el resultado, aplicar una sentencia u otra. Pero, como dijimos antes, suele ser más cómodo emplear notación funcional. Podemos definir entonces una aplicación auxiliar $\n{cond} : (\State \to \mathbf{Bool}) \times (\State \hookrightarrow  \State) \times (\State \hookrightarrow  \State) \to (\State \hookrightarrow  \State)$, bajo la idea de que el primer parámetro será la evaluación de la expresión booleana (en función del estado) y las otras dos serán las evaluaciones de las sentencias $S_1$ y $S_2$\footnote{Hemos empleado el producto de tipos para mayor simplicidad. También podríamos haber escrito $\n{cond} : (\State \to \mathbf{Bool}) \to (\State \hookrightarrow  \State) \to (\State \hookrightarrow  \State) \to (\State \hookrightarrow  \State)$ y por tanto prescindir de paréntesis. Puede que, en un aspecto puramente formal, esta diferencia no sea relevante. En cambio, sí que es importante señalarla desde el punto de vista de los tipos de datos que emplea $\n{cond}$. También podríamos haber sustituido el tipo de funciones $\mathbf{State}\to \mathbf{Bool}$ por el tipo simple $\mathbf{Bool}$ pero, de nuevo, recordemos que es preferible trabajar con funciones.}. Para ello, según el valor que retorne el booleano, se devolverá el primer parámetro o el segundo, es decir:
+donde sencillamente se ha utilizado el valor $\fc{B}{b}s$ para separar en dos casos y, según el resultado, aplicar una sentencia u otra. Pero, como dijimos antes, suele ser más cómodo emplear notación funcional. Podemos definir entonces una aplicación auxiliar $\n{cond} : (\State \to \mathbf{Bool}) \times (\State \hookrightarrow  \State) \times (\State \hookrightarrow  \State) \to (\State \hookrightarrow  \State)$, bajo la idea de que el primer parámetro será la evaluación de la expresión booleana (en función del estado) y las otras dos serán las evaluaciones de las sentencias $S_1$ y $S_2$\footnote{Hemos empleado el producto de tipos para mayor simplicidad. También podríamos haber escrito $\n{cond} : (\State \to \mathbf{Bool}) \to (\State \hookrightarrow  \State) \to (\State \hookrightarrow  \State) \to (\State \hookrightarrow  \State)$ y por tanto prescindir de paréntesis. Puede que, en un aspecto puramente formal, esta diferencia no sea relevante. En cambio, sí que es importante señalarla desde el punto de vista de los tipos de datos que emplea $\n{cond}$. También podríamos haber sustituido el tipo de funciones $\mathbf{State}\to \mathbf{Bool}$ por el tipo simple $\mathbf{Bool}$ pero, de nuevo, recordemos que estamos siguiendo un enfoque funcional.}. Para ello, según el valor que retorne el booleano, se devolverá el primer parámetro o el segundo, es decir:
 \[
     \n{cond}(f_b, f_1, f_2) s := 
     \begin{cases}
@@ -103,8 +103,10 @@ Entonces, de momento, tenemos las siguientes reglas:
 donde $F(g) := \n{cond}(\fc{B}{b}, g\circ \mc{S}_\nn{ds}[[S]], id)$.
 \end{sist*}
 
+\begin{example}
+
 Notemos que podríamos haber intentado definir 
-$$\mc{S}_{ds}[[\n{while } b \n{ do } S]]s := \mc{S}_{ds}^{\delta(b, S)s}s$$
+$$\mc{S}_\nn{ds}[[\n{while } b \n{ do } S]]s := \mc{S}_\nn{ds}^{\delta(b, S)s}s$$
 con 
 $$\delta(b, S)s := \begin{cases}
     0 \text{, si } \fc{B}{b}s = \mathbf{ff} \\
@@ -112,6 +114,7 @@ $$\delta(b, S)s := \begin{cases}
 \end{cases}$$
 Sería una definición composicional pero, en cambio, la aplicación $\delta(b, S)$ no está bien definida como función recursiva, porque podría darse el caso de que no devolviera ningún valor bien definido.
 
+\end{example}
 \subsection{Requisitos de punto fijo}
 
 Ahora bien, si examinamos la definición que hemos dado para $\mc{S}_\nn{ds} [[\nwhile b \ndo S]]$, veremos que volvemos a tener problemas. Esta vez el obstáculo se encuentra en que hemos supuesto que cada aplicación asociada a una sentencia de la forma $\nwhile b \ndo S$ tiene \textit{un} punto fijo. La realidad es bien distinta: puede haber varios puntos fijos o incluso ninguno, como ilustran los siguientes ejemplos.
@@ -403,7 +406,7 @@ $$\bigsqcup\{f^{n}(\bot) \, | \, n \geq 1\} = \bigsqcup(\{f^{n}(\bot) \, | \, n 
 Finalmente, veamos que es el menor punto fijo. Sea $d$ otro punto fijo de $f$. Como $\bot \sqsubseteq d$, por monotonía se tiene que $f^n(\bot) \sqsubseteq f^n(d)$, para cada $n \geq 0$. Como $d$ es punto fijo, $f^n(\bot) \sqsubseteq d$, para cada $n \geq 0$, es decir, $d$ es cota superior de la cadena $\{f^n(d) \, | \, n \geq 0\}$. Pero, por definición, $\n{fix}(f) \sqsubseteq d$.
 \end{proof}
 
-\begin{prop}
+\begin{prop}\label{propcpo}
 Sea $f: D \to D$ continua con $(D, \sqsubseteq)$ parcialmente ordenado y completo. Sea $d \in D$ tal que $f(d)\sqsubseteq d$. Entonces, $\n{fix}(f) \sqsubseteq d$.
 \end{prop}
 \begin{proof}
@@ -502,7 +505,7 @@ es decir, $g_0 \sqsubseteq g_1$, como queríamos.
 \end{proof}
 
 Con el siguiente ejemplo vemos qué aspecto tiene una aplicación continua en el caso especial que estudiamos:
-\begin{example}
+\begin{example}[TERMINAR? JOJOJO]
 Recordemos el siguiente funcional asociado a $\n{while} \neg(\n{x}=0)\n{do skip}$:
 $$F(g)s := \begin{cases}
     gs \text{, si } s\n{x} \neq 0\\
@@ -520,7 +523,7 @@ El Teorema \ref{fixth} aplicado al orden $\sqsubseteq$ nos dice que, bajo determ
 $$\mc{S}_\nn{ds} [[\nwhile b \ndo S]] :=  \n{fix}(F),$$
 siendo $F(g) := \n{cond}(\fc{B}{b}, g\circ \mc{S}_\nn{ds}[[S]], id)$. Por tanto, debemos verificar que $F$ verifica las condiciones de las que hablamos. El siguiente Lema nos da un resultado en esta dirección:
 
-\begin{lema}
+\begin{lema}\label{dslema1}
 Sea $p \in \mathbf{State}\to\mathbf{Bool}$. La aplicación $\Phi(g, h) := \n{cond}(p, g, h)$ es continua en las dos variables $g, h$, es decir, tanto
 $$F(g) := \n{cond}(p, g, g_0) \quad \text{como} \quad H(g) := \n{cond}(p, g_0, g)$$
 son continuas, siendo $g_0 \in \mathbf{State}\hookrightarrow\mathbf{State}$.
@@ -532,7 +535,7 @@ Vamos a demostrar la continuidad de $F$, el otro caso es análogo. Primero veamo
 Veamos ahora la continuidad. Basta ver que, si $C \subseteq \mathbf{State}\hookrightarrow\mathbf{State}$ es una cadena arbitraria no vacía, $F(\bigsqcup C) \sqsubseteq \bigsqcup F(C)$ (la otra dirección viene dada, en general, por monotonía). Por lo que ya vimos antes, podemos ver que $G(F(\bigsqcup C)) \subseteq \bigcup \{G(F(g)) \, | \, g \in C\}$ para tener el resultado. Sea $(s, s')\in G(F(\bigsqcup C))$. Si $ps = \mathbf{tt}$, $F(\bigsqcup C)s = g_0s= s'$. Pero entonces, para cada $g \in C$, $F(g)s = g_0s = s'$. Si $ps = \mathbf{tt}$, $F(\bigsqcup C)s = (\bigsqcup C)s = s'$, es decir, $(s, s')\in G(\bigsqcup C) = \bigcup \{G(g) \, | \, g \in C\}$, luego existe cierta $h \in C$ con $hs = s'$, es decir, $F(h)s = s'$, lo que nos da el resultado.
 \end{proof}
 
-\begin{lema}
+\begin{lema}\label{dslema2}
 La aplicación $\Psi(g, h) := g \circ h$ es continua en las dos variables, es decir, tanto
 $$F(g) := g \circ g_0\quad \text{como}\quad H(g) := g_0 \circ g$$
 son continuas, siendo $g_0 \in \mathbf{State}\hookrightarrow\mathbf{State}$.
@@ -663,5 +666,68 @@ Como siempre, cuando introducimos un nuevo sistema de semántica, nos interesa e
 \begin{theorem}
 Para cada $S \in \mathbf{Stm}$, $\mc{S}_\nn{sos}[[S]] = \mc{S}_\nn{ds}[[S]]$.
 \end{theorem}
+\\
 
 Notemos que, tanto $\mc{S}_\nn{sos}[[S]]$ como $\mc{S}_\nn{ds}[[S]]$ son elementos de $\mathbf{State}\hookrightarrow\mathbf{State}$, que es un conjunto ordenado por $\sqsubseteq$, luego basta demostrar que $\mc{S}_\nn{sos}[[S]] \sqsubseteq \mc{S}_\nn{ds}[[S]]$ y $\mc{S}_\nn{ds}[[S]] \sqsubseteq \mc{S}_\nn{sos}[[S]]$, para $S \in \mathbf{Stm}$ arbitrario.
+\\
+
+\begin{lema}
+Para cada $S \in \mathbf{Stm}$, $\mc{S}_\nn{sos}[[S]]\sqsubseteq \mc{S}_\nn{ds}[[S]]$.
+\end{lema}
+\begin{proof}
+Veamos que, para arbitrarios $s, s' \in \mathbf{State}$, $\la{S}{s}\dto s'$ implica $\mc{S}_\nn{ds}[[S]]s = s'$. Para ello, vamos a demostrar lo siguiente:
+$$(\star) \begin{cases}
+    \la{S}{s}\dto s' \quad \text{ implica }\quad \mc{S}_\nn{ds}[[S]]s=s' \\
+    \la{S}{s}\dto \la{S'}{s} \quad \text{ implica }\quad \mc{S}_\nn{ds}[[S]]s= \mc{S}_\nn{ds}[[S']]s 
+\end{cases}$$
+En efecto, una vez demostrado $(\star)$, lo primero se sigue fácilmente por inducción sobre al longitud de la secuencia de derivación $\la{S}{s}\dto^k s'$. Empleamos demostración por inducción en la forma del árbol de derivación de $ \la{S}{s}\dto s'$ o $\la{S}{s}\dto \la{S'}{s}$:
+\begin{itemize}
+    \item[($\nn{ass}_\nn{sos}$)] Tenemos que $\la{x:= a}{s}\dto s[x\mapsto \fc{A}{a}s] = \mc{S}_\nn{ds}[[x:=a]]s$.
+    \item[($\nn{skip}$)] Análogo.
+    \item[($\nn{comp}^1_\nn{sos}$)] Supongamos que hemos deducido $\la{S_1;S_2}{s} \dt \la{S_1';S_2}{s'}$ de $\la{S_1}{s}\dto \la{S'_1}{s'}$. Entonces, aplicando a ésto último la hipótesis de inducción, $\mc{S}_\nn{ds}[[S_1]]s = \mc{S}_\nn{ds}[[S'_1]]s'$. Pero entonces, 
+    $$\mc{S}_\nn{ds}[[S_1;S_2]]s = \mc{S}_\nn{ds}[[S_2]](\mc{S}_\nn{ds}[[S_1]]s) = \mc{S}_\nn{ds}[[S_2]](\mc{S}_\nn{ds}[[S'_1]]s') = \mc{S}_\nn{ds}[[S'_1;S_2]]s.$$
+    \item[($\nn{comp}^2_\nn{sos}$)] Análogo.
+     \item[($\nn{if}^\nn{tt}_\nn{sos}$)] Supongamos que hemos deducido $\la{\n{if }b \n{ then }S_2\n{ else }S_2}{s} \dto \la{S_1}{s}$ de $\fc{B}{b}s = \mathbf{tt}$. Pero entonces, 
+     $$\mc{S}_\nn{ds}[[\n{if }b \n{ then }S_2\n{ else }S_2]]s = \n{cond}(\fc{B}{b}, \mc{S}_\nn{ds}[[S_1]], \mc{S}_\nn{ds}[[S_2]])s = \mc{S}_\nn{ds}[[S_1]]s.$$
+     \item[($\nn{if}^\nn{ff}_\nn{sos}$)] Análogo.
+     \item[($\nn{while}_\nn{sos}$)] Supongamos que $\la{\n{while }b\n{ do }S}{s}\Rightarrow \la{\n{if }b\n{ then }(S; \n{while }b\n{ do }S)\n{ else skip}}{s}$. Sabemos que $\mc{S}_\nn{ds}[[\n{while }b\n{ do }S]] = \n{fix}(F)$, donde $Fg := \n{cond}(\fc{B}{b}, g\circ \mc{S}_\nn{ds}[[S]], id)$. Entonces:
+     $$\mc{S}_\nn{ds}[[\n{while }b\n{ do }S]] = \n{fix}(F) = F(\n{fix}(F)) =  \n{cond}(\fc{B}{b}, (\n{fix}(F))\circ \mc{S}_\nn{ds}[[S]] , id) = $$
+     $$ = \n{cond}(\fc{B}{b}, \mc{S}_\nn{ds}[[\n{while }b\n{ do }S]]\circ\mc{S}_\nn{ds}[[S]] , id) = \n{cond}(\fc{B}{b}, \mc{S}_\nn{ds}[[S;\n{while }b\n{ do }S]], mc{S}_\nn{ds}[[\n{skip}]]) = $$ $$=\mc{S}_\nn{ds}[[\n{if }b\n{ then }(S; \n{while }b\n{ do }S)\n{ else skip}]]$$
+\end{itemize}
+\end{proof}
+
+Notemos que solo hemos probado que, si $\mc{S}_\nn{sos}[[S]]s \neq \n{INDEFINIDO}$, entonces $\mc{S}_\nn{sos}[[S]]=\mc{S}_\nn{ds}[[S]]$. En principio, $\mc{S}_\nn{ds}[[S]]$ podría estar más definida que $\mc{S}_\nn{sos}[[S]]$. De todos modos, el siguiente lema nos asegura que no es el caso:
+
+\begin{lema}
+Para cada $S \in \mathbf{Stm}$, $\mc{S}_\nn{ds}[[S]]\sqsubseteq \mc{S}_\nn{sos}[[S]]$.
+\end{lema}
+\begin{proof}
+Lo demostramos por inducción estructural sobre $S$:
+\begin{itemize}
+    \item[($x:=a$)] Claramente, como $\mc{S}_\nn{ds}[[x:=a]]s = \mc{S}_\nn{sos}[[x:=a]]s$, tenemos que $\mc{S}_\nn{sos}$ verifica la definición de $\mc{S}_\nn{ds}$.
+    \item[($\n{skip}$)] Análogo. 
+    \item[($S_1;S_2$)] Empleando el Lema \ref{dslema2} y la hipótesis de inducción,
+    $$\mc{S}_\nn{ds}[[S_1;S_2]] = \mc{S}_\nn{ds}[[S_2]] \circ \mc{S}_\nn{ds}[[S_1]] \sqsubseteq \mc{S}_\nn{sos}[[S_2]] \circ \mc{S}_\nn{sos}[[S_1]]$$
+Por el Lema \ref{lemasos2},
+$$\mc{S}_\nn{sos}[[S_2]] \circ \mc{S}_\nn{sos}[[S_1]] \sqsubseteq \mc{S}_\nn{sos}[[S_1;S_2]]$$
+que nos da el resultado. Nótese que en este caso $\mc{S}_\nn{sos}$ verifica algo más débil que la definición de $\mc{S}_\nn{ds}$.
+    \item[($\n{if}$)] Aplicando el Lema \ref{dslema1} y la hipótesis de inducción,
+    $$\mc{S}_\nn{ds}[[\n{if }b\n{ then }S_1\n{ else }S_2]] = \n{cond}(\fc{B}{b}, \mc{S}_\nn{ds}[[S_1]], \mc{S}_\nn{ds}[[S_2]]) \sqsubseteq \n{cond}(\fc{B}{b}, \mc{S}_\nn{sos}[[S_1]], \mc{S}_\nn{sos}[[S_2]])$$
+Aplicando las reglas respectivas $[\nn{if}_\nn{sos}^\nn{tt}]$ y $[\nn{if}_\nn{sos}^\nn{ff}]$, vemos que
+$$\mc{S}_\nn{sos}[[\n{if }b\n{ then }S_1\n{ else }S_2]]s = \mc{S}_\nn{sos}[[S_1]]s \, \text{ si } \fc{B}{b}s = \mathbf{tt}$$
+$$\mc{S}_\nn{sos}[[\n{if }b\n{ then }S_1\n{ else }S_2]]s =  \mc{S}_\nn{sos}[[S_2]]s \, \text{ si } \fc{B}{b}s =\mathbf{ff}$$
+es decir, 
+$$\n{cond}(\fc{B}{b}, \mc{S}_\nn{sos}[[S_1]], \mc{S}_\nn{sos}[[S_2]]) = \mc{S}_\nn{sos}[[\n{if }b\n{ then }S_1\n{ else }S_2]]$$
+que nos da el resultado. En este caso, $\mc{S}_\nn{sos}$ verifica la definición de $\mc{S}_\nn{ds}$.
+    \item[($\n{while}$)] Tenemos que $\mc{S}_\nn{ds}[[\n{while }b\n{ do }S]] = \n{fix}(F)$, con $Fg := \n{cond}(\fc{B}{b}, g\circ \mc{S}_\nn{ds}[[S]], id)$ funcional continuo. Veamos que $F(\mc{S}_\nn{sos}[[\n{while }b\n{ do }S]]) \sqsubseteq \mc{S}_\nn{sos}[[\n{while }b\n{ do }S]]$ porque, una vez demostrado, podemos aplicar la Proposición \ref{propcpo} para obtener el resultado. 
+    
+    De nuevo por los Lemas \ref{lemasos2} y \ref{dslema1},
+    $$\n{cond}(\fc{B}{b}, \mc{S}_\nn{sos}[[\n{while }b\n{ do }S]]\circ \mc{S}_\nn{sos}[[S]], id) \sqsubseteq \n{cond}(\fc{B}{b}, \mc{S}_\nn{sos}[[S; \n{while }b\n{ do }S]], id) =\mc{S}_\nn{sos}[[\n{while }b\n{ do }S]]$$
+    Aplicando la hipótesis de inducción (a $S$) y los Lemas \ref{dslema1} y \ref{dslema2}, 
+    $$F(\mc{S}_\nn{sos}[[\n{while }b\n{ do }S]]) = \n{cond}(\fc{B}{b}, \mc{S}_\nn{sos}[[\n{while }b\n{ do }S]]\circ \mc{S}_\nn{ds}[[S]], id) \sqsubseteq$$
+    $$\sqsubseteq \n{cond}(\fc{B}{b}, \mc{S}_\nn{sos}[[\n{while }b\n{ do }S]]\circ \mc{S}_\nn{sos}[[S]], id) \sqsubseteq \mc{S}_\nn{sos}[[\n{while }b\n{ do }S]].$$
+    En este caso, $\mc{S}_\nn{sos}$ verifica algo más débil que la definición de $\mc{S}_\nn{ds}$.
+\end{itemize}
+\end{proof}
+
+En general, hemos empleado dos métodos de demostración. Nótese que estos pueden ser desarrollados para demostrar otros tipos de propiedades.

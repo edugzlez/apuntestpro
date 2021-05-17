@@ -1,0 +1,295 @@
+\cleardoublepage
+\chapter{Semántica axiomática}
+
+Durante los capítulos anteriores hemos empleado sistemas semánticos con unas reglas muy cercanas a la semántica de los programas, lo que hacía que las demostraciones fuesen especialmente complejas, porque incluían detalles concretos y específicos de cada sistema. Ahora nos interesa estudiar las propiedades generales acerca de la ejecución de un programa, y nos centraremos en demostrar propiedades de \textit{corrección parcial}\footnote{Es decir, aquellas que establecen que, si un programa termina, entonces hay una relación entre los valores iniciales y finales de las variables (véase la Introducción). Las propiedades de \textit{corrección total}, por otro lado, dicen que un programa termina y que también hay una tal relación entre los distintos valores de las variables.}.
+
+
+\section{Sistema de reglas de inferencia}
+
+La idea general consiste en codificar los programas mediante \textit{aserciones}, es decir, enunciados que se afirman sobre ellos. Denotaremos las aserciones como  $$ \pre{P}{S}{Q}$$ donde $S \in \mathbf{Stm}$ y $P, Q$ son \textit{predicados}: $P$ y $Q$ se llaman \textit{precondición} y \textit{poscondición}, respectivamente. Lo que una aserción de esta forma quiere decir es lo siguiente: si $P$ es cierto en un estado inicial y la ejecución de $S$ a partir de tal estado termina, entonces $Q$ será cierto en el estado en el que $S$ finaliza. Por tanto, como dijimos antes, no es necesario que $S$ termine, sino que, en caso de que sí ocurra, $Q$ sea cierto en el estado final correspondiente.
+
+\begin{example}
+Consideremos la aserción $$\pre{\n{x}=\n{n}}{\n{y} := 1; \n{while} ¬(\n{x}=1) \n{do} (\n{y} := \n{x}\cdot \n{y}; \n{x} := \n{x}−1)}{\n{y}=\n{n}! ∧ \n{n}>0}$$ Notemos que, si cambiamos la poscondición por $\n{y}=\n{x}! ∧ \n{x}>0$, entonces tendremos una relación entre el valor final de $\n{y}$ y el de $\n{x}$, que no es lo que queremos reflejar mediante una aserción. Para ello empleamos la variable $\n{n}$. 
+\end{example}
+
+Esta variable $\n{n}$ es un ejemplo de \textit{variable lógica}, en contraposición con una \textit{variable de programa}. Para que una variable lógica sea operativa, es decir, para que nos permita referirnos a los valores iniciales de una variable de programa, no debe tener ninguna ocurrencia en la sentencia $S$ asociada a una aserción $\pre{P}{S}{Q}$. Más aún, el valor de una variable lógica debe permanecer constante a lo largo de la ejecución de $S$. De este modo, lo que el anterior ejemplo dice es que, inicialmente, $\n{x}$ toma el valor de $\n{n}$ y que, después de ejecutar $S$, $\n{y}$ toma el factorial del valor inicial de $\n{x}$. 
+\\
+
+Como antes hemos comentado, vamos a considerar que las precondiciones y poscondiciones son predicados, es decir, elementos de $\mathbf{State} \to \mathbf{Bool}$\footnote{Esto es lo que se denomina el \textit{enfoque intensional}, en contraposición al \textit{extensional}.}. Por tanto, $\pre{P}{S}{Q}$ dice que, si $Ps$ y $S$ lleva $s$ en $s'$, entonces $Qs'$. Un ejemplo sencillo de predicado es el que induce una expresión booleana $b$, a saber, $\fc{B}{b}$. Permitiremos que en una expresión booleana aparezcan tanto variables lógicas como de programa. 
+\\
+
+Emplearemos las siguientes abreviaturas:
+\begin{align*}
+    P_1 \land P_2 & \text{ para } P  \text{ si } Ps = (P_1s) \text{ y } (P_2s)\\ 
+    P_1 \lor P_2 & \text{ para } P  \text{ si } Ps = (P_1s) \text{ o } (P_2s)\\ 
+    \neg P' & \text{ para } P \text{ si } Ps = \text{ no }(P's)\\ 
+    P[x \mapsto \fc{A}{a}] & \text{ para } P'  \text{ si } P's = P(s[x \mapsto \fc{A}{a}s])\\ 
+    P_1 \dto P_2 & \text{ para } P  \text{ si, para todo }s \in \mathbf{State}, Ps = (P_1s) \text{ implica } (P_2s)
+\end{align*}
+
+\begin{example}
+No es difícil verificar que
+\begin{itemize}
+    \item[(a)] $\fc{B}{b[x\mapsto a]} = \fc{B}{b}[x \mapsto \fc{A}{a}]$
+    \item[(b)] $\fc{B}{b_1 \land b_2} = \fc{B}{b_1} \land \fc{B}{b_2}$.
+    \item[(c)] $\fc{B}{\neg b} = \neg \fc{B}{b}$.
+\end{itemize}
+Para (a) véase en la Introducción el Lema para la sustitución en expresiones booleanas. (b) y (c) son directos de la definición\footnote{Notemos que, en las abreviaturas que hemos introducido, hemos supuesto que el tipo $\mathbf{Bool}$ está dotado de una estructura de retículo con las operaciones booleanas usuales. Por tanto, expresiones del tipo $\neg \mathbf{true} \Rightarrow \mathbf{false}$ y otras similares son admitidas. De aquí se sigue que las dos igualdades (b) y (c) son inmediatas.}.
+\end{example}
+
+Por tanto, determinamos un sistema de \textit{reglas de inferencia} que muestre cómo se comportan las aserciones, en función de los predicados y la sentencia correspondientes que les forman:
+
+\begin{sist*}[$\nn{While}_\nn{p}$, Reglas de Hoare]\mbox{}
+\begin{itemize}
+    \item[] $[\text{ass}_{\nn{p}}]$
+\begin{prooftree}
+    \AxiomC{}
+    \LeftLabel{}
+    \UnaryInfC{ $\pre{P[x\mapsto \fc{A}{a}]}{x:=a}{P}$}
+\end{prooftree}
+    \item[]$[\text{skip}_{\nn{p}}]$
+\begin{prooftree}
+    \AxiomC{}
+    \LeftLabel{}
+    \UnaryInfC{$\pre{P}{\n{skip}}{P}$}
+\end{prooftree}
+    \item[]$[\text{comp}_{\nn{p}}]$
+\begin{prooftree}
+    \AxiomC{$\pre{P}{S_1}{Q}$ }
+    \AxiomC{$\pre{Q}{S_2}{R}$}
+    \LeftLabel{}
+    \BinaryInfC{ $\pre{P}{S_1; S_2}{R} $}
+\end{prooftree}
+    
+    \item[]$[\text{if}_{\nn{p}}]$
+\begin{prooftree}
+    \AxiomC{$\pre{P  \wedge \fc{B}{b}}{S_1}{Q}$}
+    \AxiomC{$\pre{P \wedge \fc{B}{\neg b} }{S_2}{Q}$}
+    \LeftLabel{}
+    \BinaryInfC{$\pre{P}{\n{if }b\n{ then }S_1 \n{ else } S_2}{Q} $}
+\end{prooftree}
+   
+
+    \item[] $[\nn{while}_\nn{p}]$
+\begin{prooftree}
+    \AxiomC{$\pre{P  \wedge \fc{B}{b}}{S}{P}$}
+    \LeftLabel{}
+    \RightLabel{}
+    \UnaryInfC{$\pre{P}{\n{while }b\n{ do }S}{\neg \fc{B}{b} \wedge P}$}
+\end{prooftree}
+
+    \item[] $[\nn{cons}_\nn{p}]$
+\begin{prooftree}
+    \AxiomC{$\pre{P'}{S}{Q'}$}
+    \LeftLabel{}
+    \RightLabel{si $P \Rightarrow P'$ y $Q' \Rightarrow Q$}
+    \UnaryInfC{$\pre{P}{S}{Q}$} 
+
+    
+\end{prooftree}
+\end{itemize}
+
+    
+\end{sist*}
+\\
+
+Nótese que, las reglas $[\text{ass}_{\nn{p}}]$ y $[\text{skip}_{\nn{p}}]$ son, en verdad, \textit{esquemas}, porque codifican un axioma distinto para cada elección del predicado $P$. Fijémonos en la regla  $[\nn{while}_\nn{p}]$. En ella aparece lo que se denomina como \textit{predicado invariante}, es decir, aquel que se verifica antes y después de la ejecución del programa. Esto corresponde a la intuición que tenemos sobre el bucle $\n{while}$. La regla $[\nn{cons}_\nn{p}]$ puede parecer la más alejada de todo lo que hemos visto hasta ahora, pero es necesaria para que el sistema sea manejable.
+\\
+
+\begin{example}
+Conviene tener cuidado a la hora de interpretar el significado que pretendemos dar a las aserciones. Por ejemplo, podríamos haber propuesto un axioma del tipo:
+\begin{prooftree}
+    \AxiomC{}
+    \LeftLabel{}
+    \UnaryInfC{ $\pre{P}{x:=a}{P\land x=a}$}
+\end{prooftree}
+Esta regla parece intuitiva a simple vista. Sin embargo, es claro que podemos deducir a partir de ella $\pre{x=3}{x:=6}{x=3 \land x=6}$, lo que nos daría que esl estado final es falso y no se respetaría la motivación informal que dimos antes.
+\\
+
+\end{example}
+
+
+\begin{example}
+¿Podemos deducir las siguientes aserciones a partir de las reglas de Hoare?
+\begin{itemize}
+    \item[(a)] $\pre{y=1}{y:=1}{y=1}$. 
+    \item[(b)] $\pre{x=N \land y=1}{y:=1}{x=N}$. 
+    \item[(c)] $\pre{x = N \land N=0}{y:=1}{y=1 \land y= N!}$.
+    \item[(d.1)] $\pre{x = N \land N>0}{y:=1}{y=1 \land y= N!}$.
+    \item[(d.2)] $\pre{x=N \land N >1}{y:=1}{y=N!}$
+\end{itemize}
+La aserción (a) se puede deducir fortaleciendo la precondición mediante la regla $[\nn{cons}_\nn{p}]$ porque, como $y=1 \Rightarrow 1=1$, entonces
+\begin{prooftree}
+        \AxiomC{}
+        \LeftLabel{$[\nn{ass}_\nn{p}]$}
+    \UnaryInfC{$\pre{1=1}{y:=1}{y=1}$}
+    \LeftLabel{$[\nn{cons}_\nn{p}]$}
+    \UnaryInfC{$\pre{y=1}{y:=1}{y=1}$}
+\end{prooftree}
+La aserción (b) puede deducirse de forma similar:
+\begin{prooftree}
+        \AxiomC{}
+        \LeftLabel{$[\nn{ass}_\nn{p}]$}
+    \UnaryInfC{$\pre{x=N}{y:=1}{x=N}$}
+    \LeftLabel{$[\nn{cons}_\nn{p}]$}
+    \UnaryInfC{$\pre{x=N \land y=1}{y:=1}{x=N}$}
+\end{prooftree}
+pues 
+$x=N \land y=1 \Rightarrow x=N$ y $x = N \Rightarrow x = N$.
+\\ 
+La aserción (c) se deduce también de forma similar, sea P la postcondición tenemos que $\{ P[y\mapsto \fc{A}{1}]\}  = \{1 = 1 \wedge 1 = N! \}$ 
+\begin{prooftree}
+        \AxiomC{}
+        \LeftLabel{$[\nn{ass}_\nn{p}]$}
+        \UnaryInfC{$\pre{1 = 1 \wedge 1 = N!}{y:=1}{y=1 \land y= N!}$}
+    %\LeftLabel{$[\nn{cons}_\nn{p}]$}
+        \UnaryInfC{$\pre{N!=1}{y:=1}{y=1 \land y= N!}$}
+    \LeftLabel{$[\nn{cons}_\nn{p}]$}
+    \UnaryInfC{$\pre{N=0}{y:=1}{y=1 \land y= N!}$}
+    \LeftLabel{$[\nn{cons}_\nn{p}]$}
+    \UnaryInfC{$\pre{x = N \land N=0}{y:=1}{y=1 \land y= N!}$}
+\end{prooftree}
+ya que $1 = 1 \wedge 1 = N! \iff N!=1 \Leftarrow N = 0 \Leftarrow x = N \land N=0 $\\
+La d.1) no es correcta: 
+\begin{prooftree}
+        \AxiomC{}
+        \LeftLabel{$[\nn{ass}_\nn{p}]$}
+        \UnaryInfC{$\pre{1 = 1 \wedge 1 = N!}{y:=1}{y=1 \land y= N!}$}
+    %\LeftLabel{$[\nn{cons}_\nn{p}]$}
+        \UnaryInfC{$\pre{N = 0 \vee N = 1}{y:=1}{y=1 \land y= N!}$}
+
+\end{prooftree}
+pues $N! = 1 \vee 1 = 1 \iff N = 0 \vee N = 1 \nLeftarrow N > 0 $\\
+\\La aserción d.2) no es correcta:
+\begin{prooftree}
+    \AxiomC{}
+    \LeftLabel{$[\nn{ass}_\nn{p}]$}
+    \UnaryInfC{$\pre{1 = N!}{y:=1}{y=N!}$}
+    %\LeftLabel{$[\nn{cons}_\nn{p}]$}
+    \UnaryInfC{$\pre{N = 0 \vee N = 1}{y:=1}{y=N!}$}
+\end{prooftree}
+pues $N! = 1 \iff N = 0 \vee N = 1 \nLeftarrow N > 1 $
+\\
+
+\end{example}
+
+
+
+Tenemos el siguiente resultado para $[\nn{cons}_\nn{p}]$, que simplificará considerablemente los árboles de inferencia:
+
+\begin{lema}
+Si existe un árbol de inferencia para una determinada aserción, entonces existe un árbol canónico (en el que no hay dos aplicaciones seguidas de $[\nn{cons}_\nn{p}]$).
+\end{lema}
+\begin{proof}
+Supongamos que tenemos, en un árbol dado, que $\pre{P}{S}{Q}$ implica $\pre{P'}{S}{Q'}$ mediante $[\nn{cons}_\nn{p}]$, y que, del mismo modo, que $\pre{P'}{S}{Q'}$ implica $\pre{P''}{S}{Q''}$   Entonces sabemos que $P'' \Rightarrow P' \Rightarrow P$ y que $Q \Rightarrow Q' \Rightarrow Q''$. Pero entonces $\pre{P}{S}{Q}$ implica $\pre{P''}{S}{Q''}$ mediante $[\nn{cons}_\nn{p}]$. Eliminando las repeticiones indicadas de esta forma, tenemos el resultado.
+\end{proof}
+
+
+
+
+El lector debe recordar, llegados a este punto, los sistemas de transiciones que vimos en la semántica operacional. Por tanto, deducirá que hay varias ideas que se vuelven a repetir. Hablaremos de \textit{árbol de inferencia}, en vez de `árbol de derivación', y diremos que el árbol da una \textit{prueba} de la aserción que aparecerá en su raíz. En tal caso, escribiremos $\vdash_p \pre{P}{S}{Q}$.
+\\
+
+\begin{example}
+Supongamos que queremos demostrar la aserción $\pre{\n{true}}{\n{while true do skip}}{\n{true}}$. De la regla $[\nn{skip}_\nn{p}]$, tenemos que $\vdash_P \pre{\n{true}}{\n{skip}}{\n{true}}$. Como $(\n{true} \land \n{true})\Rightarrow \n{true}$, juntando lo anterior con la regla $[\nn{cons}_\nn{p}]$ tenemos que $\vdash_P \pre{\n{true}\land \n{true}}{\n{skip}}{\n{true}}$. Aplicando directamente $[\nn{while}_\nn{p}]$, $\pre{\n{true}}{\n{while true do skip}}{\neg\n{true}\land \n{true}}$. Ahora bien, $\neg \n{true} \land \n{true} \Rightarrow \n{false} \land \n{true} \Rightarrow \n{false} \Rightarrow \n{true}$. Entonces podemos aplicar de nuevo $[\nn{cons}_\nn{p}]$ para obtener $\pre{\n{true}}{\n{while true do skip}}{\n{true}}$, como queríamos.
+\end{example}
+
+\begin{example}
+EJEMPLO 9.9 o EJERCICIO 9.10
+\end{example}
+
+\begin{example}
+Veamos cómo podemos ampliar el sistema $\nn{While}_\nn{p}$ para incluir una aserción asociada a $\n{repeat }S\n{ until }b$. [PROPUESTA]
+\begin{prooftree}
+    \AxiomC{$\pre{P}{S}{Q}$}
+    \AxiomC{$\pre{Q\land  \neg\fc{B}{b}}{S}{Q}$}
+    \BinaryInfC{ $\pre{P}{\n{repeat }S \n{ until }b}{\fc{B}{b} \land Q}$}
+\end{prooftree}
+\end{example}
+
+\section{Propiedades}
+
+Siguiendo con las analogías con la semántica operacional antes comentadas, tenemos la siguiente
+\begin{definition}
+Decimos que $S_1, S_2 \in \mathbf{Stm}$ son \textit{probablemente equivalentes} si, para cualesquiera predicados $P, Q$ se cumple que
+$$\vdash_p \pre{P}{S_1}{Q} \quad \text{ si y solo si } \quad \vdash_p \pre{P}{S_2}{Q}.$$
+\end{definition}
+
+
+\begin{example}
+Supongamos que $\vdash_p \pre{P}{S;\n{skip}}{Q}$. Entonces, por la sintaxis, deducimos que lo hemos deducido de las premisas $\vdash_p \pre{P}{S}{Q}$ y $\vdash_p \pre{Q}{\n{skip}}{Q}$, aplicando la regla $[\text{comp}_{\nn{p}}]$. Recíprocamente, si $\vdash_p \pre{P}{S}{Q}$ entonces, aplicando el axioma $[\text{skip}_{\nn{p}}]$ tenemos que $\vdash_p \pre{Q}{\n{skip}}{Q}$ y, aplicando $[\text{comp}_{\nn{p}}]$ a ambos resultados, $\vdash_p \pre{P}{S;\n{skip}}{Q}$. Como $P, Q$ son predicados arbitrarios, hemos demostrado la equivalencia entre $S;\n{skip}$ y $S$.
+\end{example}
+
+\begin{example}
+El lector puede convencerse de que $S_1;(S_1;S_2)$ y $(S_1;S_2);S_3$ son probablemente equivalentes: veáse el anterior ejemplo y las demostraciones que ya vimos en otros sistemas, nótese que basta emplear la regla $[\text{comp}_{\nn{p}}]$ a las hojas de la deducción.
+\end{example}
+
+En algunas demostraciones nos veremos obligados a suponer que hemos probado cierta propiedad con sentencias simples para poder demostrarla en sentencias complejas. Tendremos que emplear, entonces, la demostración por \textit{inducción sobre la forma del árbol de inferencia}, es decir:
+\begin{itemize}
+    \item[(i)] Verificamos que la propiedad que queramos demostrar se cumple para los axiomas del sistema.
+    \item[(ii)] Suponiendo que la propiedad se cumple para las premisas de una regla, la demostramos para la conclusión.
+\end{itemize}
+
+\begin{prop}
+Las sentencias $\n{repeat }S\n{ until }b$ y $S;\n{while }\neg b\n{ do }S$ son probablemente equivalentes.
+\end{prop}
+\begin{proof}
+De hecho, vamos a ver que todo lo que se puede demostrar para una de ellas, se puede probar para la otra. [HACER]
+\end{proof}
+
+\section{Corrección y completitud}
+
+Comencemos esta sección con la siguiente observación fundamental. Como ya hemos ido advirtiendo desde el inicio del capítulo, lo que acabamos de definir es un sistema que no tiene en cuenta transiciones específicas (a diferencia de los anteriores) sino que solo distingue su comportamiento general, es decir, la relación entre los estados inicial y final (inferencia). Por tanto, el sistema $\nn{While}_p$ es un sistema de reglas sintácticas, y para comprobar que satisface nuestros requerimientos intuitivos, debemos comprobar las siguientes propiedades, empleando para ello las semánticas denotacional y operacional:
+\begin{itemize}
+    \item La \textit{corrección}: si alguna propiedad (de corrección parcial) se puede demostrar empleando el sistema de inferencias, entonces también se puede demostrar mediante el sistema de transiciones.
+    \item La \textit{completitud}: si alguna propiedad (de corrección parcial) se puede demostrar empleando el sistema de transiciones, entonces también se puede demostrar mediante el sistema de inferencia.
+\end{itemize}
+Por el Teorema de Equivalencia, podemos elegir $\nn{While}_\nn{ns}$ como sistema de transiciones. 
+\\
+
+Ahora bien, ya hemos definido antes cuándo una aserción era \textit{deducible}, es decir, demostrable según el sistema de inferencias. Debemos dar, entonces, una idea paralela correspondiente al sistema de transiciones: una aserción $\pre{P}{S}{Q}$ es \textit{válida} si, para cada $s\in \mathbf{State}$, si $Ps = \mathbf{tt}$ y $\la{S}{s}\to s's$ (para cierto estado $s'$), entonces $Qs' = \mathbf{tt}$. En tal caso, denotamos $\vDash_p \pre{P}{S}{Q}$.
+\\
+
+Ahora ya estamos en condiciones de enunciar los teoremas que queremos demostrar:
+
+\begin{theorem}[De corrección]
+Para cada aserción $\pre{P}{S}{Q}$ se cumple que 
+$$\vdash_p \pre{P}{S}{Q}\quad \text{ implica }\quad\vDash_p \pre{P}{S}{Q}.$$
+\end{theorem}
+\begin{proof}
+La demostración se realiza por inducción en la forma del árbol de inferencia empleado para obtener $\vdash_p \pre{P}{S}{Q}$. Nótese que lo que queremos probar no es más que las reglas que hemos definido se conforman correctamente respecto de nuestras intenciones originales.
+\begin{itemize}
+    \item[($\nn{ass}_\nn{p}$)] Supongamos que $\la{x:=a}{s}\to s'$ y que $(P[x\mapsto \fc{A}{a}])s = \mathbf{tt}$ y veamos que $Ps' = \mathbf{tt}$. De la regla $[\nn{ass}_\nn{ns}]$, $s' = s[x\mapsto \fc{A}{a}s]$ y, de la segunda suposición, $P(s[x \mapsto \fc{A}{a}s]) = Ps' = \mathbf{tt}$.
+    \item[($\nn{skip}_\nn{p}$)] Es evidente empleando $[\nn{skip}_\nn{ns}]$.
+    \item[($\nn{comp}_\nn{p}$)] Supongamos que $\vDash_p \pre{P}{S_1}{Q}$ y $\vDash_p \pre{Q}{S_2}{R}$ y veamos que $\vDash_p \pre{P}{S_1;S_2}{R}$. Para ello, supongamos que $Ps= \mathbf{tt}$ y $\la{S_1;S_2}{s}\to s''$ y veamos que $Rs''= \mathbf{tt}$. Sabemos que la segunda premisa se ha obtenido empleando $[\nn{comp}_\nn{ns}]$ a partir de $\la{S_1}{s}\to s'$ y $\la{S_2}{s'}\to s''$. Ahora, juntado esto con $\vDash_p \pre{P}{S_1}{Q}$ y $\vDash_p \pre{Q}{S_2}{R}$, obtenemos que $Ps = \mathbf{tt}$ implica $Qs' = \mathbf{tt}$, que implica $Rs'' = \mathbf{tt}$.
+    \item[($\nn{if}_\nn{p}$)] Supongamos que $\vDash_p \pre{\fc{B}{b}\land P}{S_1}{Q}$ y $\vDash_p \pre{\neg\fc{B}{b}\land P}{S_2}{Q}$. Pongamos que $Ps = \mathbf{tt}$ y que $\la{\n{if }b\n{ then }S_1\n{ else }S_2}{s}\to s'$. Si $\fc{B}{b}s = \mathbf{tt}$, entonces $(\fc{B}{b}\land P)s = \fc{B}{b}s \land Ps = \mathbf{tt}$. Entonces, aplicando $[\nn{if}_\nn{ns}^\nn{tt}]$, $\la{S_1}{s}\to s'$. Pero como $\vDash_p \pre{\fc{B}{b}\land P}{S_1}{Q}$, $Qs' = \mathbf{tt}$. El caso en que $\fc{B}{b}s = \mathbf{ff}$ es análogo.
+    \item[($\nn{while}_\nn{p}$)] Supongamos que $\vDash_p \pre{\fc{B}{b}\land P}{S}{P}$ y veamos que $\vDash_p \pre{P}{\n{while }b\n{ do }S}{\neg\fc{B}{b}\land P}$. Sean $Ps = \mathbf{tt}$, $\la{\n{while }b\n{ do }S}{s}\to s''$. Tenemos que deducir que $(\neg\fc{B}{b}\land P)s'' = \mathbf{tt}$. El caso $\fc{B}{b}s = \mathbf{ff}$ es claro porque, aplicando $[\nn{while}_\nn{ns}^\nn{ff}]$, $s'' = s$ y se seguiría el resultado. Supongamos que $\fc{B}{b}s = \mathbf{tt}$. Entonces, hemos tenido que aplicar $[\nn{while}_\nn{ns}^\nn{tt}]$ a $\la{S}{s}\to s'$ y $\la{\n{while }b\n{ do }S}{s'}\to s''$. Como suponemos que $(\fc{B}{b}s \land P)s = \mathbf{tt}$ y que $\vDash_p \pre{\fc{B}{b}\land P}{S}{P}$, obtenemos que $Ps' = \mathbf{tt}$. Aplicando la hipótesis de inducción sobre la premisa $\la{\n{while }b\n{ do }S}{s'}\to s''$ y juntando esto con lo que anterior, tenemos el resultado.
+    \item[($\nn{cons}_\nn{p}$)] Supongamos que $\vDash_p \pre{P'}{S}{Q'}$, $P \Rightarrow P'$, $Q' \Rightarrow Q$ y veamos que $\vDash_p \pre{P}{S}{Q}$. Para ello, sean $Ps = \mathbf{tt}$ y $\la{S}{s}\to s'$. De la segunda hipótesis, $P's = \mathbf{tt}$ y por tanto, de la primera hipótesis, $Q's' = \mathbf{tt}$. Pero, de la tercera hipótesis, se sigue que $Qs' = \mathbf{tt}$.
+\end{itemize}
+\end{proof}
+
+Para demostrar la completitud del sistema, debemos antes dar una definición auxiliar. Definimos la \textit{precondición más débil} de un par $(S, Q) \in \mathbf{Stm}\times(\mathbf{State} \to \mathbf{Bool})$ como un predicado $wlp(S, Q)$ tal que:
+$$wlp(S, Q)s = \mathbf{tt} \quad \text{ si y solo si }\quad \forall s, s' \in \mathbf{State}\, \la{S}{s}\to s' \text{ implica } Qs' = \mathbf{tt}.$$
+El siguiente lema nos dice que el nombre que hemos puesto a este predicado esta justificado: 
+
+\begin{lema}
+Para cada par $(S,  Q)\in \mathbf{Stm}\times(\mathbf{State} \to \mathbf{Bool})$, 
+\begin{itemize}
+    \item $\vDash_p \pre{wlp(S, Q)}{S}{Q}$.
+    \item Si $\vDash_p \pre{P}{S}{Q}$, entonces $P \Rightarrow wlp(S, Q)$.
+\end{itemize}
+\end{lema}
+\begin{proof}
+Para lo primero, sean $s, s' \in \mathbf{State}$ con $\la{S}{s}\to s'$ y $wlp(S, Q)s = \mathbf{tt}$. Por la definición de $wlp(S, Q)$, se sigue que $Qs' = \mathbf{tt}$, como queríamos ver. 
+\\
+
+Para lo segundo, supongamos que $\vDash_p \pre{P}{S}{Q}$ y que $Ps = \mathbf{tt}$. Entonces, de $\la{S}{s}\to s'$ se sigue que $Qs' = \mathbf{tt}$. Pero esta implicación es equivalente (por definición) a que $wlp(S, Q)s = \mathbf{tt}$. Luego hemos probado que $P \Rightarrow Q$. 
+\end{proof}
+
+\begin{theorem}[De Completitud]
+Para cada aserción $\pre{P}{S}{Q}$ se cumple que 
+$$\vDash_p \pre{P}{S}{Q}\quad \text{ implica }\quad\vdash_p \pre{P}{S}{Q}.$$
+\end{theorem}
+\begin{proof}
+
+\end{proof}

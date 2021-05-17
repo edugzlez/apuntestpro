@@ -57,7 +57,7 @@ donde $l = sto(\n{next})$ y $v = \fc{A}{a}(\nn{lookup}\ env_V\ sto)$. La idea es
     \item Tomamos la siguiente posición libre en el almacenamiento ($l = sto(\n{next})$)
     \item Modificamos el entorno dirigiendo la variable $x$ a esa nueva posición.
     \item Para esa posición, establecemos en el almacenamiento su valor $sto[l\mapsto v]$ (la posición $l$ redirige al valor $v$). El valor $v$ es simplemente la interpretación de la expresión aritmética $a$ bajo las referencias $env_V$ y $sto$ anteriores.
-    \item Finalmente fijamos que en almacenamiento $\n{next}$ redirija a la futura próxima localicación $new\ l$. Imagina que $l = 3$: si $new$ representa la función \textit{sucesor}, la próxima posición en memoria a rellenar sería la $4$.
+    \item Finalmente fijamos que en almacenamiento $\n{next}$ redirija a la futura próxima localicación $new\ l$. Imaginemos que $l = 3$: si $new$ representa la función \textit{sucesor}, la próxima posición en memoria a rellenar sería la $4$.
 \end{enumerate}
 Ahora estamos en condiciones de fijar una semántica para las sentencias del tipo $\nbegin D_v\ S \nend$. Más adelante se incluirán también los procedimientos.
 \begin{sist*}[$\nn{While}_\nn{ds}$, ámbito estático, con entornos de variables]
@@ -144,7 +144,7 @@ Luego
     \mc{S}'_\nn{ds}[[S_2]](env_V'') (sto'') &=& \mc{S}'_\nn{ds}[[\nskip]](env_V''') (sto''') \\
     &=& sto'''
 \end{eqnarray*}
-Fíjate que ahora lo único que se envía a la siguiente sentencia es el estado actual del almacén, pero el entorno desaparece y se vuelve a utilizar el anterior:
+Fijémonos que ahora lo único que se envía a la siguiente sentencia es el estado actual del almacén, pero el entorno desaparece y se vuelve a utilizar el anterior:
 \begin{eqnarray*}
     \mc{S}'_\nn{ds} [[S]](env_V)(sto)
     &=& (\mc{S}'_\nn{ds}[[S_3]](env_V'') \circ \mc{S}'_\nn{ds}[[S_2]](env_V'')) (sto'') \\

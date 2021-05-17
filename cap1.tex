@@ -134,8 +134,9 @@ Intepretaremos los numerales como si fuesen la expresión binaria de un número 
     \end{array}
 \]
 Donde $\oplus, \otimes$ expresan las operaciones de suma y producto en $\Z$ y $0, 1, 2$ los enteros correspondientes: la distinción entre objetos sintácticos y semánticos tiene que ser cuidadosa. Las igualdades anteriores se llaman \textit{ecuaciones semánticas}, nos indican cómo asociar un objeto matemático a un símbolo. Además, tenemos aquí un ejemplo de lo que se llama el \textit{principio de composición}, es decir, construimos el significado de una expresión (\textit{elemento compuesto}) en función del de sus componentes (\textit{elementos base}). Ésto facilita aplicar el método de demostración general que seguiremos, la \textit{inducción estructural}, que consiste en primero demostrar una propiedad para cada elemento base y después demostrarla para los compuestos empleando la hipótesis de inducción. Veamos un ejemplo a continuación.
+\\
 
-Primero recordemos que una función $f: A \rightarrow B$ es \textit{parcial} si hay elementos $a\in A$ en los que no está definida. En caso contrario, se denomina \textit{función total}.
+Recordemos que una función $f: A \rightarrow B$ es \textit{parcial} si hay elementos $a\in A$ en los que no está definida. En caso contrario, se denomina \textit{función total}.
 
 \begin{prop}
 La función $\mc{N}: \mathbf{Num} \to \Z$ es total.
@@ -208,7 +209,7 @@ $$\fc{A}{-a}s  = \fc{A}{\n{0}-a}s$$
 no está definida de forma composicional.
 \end{example}
 
-Se puede repetir el procedimiento anterior para definir una función semántica para los booleanos, $\mc{B} : \mathbf{Bexp} \rightarrow (\mathbf{State}\rightarrow Bool)$, siendo $Bool := \{\mathbf{tt}, \mathbf{ff}\}$, definida por:
+Se puede repetir el procedimiento anterior para definir una función semántica para los booleanos, $\mc{B} : \mathbf{Bexp} \rightarrow (\mathbf{State}\rightarrow \mathbf{Bool})$, siendo $\mathbf{Bool} := \{\mathbf{tt}, \mathbf{ff}\}$, definida por:
 \begin{align*}
     \fc{B}{\n{true}}s & = \mathbf{tt}\\
     \fc{B}{\n{false}}s & = \mathbf{ff} \\
@@ -353,10 +354,29 @@ De nuevo, una demostración rutinaria por inducción estructural. Los casos base
         \fc{A}{a_1[y\mapsto a_0]+a_2[y\mapsto a_0]}s  \\
         &=& \fc{A}{a_1[y\mapsto a_0]}s\oplus\fc{A}{a_2[y\mapsto a_0]}s \\
         &\overset{hip.ind.}{=}& \fc{A}{a_1}s' \oplus\fc{A}{a_2}s' \\
-        &=& \fc{A}{a_1+a_2}
+        &=& \fc{A}{a_1+a_2}s'
     \end{eqnarray*}
     \item El caso $a := a_1 \times a_2$ es análogo.
 \end{itemize}
+\end{proof}
+
+Dadas una expresión booleana $b$ y una aritmética $a_0$, podemos definir la sustitución $b[x \mapsto a_0]$ como:
+\begin{align*}
+    \n{true}[x \mapsto a_0] & = \n{true} \\
+    \n{false}[x \mapsto a_0] & = \n{false} \\
+    (a_1=a_2)[x \mapsto a_0] & = a_1[x \mapsto a_0] = a_2[x \mapsto a_0]\\
+    (a_1\leq a_2)[x \mapsto a_0] & = a_1[x \mapsto a_0] \leq a_2[x \mapsto a_0]\\
+    (\neg b)[x \mapsto a_0] & = \neg(b[x\mapsto a_0])\\
+    (b_1\land b_2)[x \mapsto a_0] & = b_1[x \mapsto a_0] \land b_2[x \mapsto a_0]
+\end{align*}
+Y, del mismo modo que antes, podemos demostrar un resultado análogo:
+
+\begin{lema}
+Dadas $b \in \mathbf{Bexp}$ y $a_0 \in \mathbf{Aexp}$, para cada $s \in \mathbf{State}$ se verifica que:
+$$\fc{B}{b[x \mapsto a_0]}s = \fc{B}{b}s[y\mapsto \fc{A}{a_0}s]$$
+\end{lema}
+\begin{proof}
+Véase la demostración del anterior lema y repítase para expresiones booleanas.
 \end{proof}
 
 En general, si tratamos con conjuntos de variables, necesitaremos lo siguiente. Sea $X\subseteq \mathbf{Var}$ y $s, s' \in \mathbf{State}$. Dada $\n{x}\in \mathbf{Var}$, definimos la \textit{sustitución múltiple en X} como:

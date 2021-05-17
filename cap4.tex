@@ -8,7 +8,7 @@ Una pregunta a realizarse sería cómo implementar un lenguaje de programación 
     \item Bisimulación.
 \end{itemize}
 
-La idea es que definiremos el comportamiento semántico de las instrucciones de la máquina abstracta mediante semántica operacional y después estudiaremos traducciones que lleven elementos de $\nn{While}$ en secuencias de estas instrucciones. Con \textit{corrección} nos referimos a que, si traducimos una expresión en \textit{código} y lo ejecutamos, entonces obtendremos el mismo resultado que el que ya describimos mediante $\mc{S}_\nn{ns}$ o $\mc{S}_\nn{sos}$. Finalmente, veremos de pasada la bisimulación.
+La idea es que definiremos el comportamiento semántico de las instrucciones de la máquina abstracta mediante semántica operacional y después estudiaremos traducciones que lleven elementos de $\nn{While}$ en secuencias de estas instrucciones. Con \textit{corrección} nos referimos a que, si traducimos una expresión en \textit{código} y lo ejecutamos, entonces obtendremos el mismo resultado que el que ya describimos mediante $\mc{S}_\nn{ns}$ o $\mc{S}_\nn{sos}$. Finalmente, veremos de pasada la bisimulación como un método alternativo para demostrar la equivalencia de dos sistemas de transiciones.
 
 \section{Máquina abstracta}
 
@@ -109,14 +109,14 @@ Nótese que, en el primer caso, se puede terminar con una configuración final o
 
 Para no repetir las demostraciones que ya hemos visto, enunciaremos las diferentes propiedades básicas del sistema que acabamos de presentar:
 
-\begin{lema}
+\begin{lema}\label{lemaam1}
 Si $\conf{c_1}{e_1}{s}\rhd^k \conf{c'}{e'}{s'}$, entonces $\conf{c_1:c_2}{e_1:e_2}{s}\rhd^k \conf{c':c_2}{e':e_2}{s'}$.
 \end{lema}
 \begin{proof}
 Véase la demostración del Lema \ref{lemasos2}.
 \end{proof}
 
-\begin{lema}
+\begin{lema}\label{lemaam2}
 Si $\conf{c_1:c_2}{e}{s} \rhd^k \conf{\varepsilon}{e''}{s''}$, entonces existe una configuración $\conf{\varepsilon}{e'}{s'}$ y $k_1, k_2 \in \N$ tales que $k = k_1 + k_2$ y 
 $$\conf{c_1}{e}{s} \rhd^{k_1} \conf{\varepsilon}{e'}{s'} \quad\text{ y }\quad \conf{c_2}{e'}{s'} \rhd^{k_2} \conf{\varepsilon}{e''}{s''}.$$
 \end{lema}
@@ -131,6 +131,8 @@ $$\gamma \rhd \gamma'  \text{ y }\gamma \rhd \gamma'' \quad \text{ implica } \qu
 \begin{proof}
 Véase la demostración del Teorema \ref{teosos}.
 \end{proof}
+
+Más adelante veremos que este paralelismo entre el sistema de la máquina abstracta y la semántica operacional estructural no es accidental.
 
 \subsection{Función de ejecución}
 
@@ -164,9 +166,12 @@ Para traducir expresiones (aritméticas y booleanas) debemos proceder composicio
     b_1 \land b_2&\mapsto \fc{CB}{b_2}:\fc{CB}{b_1}: \n{AND}
 \end{align*}
 Se deben distinguir, evidentemente, los casos base y los inductivos. El orden que seguimos para el código no es arbitrario: véase el sistema de transiciones asociado a la máquina abstracta. 
+\\
 
 \begin{example}
 $\fc{CA}{\n{x}+1}= \fc{CA}{1}:\fc{CA}{\n{x}}:\n{ADD} = \n{PUSH}-1:\n{FETCH}-x:\n{ADD}$.
+\\
+
 \end{example}
 
 Conviene indicar que, precisamente por el hecho de que mediante las aplicaciones $\mc{CA}$ y $\mc{CB}$ vamos `apilando' información, se puede dar el caso de que dos expresiones que son iguales en $\nn{While}$ no lo son en el código. Por ejemplo, $\fc{A}{a_1+(a_2 + a_3)}= \fc{A}{(a_1+a_2)+a_3}$ pero $\fc{CA}{a_1+(a_2 + a_3)}\neq \fc{CA}{(a_1+a_2)+a_3}$. Únicamente podemos decir que ambas expresiones se `comportan' de la misma forma.
@@ -174,11 +179,11 @@ Conviene indicar que, precisamente por el hecho de que mediante las aplicaciones
 
 Siguiendo un razonamiento similar al anterior, definimos la aplicación:
 \begin{align*}
-    \mc{CB}: \mathbf{Stm} &\longrightarrow\mathbf{Code}\\
+    \mc{CS}: \mathbf{Stm} &\longrightarrow\mathbf{Code}\\
     x;=a &\mapsto \fc{CA}{a}:\n{STORE}-x\\
     \n{skip} &\mapsto \n{NOOP}\\
     S_1;S_2&\mapsto \fc{CA}{S_2}:\fc{CA}{S_1}\\
-    \n{if }b\n{ then } S_1 \n{ else }S_2&\mapsto \fc{CB}{b}:\n{BRANCH}(\fc{CS}{S_1}, \fc{CS}{S_1})\\
+    \n{if }b\n{ then } S_1 \n{ else }S_2&\mapsto \fc{CB}{b}:\n{BRANCH}(\fc{CS}{S_1}, \fc{CS}{S_2})\\
     \n{while }b\n{ do }S&\mapsto \n{LOOP}(\fc{CB}{b}, \fc{CS}{S})
 \end{align*}
 Notemos que, de nuevo, esta definición es composicional. Además, no se genera nunca código vacío. 
@@ -222,11 +227,11 @@ Recordemos que el objetivo ahora consiste en comprobar que, si ejecutamos un có
 
 Para expresiones, tenemos unos resultados precisos:
 
-\begin{lema}
+\begin{lema} \label{lemaam3}
 Sea $a \in \mathbf{Aexp}$. Entonces $\conf{\fc{CA}{a}}{\varepsilon}{s}\rhd^*\conf{\varepsilon}{\fc{A}{a}s}{s}$ y cada configuración intermedia de esta secuencia de derivación tendrá pila no vacía.
 \end{lema}
 
-\begin{lema}
+\begin{lema} \label{lemaam4}
 Sea $b \in \mathbf{Bexp}$. Entonces $\conf{\fc{CB}{b}}{\varepsilon}{s}\rhd^*\conf{\varepsilon}{\fc{B}{b}s}{s}$ y cada configuración intermedia de esta secuencia de derivación tendrá pila no vacía.
 \end{lema}
 
@@ -266,6 +271,109 @@ Notemos que ésta fue la motivación informal que dimos en su momento para compr
 Si $\gamma_\nn{sos} \approx \gamma_\nn{am}$ y $\gamma_\nn{sos}\dto\delta_\nn{sos}$, entonces existe una configuración $\delta_\nn{am}$ tal que $\gamma_\nn{am} \rhd^+ \delta_\nn{am} \approx \delta_\nn{sos}.$ 
 
 De hecho, si $\la{S}{s}\dto^* s'$, entonces $\conf{\fc{CS}{S}}{\varepsilon}{s}\rhd^* \conf{\varepsilon}{\varepsilon}{s'}$.
+\begin{proof} Procedemos por inducción sobre el número de pasos para $\la{S}{s}\dto^* s'$.
+\begin{itemize}
+    \item Sea $S \equiv \nx:=a$, entonces $\la{S}{s}\dto^* s'$ se ha deducido en un paso por $[\nn{ass}_\nn{sos}]$:
+    \[
+        \la{\nx:=a}{s}\dto s' = s[x\mapsto \fc{A}{a}s]
+    \]
+    Veamos a qué estado se llega en la máquina abstracta:
+    \begin{eqnarray*}
+        \conf{\fc{CS}{\nx:=a}}{\varepsilon}{s} &=& \conf{\fc{CA}{a}; \n{STORE}-x}{\varepsilon}{s} \\
+        &\rhd& \conf{\n{STORE}-x}{\fc{A}{a}s}{s} \\
+        &\rhd& \conf{\varepsilon}{\varepsilon}{s[x\mapsto \fc{A}{a}s]}
+    \end{eqnarray*}
+    por lo tanto $\conf{\fc{CS}{\nx:=a}}{\varepsilon}{s} \rhd^* \conf{\varepsilon}{\varepsilon}{s[x\mapsto \fc{A}{a}s]}$, como se quería probar.
+    \item Si $S \equiv \nskip$ se tiene 
+    \[
+        \la{\nskip}{s}\dto s
+    \]
+    y en la máquina abstracta se consigue
+    \begin{eqnarray*}
+        \conf{\fc{CS}{\nskip}}{\varepsilon}{s} &=& \conf{\n{NOOP}}{\varepsilon}{s} \\
+        &\rhd & \conf{\varepsilon}{\varepsilon}{s}
+    \end{eqnarray*}
+    \item Para $\la{S_1; S_2}{s} \dto^k s''$ se tiene por el lema \ref{lemasos1} que existen $k_1, k_2\in\N$ con $k_1 + k_2 = k$ y $s'\in\State$  tales que
+    \[
+        \la{S_1}{s} \dto^{k_1} s'\ \ \ y\ \ \ \la{S_2}{s'} \dto^{k_2} s''
+    \]
+    y por hipótesis de inducción
+    \begin{eqnarray*}
+        \conf{\fc{CS}{S_1}}{\varepsilon}{s} &\rhd^*& \conf{\varepsilon}{\varepsilon}{s'} \\
+        \conf{\fc{CS}{S_2}}{\varepsilon}{s'} &\rhd^*& \conf{\varepsilon}{\varepsilon}{s''}
+    \end{eqnarray*}
+    Aplicando el lema $\ref{lemaam1}$:
+    \begin{eqnarray*}
+        \conf{\fc{CS}{S_1;S_2}}{\varepsilon}{s} &=&  \conf{\fc{CS}{S_1}:\fc{CS}{S_2}}{\varepsilon}{s} \\
+        &\overset{\ref{lemaam1}}{\rhd^*}&  \conf{\fc{CS}{S_2}}{\varepsilon}{s'} \\
+        &\rhd^*&  \conf{\varepsilon}{\varepsilon}{s''}
+    \end{eqnarray*}
+    \item Supongamos $S \equiv \nif b \nthen S_1 \nelse S_2$. Tenemos dos casos
+    \begin{itemize}
+        \item $\fc{B}{b}s = \textbf{tt}$, entonces si $\la{S}{s}\dto^k s'$ entonces por $[\nn{if}_\nn{sos}^{tt}]$
+        \[
+            \la{S}{s} \dto \la{S_1}{s} \dto^{k-1} s'
+        \]
+        y por hipótesis de inducción
+        \[
+            \conf{\fc{CS}{S_1}}{\varepsilon}{s} \rhd^* \conf{\varepsilon}{\varepsilon}{s'}
+        \]
+        Entonces
+        \begin{eqnarray*}
+            \conf{\fc{CS}{S}}{\varepsilon}{s} &=& \conf{\fc{CB}{b}:\n{BRANCH}(\fc{CS}{S_1}, \fc{CS}{S_2})}{\varepsilon}{s} \\
+            &\overset{\ref{lemaam4}\ y\ \ref{lemaam1}}{\rhd^*}& \conf{\n{BRANCH}(\fc{CS}{S_1}, \fc{CS}{S_2})}{\fc{B}{b}s}{s} \\
+            &\rhd& \conf{\fc{CS}{S_1}}{\varepsilon}{s} \\
+            &\rhd^*& \conf{\varepsilon}{\varepsilon}{s'} \\
+        \end{eqnarray*}
+        \item $\fc{B}{b}s = \textbf{ff}$, se prueba de forma análoga.
+    \end{itemize}
+    \item Por último, si $\la{\nwhile b \ndo S}{s} \dto^k s''$ tenemos dos casos
+    \begin{itemize}
+        \item $\fc{B}{b}s = \textbf{ff}$ y entonces
+            \begin{eqnarray*}
+                \la{\nwhile b \ndo S}{s} &\dto& \la{\nif b \nthen (S; \nwhile b \ndo S) \nelse \nskip}{s} \\
+                &\dto& \la{\nskip}{s} \\
+                &\dto& s
+            \end{eqnarray*}
+            luego necesariamente $s = s''$ por determinismo. A su vez, la máquina abstracta 
+            \begin{eqnarray*}
+                \conf{\fc{CS}{\nwhile b \ndo S}}{\varepsilon}{s} &=& \conf{\n{LOOP}(\fc{B}{b}, \fc{CS}{S})}{\varepsilon}{s} \\
+                &\rhd&  \conf{\fc{CB}{b}:\n{BRANCH}(\fc{CS}{S}:\n{LOOP}(\fc{CB}{b}, \fc{CS}{s}), \n{NOOP})}{\varepsilon}{s} \\
+                &\rhd^*& \conf{\n{BRANCH}(\fc{CS}{S}:\n{LOOP}(\fc{CB}{b}, \fc{CS}{s}), \n{NOOP})}{\fc{B}{b}s}{s} \\
+                &\rhd& \conf{\n{NOOP}}{\varepsilon}{s} \\
+                &\rhd& \conf{\varepsilon}{\varepsilon}{s}
+            \end{eqnarray*}
+        \item $\fc{B}{b}s = \textbf{tt}$ y entonces
+        \begin{eqnarray*}
+            \la{\nwhile b \ndo S}{s} &\dto& \la{\nif b \nthen (S; \nwhile b \ndo S) \nelse \nskip}{s} \\
+            &\dto& \la{S;\nwhile b \ndo S}{s} \\
+            &\dto^{*}& s''
+        \end{eqnarray*}
+        Por el lema \ref{lemasos1} se garantiza la existencia de $k_1, k_2\in\N$ y $s'\in\State$ tal que
+        \[
+            \la{S}{s} \dto^{k_1} s'\ \ \ y\ \ \ \la{\nwhile b \ndo S}{s'} \dto^{k_2} s''
+        \]
+        que por hipótesis de inducción nos dicen que
+        \[
+            \conf{\fc{CS}{S}}{\varepsilon}{s} \dto^* \conf{\varepsilon}{\varepsilon}{s'}
+        \]
+        y
+        \[
+            \conf{\fc{CS}{\nwhile b \ndo S}}{\varepsilon}{s'} = \conf{\n{LOOP}(\fc{CB}{b}, \fc{CS}{S})}{\varepsilon}{s'} \\
+            \dto^* \conf{\varepsilon}{\varepsilon}{s''} \\
+        \]
+        Ahora
+        \begin{eqnarray*}
+            \conf{\fc{CS}{\nwhile b \ndo S}}{\varepsilon}{s} &=& \conf{\n{LOOP}(\fc{B}{b}, \fc{CS}{S})}{\varepsilon}{s} \\
+            &\rhd&  \conf{\fc{CB}{b}:\n{BRANCH}(\fc{CS}{S}:\n{LOOP}(\fc{CB}{b}, \fc{CS}{s}), \n{NOOP})}{\varepsilon}{s} \\
+            &\rhd^*& \conf{\n{BRANCH}(\fc{CS}{S}:\n{LOOP}(\fc{CB}{b}, \fc{CS}{s}), \n{NOOP})}{\fc{B}{b}s}{s} \\
+            &\rhd& \conf{\fc{CS}{S}:\n{LOOP}(\fc{CB}{b}, \fc{CS}{s})}{\varepsilon}{s} \\
+            &\rhd^*& \conf{\n{LOOP}(\fc{CB}{b}, \fc{CS}{s})}{\varepsilon}{s'} \\
+            &\rhd^*& \conf{\varepsilon}{\varepsilon}{s''}
+        \end{eqnarray*}
+    \end{itemize}
+\end{itemize}
+\end{proof}
 \end{lema}
 
 Recíprocamente, hay que demostrar que, si la máquina abstracta realiza una serie de movimientos con la pila vacía (es decir, cambia de una configuración a otra y ambas tienen la pila vacía, esto es, son de la forma $\conf{c}{\varepsilon}{s}$) entonces se pueden realizar otros movimientos paralelos en la semántica operacional estructural. Notemos que en la semántica operacional las variables se evalúan en un paso mientras que, en la máquina abstracta, esto puede llevar más de uno. Tenemos entonces:
@@ -315,7 +423,7 @@ $$\mc{S}_\nn{sos}[[S]]= \mc{S}'_\nn{sos}[[S]].$$
 Podríamos aplicar el método de demostración que acabamos de ver, es decir, podemos asociar $\la{\n{while }b\n{ do }S}{s}$ y $s$ en cada sistema y, por otro lado, tendríamos que $\la{\n{while }b\n{ do }S}{s} \dto^* \la{S;\n{while }b\n{ do }S}{s}$ mientras que $\la{\n{while }b\n{ do }S}{s}\dto' \la{S;\n{while }b\n{ do }S}{s}$, si si $\fc{B}{b}s = \mathbf{tt}$, y $\la{\n{while }b\n{ do }S}{s}\dto^* s$ mientras que $\la{\n{while }b\n{ do }S}{s}\dto' s$. Con esto podemos convencernos de la afirmación anterior.
 \end{example}
 
-\begin{example}
+\begin{example} [ACABAR?]
     Hemos realizado una modificación de la máquina abstracta de tal forma que ahora el código es fijo y disponemos de un contador de programa $pc$ que indica la instrucción en ejecución (tal y como aparece en la máquina $\mathbf{A M}_{2}$ ). También se han reemplazado las instrucciones $\n{BRANCH}$ y $\n{LOOP}$ por las siguientes: $\n{JUMP}-z$
 y $\n{JUMPFALSE}-z$. Pero se ha mantenido el estado. La configuración es una cuaterna definida de la siguiente forma:
 
