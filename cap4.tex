@@ -378,9 +378,75 @@ De hecho, si $\la{S}{s}\dto^* s'$, entonces $\conf{\fc{CS}{S}}{\varepsilon}{s}\r
 
 Recíprocamente, hay que demostrar que, si la máquina abstracta realiza una serie de movimientos con la pila vacía (es decir, cambia de una configuración a otra y ambas tienen la pila vacía, esto es, son de la forma $\conf{c}{\varepsilon}{s}$) entonces se pueden realizar otros movimientos paralelos en la semántica operacional estructural. Notemos que en la semántica operacional las variables se evalúan en un paso mientras que, en la máquina abstracta, esto puede llevar más de uno. Tenemos entonces:
 \begin{lema}
-Sean $\gamma_\nn{sos}\approx \gamma_\nn{am}^1 \rhd \dots \rhd \gamma_\nn{am}^k$, con $k>1$ y de modo que solo $\gamma_\nn{am}^1$ y $\gamma_\nn{am}^k$ tienen la pila vacía. Entonces, existe una configuración $\delta_\nn{sos}$ tal que $\gamma_\nn{sos}\dto \delta_\nn{sos}\approx \gamma_\nn{am}^k$. 
+-Sean $\gamma_\nn{sos}\approx \gamma_\nn{am}^1 \rhd \dots \rhd \gamma_\nn{am}^k$, con $k>1$ y de modo que solo $\gamma_\nn{am}^1$ y $\gamma_\nn{am}^k$ tienen la pila vacía. Entonces, existe una configuración $\delta_\nn{sos}$ tal que $\gamma_\nn{sos}\dto \delta_\nn{sos}\approx \gamma_\nn{am}^k$. 
 
 De hecho, si $\conf{\fc{CS}{S}}{\varepsilon}{s}\rhd^* \conf{\varepsilon}{\varepsilon}{s'}$, entonces $\la{S}{s}\dto^* s'$.
+\begin{proof} Procedemos nuevamente a probarlo por inducción sobre el número de transiciones $\rhd$. Supongamos que $\conf{\fc{CS}{S}}{\varepsilon}{s}\rhd^k \conf{\varepsilon}{\varepsilon}{s'}$:
+\begin{itemize}
+    \item Empezamos por $S \equiv \nx:=a$. Si extendemos la secuencia de configuraciones
+    \begin{eqnarray*}
+        \conf{\fc{CS}{S}}{\varepsilon}{s} &=& \conf{\fc{CA}{a}:\n{STORE}-x}{\varepsilon}{s} \\
+         &\rhd& \conf{\n{STORE}-x}{\fc{A}{a}s}{s} \\
+         &\rhd& \conf{\varepsilon}{\varepsilon}{s[x\mapsto \fc{A}{a}s]}
+    \end{eqnarray*}
+    por lo que $s' = s[x\mapsto \fc{A}{a}s]$. Por otro lado:
+    \begin{eqnarray*}
+        \la{\nx := a}{s} &\dto& s[x\mapsto \fc{A}{a}s] = s'
+    \end{eqnarray*}
+    \item Si $S \equiv \nskip$ claramente $\conf{\fc{CS}{S}}{\varepsilon}{s} \dto \conf{\varepsilon}{\varepsilon}{s}$ haciendo que $s' = s$. Igualmente $la{\nskip}{s} \dto s = s'$.
+    \item Sea $S \equiv S_1; S_2$. De $\conf{\fc{CS}{S_1}:\fc{CS}{S_2}}{\varepsilon}{s}\rhd^k \conf{\varepsilon}{\varepsilon}{s'}$, por el lema \ref{lemaam2} se deduce que existen $k_1, k_2\in\N$ y una configuración $\conf{\varepsilon}{e}{s''}$ tales que
+    \[
+        \conf{\fc{CS}{S_1}}{\varepsilon}{s}\rhd^{k_1} \conf{\varepsilon}{e}{s''}\ \ \ y\ \ \ \conf{\fc{CS}{S_2}}{\varepsilon}{e}\rhd^{k_2} \conf{\varepsilon}{\varepsilon}{s'}
+    \]
+    siendo de hecho $e = \varepsilon$ (todos los códigos $\fc{CS}{S}$ dejan vacía la pila). Por hipótesis de inducción
+    \[
+        \la{S_1}{s} \dto^* s'\ \ \ y\ \ \ \la{S_1}{s''} \dto^* s'
+    \]
+    y entonces por el lema \label{lemasos2}:
+    \[
+        \la{S_1;S_2}{s} \dto^* \la{S_2}{s''} \dto^* s'
+    \]
+    \item Para $S\equiv \nif b \nthen S_1 \nelse S_2$ se distinguen dos casos:
+    \begin{itemize}
+        \item $\fc{B}{b}s = \textbf{tt}$, entonces
+        \[
+             \conf{\fc{CS}{S}}{\varepsilon}{s} \rhd^2 \conf{\fc{CS}{S_1}}{\varepsilon}{s} \rhd^{k-2} \conf{\varepsilon}{\varepsilon}{s}
+        \]
+        Por hipótesis de inducción $\la{S_1}{s} \dto^* s'$. Entonces
+        \begin{eqnarray*}
+            \la{S}{s} \dto \la{S_1}{s} \dto^* s'
+        \end{eqnarray*}
+        \item Se procede análogamente en caso contrario.
+    \end{itemize}
+    \item Dividimos nuevamente en dos casos para la sentencia $\nwhile$
+    \begin{itemize}
+        \item Si $\fc{B}{b}s = \textbf{ff}$ entonces tenemos (se hizo el desarrollo con más detalle en el lema anterior)
+        \[
+            \conf{\fc{CS}{\nwhile b \ndo S}}{\varepsilon}{s} \rhd^* \conf{\varepsilon}{\varepsilon}{s} 
+        \]
+        luego por determinismo $s' = s$. Y con la semántica de paso corto:
+        \[
+            \la{S}{s} \dto \la{\nif b \nthen (\nwhile b \ndo S) \nelse \nskip}{s} \dto \la{\nskip}{s} \dto  s'
+        \]
+        \item En caso contrario se tiene
+        \begin{eqnarray*}
+            \conf{\fc{CS}{\nwhile b \ndo S}}{\varepsilon}{s} &\rhd^{k'}& \conf{\fc{CS}{S}:\n{LOOP}(\fc{CB}{b}, \fc{CS}{s})}{\varepsilon}{s} \\
+            &=& \conf{\fc{CS}{S; \nwhile b \ndo S}}{\varepsilon}{s} \\
+            &\rhd^{k-k'}& \conf{\varepsilon}{\varepsilon}{s'}
+        \end{eqnarray*}
+        luego por hipótesis de inducción
+        \[
+            \la{S; \nwhile b \ndo S}{s} \dto^* s'
+        \]
+        y entonces
+        \begin{eqnarray*}
+            \la{\nwhile b \ndo S}{s} &\dto& \la{\nif b \nthen (\nwhile b \ndo S) \nelse \nskip}{s} \\
+            &\dto& \la{S; \nwhile b \ndo S}{s} \\
+            &\dto^*& s'
+        \end{eqnarray*}
+    \end{itemize}
+\end{itemize}
+\end{proof}
 \end{lema}
 
 Por tanto, obtenemos:

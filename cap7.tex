@@ -1,7 +1,7 @@
 \cleardoublepage
 \chapter{Semántica axiomática}
 
-Durante los capítulos anteriores hemos empleado sistemas semánticos con unas reglas muy cercanas a la semántica de los programas, lo que hacía que las demostraciones fuesen especialmente complejas, porque incluían detalles concretos y específicos de cada sistema. Ahora nos interesa estudiar las propiedades generales acerca de la ejecución de un programa, y nos centraremos en demostrar propiedades de \textit{corrección parcial}\footnote{Es decir, aquellas que establecen que, si un programa termina, entonces hay una relación entre los valores iniciales y finales de las variables (véase la Introducción). Las propiedades de \textit{corrección total}, por otro lado, dicen que un programa termina y que también hay una tal relación entre los distintos valores de las variables.}.
+Durante los capítulos anteriores hemos empleado sistemas formales con unas reglas muy cercanas a la semántica de los programas, lo que hacía que las demostraciones fuesen especialmente complejas, porque incluían detalles concretos y específicos de cada uno. Ahora nos interesa estudiar las propiedades generales acerca de la ejecución de un programa, y nos centraremos en demostrar propiedades de \textit{corrección parcial}\footnote{Es decir, aquellas que establecen que, si un programa termina, entonces hay una relación entre los valores iniciales y finales de las variables (véase la Introducción). Las propiedades de \textit{corrección total}, por otro lado, dicen que un programa termina y que también hay una tal relación entre los distintos valores de las variables.}.
 
 
 \section{Sistema de reglas de inferencia}
@@ -93,8 +93,16 @@ Por tanto, determinamos un sistema de \textit{reglas de inferencia} que muestre 
 \end{sist*}
 \\
 
-Nótese que, las reglas $[\text{ass}_{\nn{p}}]$ y $[\text{skip}_{\nn{p}}]$ son, en verdad, \textit{esquemas}, porque codifican un axioma distinto para cada elección del predicado $P$. Fijémonos en la regla  $[\nn{while}_\nn{p}]$. En ella aparece lo que se denomina como \textit{predicado invariante}, es decir, aquel que se verifica antes y después de la ejecución del programa. Esto corresponde a la intuición que tenemos sobre el bucle $\n{while}$. La regla $[\nn{cons}_\nn{p}]$ puede parecer la más alejada de todo lo que hemos visto hasta ahora, pero es necesaria para que el sistema sea manejable.
+Nótese que, las reglas $[\text{ass}_{\nn{p}}]$ y $[\text{skip}_{\nn{p}}]$ son, en verdad, \textit{esquemas}, porque codifican un axioma distinto para cada elección del predicado $P$. Fijémonos en la regla  $[\nn{while}_\nn{p}]$. En ella aparece lo que se denomina como \textit{predicado invariante}, es decir, aquel que se verifica antes y después de la ejecución del programa. Esto corresponde a la intuición que tenemos sobre el bucle $\n{while}$. La regla $[\nn{cons}_\nn{p}]$ puede parecer la más alejada de todo lo que hemos visto hasta ahora, pero es necesaria para que el sistema sea manejable. De hecho:
 \\
+
+\begin{lema}[Árbol canónico]\label{lemaArbCan}
+Si existe un árbol de inferencia para una determinada aserción, entonces existe un árbol canónico (en el que no hay dos aplicaciones seguidas de $[\nn{cons}_\nn{p}]$).
+\end{lema}
+\begin{proof}
+Supongamos que tenemos, en un árbol dado, que $\pre{P}{S}{Q}$ implica $\pre{P'}{S}{Q'}$ mediante $[\nn{cons}_\nn{p}]$, y que, del mismo modo, que $\pre{P'}{S}{Q'}$ implica $\pre{P''}{S}{Q''}$   Entonces sabemos que $P'' \Rightarrow P' \Rightarrow P$ y que $Q \Rightarrow Q' \Rightarrow Q''$. Pero entonces $\pre{P}{S}{Q}$ implica $\pre{P''}{S}{Q''}$ mediante $[\nn{cons}_\nn{p}]$. Eliminando las repeticiones indicadas de esta forma, tenemos el resultado.
+\end{proof}
+
 
 \begin{example}
 Conviene tener cuidado a la hora de interpretar el significado que pretendemos dar a las aserciones. Por ejemplo, podríamos haber propuesto un axioma del tipo:
@@ -175,17 +183,6 @@ pues $N! = 1 \iff N = 0 \vee N = 1 \nLeftarrow N > 1 $
 
 
 
-Tenemos el siguiente resultado para $[\nn{cons}_\nn{p}]$, que simplificará considerablemente los árboles de inferencia:
-
-\begin{lema}
-Si existe un árbol de inferencia para una determinada aserción, entonces existe un árbol canónico (en el que no hay dos aplicaciones seguidas de $[\nn{cons}_\nn{p}]$).
-\end{lema}
-\begin{proof}
-Supongamos que tenemos, en un árbol dado, que $\pre{P}{S}{Q}$ implica $\pre{P'}{S}{Q'}$ mediante $[\nn{cons}_\nn{p}]$, y que, del mismo modo, que $\pre{P'}{S}{Q'}$ implica $\pre{P''}{S}{Q''}$   Entonces sabemos que $P'' \Rightarrow P' \Rightarrow P$ y que $Q \Rightarrow Q' \Rightarrow Q''$. Pero entonces $\pre{P}{S}{Q}$ implica $\pre{P''}{S}{Q''}$ mediante $[\nn{cons}_\nn{p}]$. Eliminando las repeticiones indicadas de esta forma, tenemos el resultado.
-\end{proof}
-
-
-
 
 El lector debe recordar, llegados a este punto, los sistemas de transiciones que vimos en la semántica operacional. Por tanto, deducirá que hay varias ideas que se vuelven a repetir. Hablaremos de \textit{árbol de inferencia}, en vez de `árbol de derivación', y diremos que el árbol da una \textit{prueba} de la aserción que aparecerá en su raíz. En tal caso, escribiremos $\vdash_p \pre{P}{S}{Q}$.
 \\
@@ -195,16 +192,24 @@ Supongamos que queremos demostrar la aserción $\pre{\n{true}}{\n{while true do 
 \end{example}
 
 \begin{example}
-EJEMPLO 9.9 o EJERCICIO 9.10
+EJEMPLO 9.9 o EJERCICIO 9.10.\\
+Demostremos $\pre{x=n}{y:=1; \n{while } \neg (x=1) \n{ do } (y:= y*x; x := x-1}{y = n! \wedge n > 0}$
+Por comodidad definimos la postcondición $Q$:
+$$ Q s = y  = (s n)! \wedge s n > 0 $$
+Y el Invariante del bucle va a ser:
+$$  INV s = s x > 0 \Rightarrow (s y)*(sx)! = (sn)! \wedge s n \ge s x   $$
+
+
 \end{example}
 
 \begin{example}
-Veamos cómo podemos ampliar el sistema $\nn{While}_\nn{p}$ para incluir una aserción asociada a $\n{repeat }S\n{ until }b$. [PROPUESTA]
+Veamos cómo podemos ampliar el sistema $\nn{While}_\nn{p}$ para incluir una aserción asociada a $\n{repeat }S\n{ until }b$.
 \begin{prooftree}
     \AxiomC{$\pre{P}{S}{Q}$}
     \AxiomC{$\pre{Q\land  \neg\fc{B}{b}}{S}{Q}$}
     \BinaryInfC{ $\pre{P}{\n{repeat }S \n{ until }b}{\fc{B}{b} \land Q}$}
 \end{prooftree}
+Notemos algo esencial: no podríamos haber incluido la expresión $\n{repeat}$ en la premisa de la regla, porque no habría ninguna relación estructural aparente entre premisa y conclusión, lo que nos llevaría a un bucle en la definición de la regla, algo inaceptable.
 \end{example}
 
 \section{Propiedades}
@@ -234,8 +239,96 @@ En algunas demostraciones nos veremos obligados a suponer que hemos probado cier
 Las sentencias $\n{repeat }S\n{ until }b$ y $S;\n{while }\neg b\n{ do }S$ son probablemente equivalentes.
 \end{prop}
 \begin{proof}
-De hecho, vamos a ver que todo lo que se puede demostrar para una de ellas, se puede probar para la otra. [HACER]
+REVISAR. Probamos por inducción sobre la profundidad del árbol.\\
+Suponemos cierto que $\vdash_p \pre{P}{\n{repeat }S\n{ until }b}{Q}$ veamos que $\vdash_p \pre{P}{S;\n{while }\neg b\n{ do }S}{Q}$:
+\begin{itemize}
+\item Si la regla aplicada es $[\nn{repeat}_\nn{p}]$:
+\begin{prooftree}
+    \AxiomC{$\pre{P}{S}{R}$}
+    \AxiomC{$\pre{R\land  \neg\fc{B}{b}}{S}{R}$}
+    \LeftLabel{$[\nn{repeat}_\nn{p}]$}
+    \BinaryInfC{ $\pre{P}{\n{repeat }S \n{ until }b}{\fc{B}{b} \land R}$}
+\end{prooftree}
+con $Q = \fc{B}{b} \land R$. Por lo tanto también podemos construir un árbol para la segunda instrucción: 
+\begin{prooftree}
+    \AxiomC{$\pre{P}{S}{R}$}
+    \AxiomC{$\pre{R \wedge \neg \fc{B}{b}}{S}{R}$}
+    \LeftLabel{$[\nn{while}_\nn{p}]$}
+    \RightLabel{}
+    \UnaryInfC{$\pre{R}{\n{while }\neg b\n{ do }S}{\fc{B}{b} \wedge R}$}
+    \LeftLabel{$[\nn{comp}_\nn{p}]$}
+    \BinaryInfC{$\pre{P}{S; \n{while }\neg b\n{ do }S}{\fc{B}{b} \wedge R}$}
+\end{prooftree}
+\item Si la regla aplicada es $[\nn{cons}_p]$ entonces tenemos que se ha deducido por
+\begin{prooftree}
+    \AxiomC{$\pre{P'}{\n{repeat }S \n{ until }b}{Q'}$}
+    \LeftLabel{$[\nn{cons}_\nn{p}]$}
+    \UnaryInfC{ $\pre{P}{\n{repeat }S \n{ until }b}{Q}$}
+\end{prooftree}
+con $P \Rightarrow P'$ y $Q' \Rightarrow Q$. Por inducción tenemos que
+\[
+    \vdash_p \pre{P'}{\n{repeat }S \n{ until }b}{ Q'} \Rightarrow\ \vdash_p \pre{P'}{S;\n{while }\neg b\n{ do }S}{Q'}
+\]
+y ahora por $[\nn{cons}_p]$ :
+\begin{prooftree}
+    \AxiomC{$\pre{P'}{S;\n{while }\neg b\n{ do }S}{ Q'}$}
+    \LeftLabel{$[\nn{cons}_\nn{p}]$}
+    \UnaryInfC{ $\pre{P}{S;\n{while }\neg b\n{ do }S}{Q}$}
+\end{prooftree}
+\end{itemize}
+Supongamos ahora que $\vdash_p \pre{P}{S;\n{while }\neg b\n{ do }S}{Q}$. Si la última regla aplicada en el árbol es $[\nn{cons}_p]$ entonces es análogo a la prueba del apartado anterior. \\ 
+Si la última regla es $[\nn{comp}_\nn{p}]$ entonces
+\begin{prooftree}
+    \AxiomC{$\pre{P}{S}{R}$}
+    \AxiomC{$\pre{R}{\n{while }\neg b\n{ do }S}{Q}$}
+    \LeftLabel{$[\nn{comp}_\nn{p}]$}
+    \BinaryInfC{$\pre{P}{\n{S; while }\neg b\n{ do }S}{Q}$}
+\end{prooftree}
+Para la instrucción $\n{while}$ debe existir un árbol canónico (Lema \ref{lemaArbCan}):
+\begin{prooftree}
+    \AxiomC{$\pre{\neg \fc{B}{b} \land R'}{S}{R'}$}
+    \LeftLabel{$[\nn{while}_\nn{p}]$}
+    \UnaryInfC{$\pre{R'}{\n{while }\neg b\n{ do }S}{\fc{B}{b} \land R'}$}
+    \LeftLabel{$[\nn{cons}_\nn{p}]$}
+    \UnaryInfC{$\pre{R}{\n{while }\neg b\n{ do }S}{Q}$}
+\end{prooftree}
+donde  $Q' =  \fc{B}{b} \land R'$, $R \Rightarrow R'$ y $Q' \Rightarrow Q$. Ahora
+\begin{prooftree}
+    \AxiomC{$\pre{P}{S}{R}$}
+    \LeftLabel{$[\nn{cons}_\nn{p}]$}
+    \UnaryInfC{$\pre{P}{S}{R'}$}
+\end{prooftree}
+y entonces
+\begin{prooftree}
+    \AxiomC{$\pre{P}{S}{R'}$}
+    \AxiomC{$\pre{\neg \fc{B}{b} \land R'}{S}{R'}$}
+    \LeftLabel{$[\nn{repeat}_\nn{p}]$}
+    \BinaryInfC{$\pre{P}{\n{repeat }S \n{ until }b}{\fc{B}{b} \land R'}$}
+\end{prooftree}
+Y como $\fc{B}{b} \land R' \Rightarrow Q$ se concluye que 
+\begin{prooftree}
+    \AxiomC{$\pre{P}{\n{repeat }S \n{ until }b}{\fc{B}{b} \land R'}$}
+    \LeftLabel{$[\nn{cons}_\nn{p}]$}
+    \UnaryInfC{$\pre{P}{\n{repeat }S \n{ until }b}{Q}$}
+\end{prooftree}
+como queríamos probar.
 \end{proof}
+En ocasiones es útil saber lo siguiente:
+
+\begin{lema}
+Si $\vdash_p \pre{R}{\n{skip}}{Q}$ entonces $R \Rightarrow Q$.
+\begin{proof}
+Si aplicamos la regla $[\nn{skip}_\nn{p}]$ tenemos que $R = Q$, luego es trivial. Si aplicamos la regla $[\nn{cons}_\nn{p}]$: 
+\begin{prooftree}
+    \AxiomC{$\pre{P'}{\n{skip}}{Q'}$}
+    \LeftLabel{}
+    \RightLabel{si $P \Rightarrow P'$ y $Q' \Rightarrow Q$}
+    \UnaryInfC{$\pre{P}{\n{skip}}{Q}$} 
+\end{prooftree}
+Aplicando ahora la regla $[\nn{skip}_\nn{p}]$, tenemos que $P'=Q'$, y por lo tanto $P \Rightarrow P' = Q' \Rightarrow Q$.
+\end{proof}
+\end{lema}
+
 
 \section{Corrección y completitud}
 
@@ -269,7 +362,7 @@ La demostración se realiza por inducción en la forma del árbol de inferencia 
 \end{proof}
 
 Para demostrar la completitud del sistema, debemos antes dar una definición auxiliar. Definimos la \textit{precondición más débil} de un par $(S, Q) \in \mathbf{Stm}\times(\mathbf{State} \to \mathbf{Bool})$ como un predicado $wlp(S, Q)$ tal que:
-$$wlp(S, Q)s = \mathbf{tt} \quad \text{ si y solo si }\quad \forall s, s' \in \mathbf{State}\, \la{S}{s}\to s' \text{ implica } Qs' = \mathbf{tt}.$$
+$$wlp(S, Q)s = \mathbf{tt} \quad \text{ si y solo si }\quad \forall s' \in \mathbf{State}\, [\la{S}{s}\to s' \text{ implica } Qs' = \mathbf{tt}].$$
 El siguiente lema nos dice que el nombre que hemos puesto a este predicado esta justificado: 
 
 \begin{lema}
@@ -283,7 +376,7 @@ Para cada par $(S,  Q)\in \mathbf{Stm}\times(\mathbf{State} \to \mathbf{Bool})$,
 Para lo primero, sean $s, s' \in \mathbf{State}$ con $\la{S}{s}\to s'$ y $wlp(S, Q)s = \mathbf{tt}$. Por la definición de $wlp(S, Q)$, se sigue que $Qs' = \mathbf{tt}$, como queríamos ver. 
 \\
 
-Para lo segundo, supongamos que $\vDash_p \pre{P}{S}{Q}$ y que $Ps = \mathbf{tt}$. Entonces, de $\la{S}{s}\to s'$ se sigue que $Qs' = \mathbf{tt}$. Pero esta implicación es equivalente (por definición) a que $wlp(S, Q)s = \mathbf{tt}$. Luego hemos probado que $P \Rightarrow Q$. 
+Para lo segundo, supongamos que $\vDash_p \pre{P}{S}{Q}$ y que $Ps = \mathbf{tt}$. Entonces, de $\la{S}{s}\to s'$ se sigue que $Qs' = \mathbf{tt}$. Pero esta implicación es equivalente (por definición) a que $wlp(S, Q)s = \mathbf{tt}$. Luego hemos probado que $P \Rightarrow wlp(S, Q)$. 
 \end{proof}
 
 \begin{theorem}[De Completitud]
@@ -291,5 +384,37 @@ Para cada aserción $\pre{P}{S}{Q}$ se cumple que
 $$\vDash_p \pre{P}{S}{Q}\quad \text{ implica }\quad\vdash_p \pre{P}{S}{Q}.$$
 \end{theorem}
 \begin{proof}
-
+El resultado se sigue si, para cada par $(S, Q) \in \mathbf{Stm}\times(\mathbf{State} \to \mathbf{Bool})$ conseguimos demostrar lo siguiente: 
+$$(\star) \quad \vdash_p \pre{wlp(S, Q)}{S}{Q}$$
+En efecto, si $\vDash_p \pre{P}{S}{Q}$, entonces el Lema anterior dice que $P \dto wlp(S, Q)$, y por tanto, como trivialmente $Q \dto Q$, aplicando $[\nn{cons}_\nn{p}]$ a $(\star)$, tenemos directamente que $\vdash_p \pre{P}{S}{Q}$, tal y como queremos. Por tanto, demostremos $(\star)$ por inducción estructural (sobre $S$):
+\begin{itemize}
+    \item[$(x:=a)$] No es difícil convencerse de que $wlp(x:=a, Q) = Q[x\mapsto \fc{A}{a}]$: Notemos que $Q[x \mapsto \fc{A}{a}]s = Q(s[x \mapsto \fc{A}{a}s])$. Supongamos que $Q[x\mapsto \fc{A}{a}]s= \mathbf{tt}$ y que $\la{x:=a}{s}\to s'$. Entonces sabemos que, por $[\nn{ass}_\nn{ns}]$, $s' = s[x \mapsto \fc{A}{a}s]$\footnote{Además, se usa el determinismo de $\nn{While}_\nn{ns}$. Este argumento se repite a lo largo de esta demostración.}. Por tanto, de la primera premisa y la igualdad anterior, $Q(s[x \mapsto \fc{A}{a}s]) = Qs' = \mathbf{tt}$. La otra implicación es análoga. Una vez que tenemos esto, aplicando $[\nn{ass}_\nn{p}]$, obtenemos directamente el resultado.
+    \item[($\nn{skip}$)] De forma similar a como hemos hecho antes, obtenemos que $wlp(\n{skip}, Q) = Q$. Solo hay que aplicar $[\nn{skip}_\nn{p}]$ para tener el resultado.
+    \item[($\nn{S_1;S_2}$)] La hipótesis de inducción aplicada a $S_1$ y $S_2$ nos da que\footnote{Fijémonos en que ($\star$) solo depende el par $(S, Q)$, y que nosotros fijamos la variable $S$ al hacer inducción, de modo que las aserciones siguientes se siguen de la hipótesis de inducción.}:
+    $$\dvash_p \pre{wlp(S_2, Q)}{S_2}{Q} \quad \text{ y } \quad \vdash_p \pre{wlp(S_1, wlp(S_2, Q))}{S_1}{wlp(S_2, Q)}$$
+    Empleando $[\nn{cons}_\nn{p}]$, $\vdash_p \pre{wlp(S_1, wlp(S_2, Q))}{S_1;S_2}{Q}$. Veamos que 
+    $$wlp(S_1;S_2, Q)\dto wlp(S_1, wlp(S_2, Q))$$
+    porque, en tal caso, aplicando $[\nn{cons}_\nn{p}]$ de nuevo, obtendremos el resultado (ya que $Q\dto Q$). Supongamos que $wlp(S_1;S_2, Q)s = \mathbf{tt}$. Tenemos que ver que $wlp(S_1, wlp(S_2, Q))s = \mathbf{tt}$. Esto es trivial si no existe $s'$ con $\la{S_1}{s}\to s'$\footnote{En efecto, si examinamos la definición de $wlp(S, Q)$, veremos que, si suponemos que $wlp(S, Q)$ y que existe un estado para el que no se da la transición, entonces se obtiene la implicación de forma vacua ($\n{false}\Rightarrow Q$, para todo predicado $Q$).}. En otro caso, debemos probar que $wlp(S_2, Q)s' = \mathbf{tt}$, que es obvio si no existe $s''$ con $\la{S_2}{s'}\to s''$. En otro caso, es necesario probar que $Qs'' = \mathbf{tt}$. Ahora bien, aplicando $[\nn{comp}_\nn{ns}]$ a las anteriores suposiciones, $\la{S_1;S_2}{s}\to s''$ implica que (por definición de $wlp(S_1;S_2, Q)s$) $Qs'' = \mathbf{tt}$.
+    
+    
+    
+    \item[($\nn{if}$)] Aplicando la hipótesis de inducción en $\n{if }b\n{ then }S_1\n{ else }S_2$ a $S_1$ y $S_2$:
+    $$\vdash_p \pre{wlp(S_1, Q)}{S_1}{Q} \quad \text{ y } \quad \vdash_p \pre{wlp(S_2, Q)}{S_2}{Q}$$
+    Consideremos el predicado $P := (\fc{B}{b}\land wlp(S_1, Q)) \lor (\fc{B}{b}\land wlp(S_2, Q))$. Entonces es claro que 
+    $$\fc{B}{b}\land P \dto \fc{B}{b} \land ((\fc{B}{b}\land wlp(S_1, Q)) \lor (\fc{B}{b}\land wlp(S_2, Q))) \dto (\fc{B}{b}\land \fc{B}{b}\land wlp(S_1, Q)) \lor (\fc{B}{b}\land \neg\fc{B}{b}\land wlp(S_2, Q)) \dto $$ $$ \dto (\fc{B}{b}\land wlp(S_1, Q)) \lor \bot \dto \fc{B}{b}\land wlp(S_1, Q) \Rightarrow wlp(S_1, Q)$$
+    y que, del mismo modo, 
+    $$\neg\fc{B}{b} \land P \dto wlp(S_2, Q)$$
+    Aplicando $[\nn{cons}_\nn{p}]$ en cada caso, 
+    $$\vdash_p \pre{\fc{B}{b}\land P}{S_1}{Q}\quad \text{ y } \quad \vdash_p \pre{\neg\fc{B}{b}\land P}{S_2}{Q}$$
+    Empleando $[\nn{if}_\nn{p}]$, $\vdash_p \pre{P}{\n{if }b\n{ then }S_1\n{ else }S_2}{Q}$ y notando que $wlp(\n{if }b\n{ then }S_1\n{ else }S_2, Q) \dto P$, tenemos el resultado (véase el Lema previo).
+    \item[($\nn{while}$)] Definamos $P:= wlp(\n{while }b \n{ do }S, Q)$. Veamos que 
+    $$(1) \quad (\neg\fc{B}{b}\land P) \dto Q$$
+    Sea $(\neg\fc{B}{b}\land P)s = \mathbf{tt}$. Entonces, $\la{\n{while }b\n{ do }S}{s} \to s$, luego de la definición de $P$, $Qs = \mathbf{tt}$. Ahora veamos que
+    $$(2) \quad (\fc{B}{b}\land P) \dto wlp(S, P)$$
+    Sea $(\fc{B}{b}\land P)s = \mathbf{tt}$. El resultado es claro salvo si hay un estado $s'$ con $\la{S}{s}\to s'$, y entonces debemos probar que $Ps' = \mathbf{tt}$. Supongamos que hay un estado $s''$ tal que $\la{\n{while }b\n{ do }S}{s'}\to s''$. Por $[\nn{while}_\nn{ns}]$, $\la{\n{while }b\n{ do }S}{s}\to s''$. Como $Ps= \mathbf{tt}$, usando el Lema, $Qs'' = \mathbf{tt}$.
+    
+    Aplicando la hipótesis de inducción en $\n{while }b\n{ do }S$ a $S$, $\vdash_p \pre{wlp(S, P)}{S}{P}$. Empleando $[\nn{cons}_\nn{p}]$ y (2), $\vdash_p \pre{\fc{B}{b}\land P}{S}{P}$. La regla $[\nn{while}_\nn{p}]$ dice que 
+    $$\vdash_p \pre{P}{\n{while }b\n{ do }S}{\neg\fc{B}{b}\land P}$$
+    Y, usando $[\nn{cons}_\nn{p}]$ y (1), $\vdash_p \pre{P}{\n{while }b\n{ do }S}{Q}$, como queríamos.
+\end{itemize}
 \end{proof}
